@@ -1,0 +1,2 @@
+import {PageHero,SiteShell} from "../ui";import {RequestForm} from "../request-form";
+export default function Dealer(){return <SiteShell><PageHero kicker="B2B SUPPLY" title="Dealer Programme" copy="Structured sourcing and export support for dealers, fleets and professional importers."/><section className="section"><div className="container form-page"><RequestForm kind="dealer"/></div></section></SiteShell>}

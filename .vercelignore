@@ -1,0 +1,9 @@
+# Raw source data used only by scripts/build-vehicles.mjs and friends.
+# The app at runtime only reads data/vehicles-index.json,
+# data/vehicle-detail-shards/*.json, and data/live-activity.json.
+data/vehicles
+data/vehicle-details.json
+
+# Retired per-vehicle scrape archive and raw source dump (298k+ files,
+# includes a 37GB backup zip). Not used at runtime; see next.config.ts.
+Auto-Shop

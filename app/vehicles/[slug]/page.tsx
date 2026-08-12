@@ -1,0 +1,290 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import {
+  Calendar,
+  Car,
+  Compass,
+  Gauge,
+  MapPin,
+  Palette,
+  Route,
+  Settings,
+  Tag,
+  Wallet,
+  Wrench,
+  Zap,
+} from "lucide-react";
+import { DetailTabs, Gallery, ShareButton, SiteShell, VehicleCard } from "../../ui";
+import { AddToCompareButton } from "../../compare-button";
+import { VehicleRequestForm } from "../../request-form";
+import {WHATSAPP_URL} from "../../contact-links";
+import {
+  formatCNY,
+  formatKm,
+  getFeaturedVehicles,
+  getTotalVehicleCount,
+} from "../../../lib/vehicles";
+import { getVehicleBySlug } from "../../../lib/vehicle-details";
+
+const SKIP_SPEC_KEYS = new Set(["selling price", "seller-tags"]);
+
+const SPEC_ICONS: [RegExp, typeof Zap][] = [
+  [/energy/i, Zap],
+  [/engine|motor/i, Wrench],
+  [/horsepower|power/i, Gauge],
+  [/mileage/i, Route],
+  [/registration|date/i, Calendar],
+  [/location/i, MapPin],
+  [/body|structure/i, Car],
+  [/msrp|price/i, Wallet],
+  [/gearbox|transmission/i, Settings],
+  [/drive/i, Compass],
+  [/color/i, Palette],
+];
+function iconFor(key: string) {
+  return SPEC_ICONS.find(([re]) => re.test(key))?.[1] ?? Tag;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const vehicle = getVehicleBySlug(slug);
+  if (!vehicle) return { robots: { index:false, follow:false } };
+  return {
+    title: vehicle.title,
+    description: `${vehicle.title} — ${formatCNY(vehicle.priceCNY)}. Sourced from China with full export support from HainaAuto.`,
+  };
+}
+
+export default async function VehicleDetail({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const vehicle = getVehicleBySlug(slug);
+  if (!vehicle) notFound();
+
+  const specEntries = Object.entries(vehicle.specs).filter(
+    ([key]) => !SKIP_SPEC_KEYS.has(key)
+  );
+  const metaLine = [
+    vehicle.year,
+    vehicle.mileageKm != null ? formatKm(vehicle.mileageKm) : null,
+    vehicle.fuel,
+    vehicle.location,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const stockCode = `${vehicle.site === "hainaauto" ? "HA" : "CN"}-${vehicle.id}`;
+  const chips = [vehicle.driveType, vehicle.fuel, vehicle.gearbox, `Stock ${stockCode}`].filter(
+    Boolean
+  ) as string[];
+  const totalVehicles = getTotalVehicleCount();
+  const related = getFeaturedVehicles(4).filter((v) => v.slug !== vehicle.slug).slice(0, 3);
+
+  return (
+    <SiteShell>
+      <div className="container vehicle-layout">
+        <div>
+          <div className="gallery-badges">
+            <span>Export Ready</span>
+            <span className="alt">Inspection Available</span>
+          </div>
+          <Gallery site={vehicle.site} id={vehicle.id} images={vehicle.images} title={vehicle.title} />
+
+          <span className="vehicle-title">
+            {vehicle.site === "hainaauto" ? "HAINAAUTO LISTING" : "PARTNER LISTING"}
+          </span>
+          <h1>{vehicle.title}</h1>
+          <div className="vehicle-meta">{metaLine}</div>
+          {chips.length > 0 && (
+            <div className="detail-chips">
+              {chips.map((chip) => (
+                <span key={chip}>{chip}</span>
+              ))}
+            </div>
+          )}
+
+          <div className="price-block">
+            <small>Vehicle price</small>
+            {vehicle.msrpCNY != null && vehicle.priceCNY != null && vehicle.msrpCNY > vehicle.priceCNY && (
+              <div className="msrp">MSRP {formatCNY(vehicle.msrpCNY)}</div>
+            )}
+            <div className="sale">
+              {formatCNY(vehicle.priceCNY)} <span style={{ fontSize: 14, color: "var(--muted)" }}>CNY</span>
+            </div>
+          </div>
+
+          <ul className="buy-checklist">
+            <li>
+              <b>✓</b>Vehicle inspection
+            </li>
+            <li>
+              <b>✓</b>Export documentation support
+            </li>
+            <li>
+              <b>✓</b>Shipping assistance
+            </li>
+          </ul>
+
+          <div className="detail-actions">
+            <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}`}>
+              Get Free Quote
+            </Link>
+            <a
+              className="btn btn-whatsapp"
+              href={WHATSAPP_URL}
+            >
+              WhatsApp Inquiry
+            </a>
+          </div>
+          <div className="detail-secondary">
+            <AddToCompareButton slug={vehicle.slug} />
+            <ShareButton title={vehicle.title} />
+          </div>
+
+          {vehicle.overview && (
+            <div className="overview-block">
+              <h2>Vehicle Overview</h2>
+              <p>{vehicle.overview}</p>
+            </div>
+          )}
+
+          {specEntries.length > 0 && (
+            <div className="overview-block">
+              <h2>Specifications</h2>
+              <div className="spec-tiles">
+                {specEntries.map(([key, value]) => {
+                  const Icon = iconFor(key);
+                  return (
+                    <div key={key}>
+                      <small>
+                        <Icon size={11} /> {key}
+                      </small>
+                      <b>{value}</b>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="overview-block">
+            <h2>Export Information</h2>
+            <div className="export-info-tiles">
+              <div>
+                <small>Export Status</small>
+                <b>Ready to Export</b>
+              </div>
+              <div>
+                <small>Shipping</small>
+                <b>RoRo / Container</b>
+              </div>
+              <div>
+                <small>Documents</small>
+                <b>Export Docs Ready</b>
+              </div>
+              <div>
+                <small>Inspection</small>
+                <b>Professional Inspection</b>
+              </div>
+              <div>
+                <small>Destination</small>
+                <b>Worldwide</b>
+              </div>
+            </div>
+          </div>
+
+          <DetailTabs
+            panels={[
+              [
+                "Overview",
+                <p key="o">
+                  {vehicle.overview ||
+                    "Contact our team for a full condition report and detailed specification sheet on this vehicle."}
+                </p>,
+              ],
+              [
+                "Process",
+                <ul key="p">
+                  <li>Inquiry &amp; quotation — confirm specification and pricing</li>
+                  <li>Inspection &amp; payment — condition report, then T/T or L/C settlement</li>
+                  <li>Shipping &amp; customs — RoRo, container or rail booking with export docs</li>
+                  <li>
+                    Delivery — arrival support at destination. <Link href="/services">Full export process →</Link>
+                  </li>
+                </ul>,
+              ],
+              [
+                "FAQ",
+                <ul key="f">
+                  <li>Can I inspect this vehicle before purchase? Yes — on-site or third-party inspection can be arranged.</li>
+                  <li>How long does shipping take? Typically 2–6 weeks after departure, depending on destination.</li>
+                  <li>What payment methods do you accept? T/T, L/C and other agreed secure settlement methods.</li>
+                </ul>,
+              ],
+            ]}
+          />
+        </div>
+
+        <div>
+          <VehicleRequestForm vehicleTitle={vehicle.title} />
+          <div className="side-card specialist-card">
+            <span className="avatar">HA</span>
+            <h3>Talk to Our Export Team</h3>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            <a href="mailto:info@hainaauto.com">info@hainaauto.com</a>
+            <p>We typically respond within 24 hours.</p>
+          </div>
+          <div className="side-card">
+            <h3>Why Buy From HainaAuto</h3>
+            <ul className="why-buy-list">
+              <li>
+                <b>✓</b>
+                {totalVehicles.toLocaleString()}+ export-ready vehicles
+              </li>
+              <li>
+                <b>✓</b>Professional inspection
+              </li>
+              <li>
+                <b>✓</b>Complete export documents
+              </li>
+              <li>
+                <b>✓</b>Worldwide shipping
+              </li>
+              <li>
+                <b>✓</b>After-sales support
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {related.length > 0 && (
+        <section className="section tint">
+          <div className="container">
+            <div className="section-head">
+              <span className="eyebrow">MORE OPTIONS</span>
+              <h2>You may also like</h2>
+            </div>
+            <div className="car-grid">
+              {related.map((v) => (
+                <VehicleCard v={v} key={v.slug} />
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 36 }}>
+              <Link className="btn ghost" href="/vehicles">
+                Browse all vehicles
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+    </SiteShell>
+  );
+}

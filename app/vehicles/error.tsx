@@ -1,0 +1,1 @@
+"use client";export default function ErrorPage({reset}:{reset:()=>void}){return <div className="container empty-state" role="alert"><h1>Catalogue unavailable</h1><p>The vehicle catalogue could not be loaded.</p><button className="btn primary" onClick={reset}>Try again</button></div>}

@@ -1,0 +1,2 @@
+import {PageHero,SiteShell} from "../ui";import {RequestForm} from "../request-form";
+export default function Quote(){return <SiteShell><PageHero kicker="PERSONAL EXPORT QUOTATION" title="Request a Quote" copy="Send the stock code or describe the vehicle you need and your destination."/><section className="section"><div className="container form-page"><RequestForm kind="quote"/></div></section></SiteShell>}

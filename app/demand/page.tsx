@@ -1,0 +1,18 @@
+"use client";import {FormEvent,useState} from "react";import {PageHero,SiteShell} from "../ui";import {submitLead} from "../submit-lead";
+type Status="idle"|"sending"|"sent"|"error";
+function field(data:FormData,key:string):string|undefined{const v=data.get(key);return typeof v==="string"&&v.trim()?v.trim():undefined}
+export default function Demand(){
+  const [state,setState]=useState<Status>("idle");
+  const [error,setError]=useState<string|null>(null);
+  const [ref,setRef]=useState<string|null>(null);
+  async function submit(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    if(state==="sending")return;
+    const form=event.currentTarget;
+    const data=new FormData(form);
+    setState("sending");setError(null);
+    const result=await submitLead({name:field(data,"name"),email:field(data,"email"),phone:field(data,"phone"),company:field(data,"company"),vehicle:field(data,"model"),budget:field(data,"budget"),destination:field(data,"destination"),quantity:field(data,"quantity"),message:[field(data,"condition"),field(data,"year")?`Model year: ${field(data,"year")}`:undefined,field(data,"message")].filter(Boolean).join(" · "),source:"demand-page"});
+    if(result.ok){setRef(result.ref);setState("sent");form.reset()}
+    else{setError(result.error);setState("error")}
+  }
+  return <SiteShell><PageHero kicker="PERSONAL SOURCING" title="Tell Us Your Vehicle Requirements" copy="Share what you are looking for. Our team will check the China market and return with suitable options."/><section className="section"><div className="container demand-grid"><form className="request-form" onSubmit={submit} aria-busy={state==="sending"}><h2>Vehicle details</h2><div className="form-grid"><label>Brand / model<input name="model" required placeholder="e.g. Toyota Camry"/></label><label>Condition<select name="condition"><option>New or used</option><option>New</option><option>Used</option></select></label><label>Model year<input name="year" placeholder="e.g. 2023 or newer"/></label><label>Quantity<input name="quantity" type="number" min="1" defaultValue="1"/></label><label>Destination country<input name="destination" required placeholder="Country"/></label><label>Target budget<input name="budget" placeholder="USD per vehicle"/></label><label className="wide">Additional requirements<textarea name="message" rows={5} placeholder="Trim, color, mileage, fuel type, delivery port or other details"/></label></div><h2>Contact details</h2><div className="form-grid"><label>Your name<input name="name" required/></label><label>Email<input name="email" type="email" required/></label><label>Phone / WhatsApp<input name="phone" required/></label><label>Company<input name="company"/></label></div><button className="btn primary" type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":"Send vehicle request →"}</button>{state==="sent"&&<p className="success">Thank you. Your request is ready for our sourcing team{ref?` (reference ${ref})`:""}.</p>}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</form><aside className="next-card"><span className="eyebrow">WHAT HAPPENS NEXT?</span><ol><li><b>Requirement review</b><p>We confirm the key details and ask any necessary questions.</p></li><li><b>Market search</b><p>Our team checks trusted suppliers and available inventory.</p></li><li><b>Clear quotation</b><p>You receive matched options with condition, pricing and delivery costs.</p></li></ol><hr/><b>Your privacy</b><p>Your information is used only to respond to this request and coordinate your order.</p></aside></div></section></SiteShell>}
