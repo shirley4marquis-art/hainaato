@@ -11,8 +11,6 @@ import {TELEGRAM_URL,WECHAT_CONTACT_URL,WECHAT_USERNAME,WHATSAPP_URL,TelegramIco
 import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
 import { formatCNY, formatKm, imagePath } from "../lib/format";
 import { ResilientVehicleImage, rankVehicleImages } from "./vehicle-image";
-import { LiveActivityTicker, type ActivityEvent } from "./live-activity";
-import liveActivity from "../data/live-activity.json";
 
 export function Gallery({site,id,images,title}:{site:VehicleSite,id:string,images:string[],title:string}) {
   const [active,setActive]=useState(0);
@@ -110,7 +108,6 @@ export function SiteShell({children}:{children:ReactNode}) {
       </div>
       <div className="ah-header-nav-wrap"><button className="menu" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">{open?"×":"☰"}</button><nav className={open?"open":""}><div className="ah-nav-links">{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div><div className="ah-nav-end"><form className="ah-header-search" action="/vehicles"><input type="search" name="q" placeholder="Quick search..." aria-label="Search vehicles"/><button type="submit">Search</button></form></div></nav></div>
     </div>
-    <LiveActivityTicker events={liveActivity as ActivityEvent[]}/>
     </header>
     <main id="main-content">{children}</main><Footer/>
     <aside className="mobile-social-rail" aria-label="Quick contact"><a className="wechat" href={WECHAT_CONTACT_URL} aria-label={`Contact by WeChat: ${WECHAT_USERNAME}`}><WeChatIcon/><small>WeChat</small></a><a className="telegram" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on Telegram"><TelegramIcon/></a><a className="mobile-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp"><WhatsAppIcon/></a><Link className="assistant" href="/contact" aria-label="Open assistant"><Bot/></Link></aside>

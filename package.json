@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "data:build": "node scripts/build-vehicles.mjs",
-    "data:activity": "node scripts/generate-live-activity.mjs",
     "data:compact": "node scripts/compact-vehicle-data.mjs && node scripts/shard-vehicle-data.mjs",
     "audit:routes": "node scripts/debug-static-routes.mjs"
   },
