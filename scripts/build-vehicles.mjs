@@ -161,6 +161,31 @@ if (collisions.length > 0) {
 
 fs.writeFileSync(path.join(outDir, "vehicles-index.json"), JSON.stringify(index));
 fs.writeFileSync(path.join(outDir, "vehicle-details.json"), JSON.stringify(details));
+
+// Small rotating sample of real current inventory for the header ticker
+// (app/inventory-ticker.tsx). No invented people, no invented payments —
+// just real vehicles with real prices and real stock codes, evenly sampled
+// so a fixed-size ticker still spans the whole catalogue. This intentionally
+// does not claim recency ("just listed", "Xm ago") since nothing in this
+// pipeline tracks a real listing timestamp.
+const tickerEligible = index.filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb);
+const tickerCount = Math.min(40, tickerEligible.length);
+const tickerStep = Math.max(1, Math.floor(tickerEligible.length / tickerCount));
+const inventoryTicker = [];
+for (let i = 0; i < tickerEligible.length && inventoryTicker.length < tickerCount; i += tickerStep) {
+  const v = tickerEligible[i];
+  inventoryTicker.push({
+    slug: v.slug,
+    site: v.site,
+    id: v.id,
+    title: v.title,
+    priceCNY: v.priceCNY,
+    stockCode: v.stockCode,
+    thumb: v.thumb,
+  });
+}
+fs.writeFileSync(path.join(outDir, "inventory-ticker.json"), JSON.stringify(inventoryTicker));
+console.log(`inventory-ticker: ${inventoryTicker.length} real vehicles sampled`);
 const shardCount = 64;
 const detailShards = Array.from({ length: shardCount }, () => ({}));
 for (const [slug, vehicle] of Object.entries(details)) {
