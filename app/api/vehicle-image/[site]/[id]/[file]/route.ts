@@ -45,7 +45,7 @@ async function resolveViaDoH(hostname: string): Promise<string | null> {
   return null;
 }
 
-type UpstreamResponse = { status: number; contentType: string | null; body: IncomingMessage };
+type UpstreamResponse = { status: number; contentType: string | null; contentLength: string | null; body: IncomingMessage };
 
 function requestUpstream(urlStr: string, resolvedIp: string | null, timeoutMs: number): Promise<UpstreamResponse> {
   const url = new URL(urlStr);
@@ -61,7 +61,16 @@ function requestUpstream(urlStr: string, resolvedIp: string | null, timeoutMs: n
   return new Promise((resolve, reject) => {
     const req = https.request(
       { hostname: url.hostname, path: url.pathname + url.search, lookup, headers: { "user-agent": "Mozilla/5.0" } } as https.RequestOptions,
-      (res) => resolve({ status: res.statusCode ?? 502, contentType: res.headers["content-type"] ?? null, body: res })
+      (res) => resolve({
+        status: res.statusCode ?? 502,
+        contentType: res.headers["content-type"] ?? null,
+        // Forwarded so responses declare a Content-Length instead of streaming
+        // chunked with no known size — some feed/crawler clients (plausibly
+        // including Meta's catalog image fetcher) treat a missing
+        // Content-Length as an incomplete or untrustworthy response.
+        contentLength: res.headers["content-length"] ?? null,
+        body: res,
+      })
     );
     const timer = setTimeout(() => req.destroy(new Error("Upstream request timed out")), timeoutMs);
     req.on("response", () => clearTimeout(timer));
@@ -137,6 +146,7 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": upstream.contentType || "application/octet-stream",
+      ...(upstream.contentLength ? { "Content-Length": upstream.contentLength } : {}),
       "Cache-Control": "public, max-age=86400, immutable",
     },
   });
