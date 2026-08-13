@@ -20,8 +20,15 @@ function toNumber(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+// Our real sale price is 60% of the scraped upstream price — applied here so
+// it survives every future data:build rather than being a one-off patch.
+// MSRP is left untouched: it's a separate real reference figure (factory
+// suggested price), not "our" price.
+const SALE_PRICE_MULTIPLIER = 0.6;
+
 function normalize(raw, site) {
   const specs = raw.specs ?? {};
+  const scrapedPriceCNY = toNumber(raw.price?.salePriceCNY);
   return {
     slug: `${site}-${raw.id}`,
     site,
@@ -29,7 +36,7 @@ function normalize(raw, site) {
     url: raw.url ?? null,
     title: raw.title ?? "Untitled vehicle",
     year: raw.year ?? null,
-    priceCNY: toNumber(raw.price?.salePriceCNY),
+    priceCNY: scrapedPriceCNY == null ? null : Math.round(scrapedPriceCNY * SALE_PRICE_MULTIPLIER),
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
     mileageKm: toNumber(raw.mileage ?? specs["Mileage"]),
     fuel: raw.fuel ?? specs["Energy type"] ?? null,
