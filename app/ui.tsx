@@ -12,6 +12,7 @@ import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
 import { formatKm, imagePath } from "../lib/format";
 import { ResilientVehicleImage, rankVehicleImages } from "./vehicle-image";
 import { ShipmentTicker } from "./shipment-ticker";
+import { RevealObserver } from "./reveal";
 import { Price } from "./price";
 import { setCurrency, useCurrency } from "./currency-store";
 import { CURRENCIES, isCurrencyCode } from "../lib/currency";
@@ -111,6 +112,7 @@ export function SiteShell({children}:{children:ReactNode}) {
   const path=usePathname();
   const [open,setOpen]=useState(false);
   return <>
+    <RevealObserver/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="ah-header"><div className="container">
       <div className="mobile-header-minimal"><button type="button" className="mobile-menu-trigger" onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu-panel" aria-label={open?"Close menu":"Open menu"}>{open?<X/>:<Menu/>}</button><form className="mobile-header-search" action="/vehicles"><Search/><input name="q" type="search" placeholder="Search vehicle" aria-label="Search vehicle"/></form><Link className="mobile-header-quote" href="/quote">Get Quote</Link></div>
@@ -136,4 +138,4 @@ export function PageHero({kicker,title,copy}:{kicker:string,title:string,copy:st
 
 export function SortSelect({sort,hidden}:{sort:string,hidden:Record<string,string|undefined>}){return <form method="get">{Object.entries(hidden).map(([k,v])=>v?<input key={k} type="hidden" name={k} value={v}/>:null)}<select name="sort" aria-label="Sort" defaultValue={sort} onChange={(e)=>e.currentTarget.form?.submit()}><option value="latest">Latest listings</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></form>}
 
-export function VehicleCard({v}:{v:VehicleIndexEntry}){const specLine=[v.year,v.mileageKm!=null?formatKm(v.mileageKm):null,v.fuel].filter(Boolean).join(" · ");const candidates=(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img));return <article className="car"><Link href={`/vehicles/${v.slug}`}><div className="car-image"><ResilientVehicleImage candidates={candidates} alt={`${v.title} exterior`}/><span>{v.site==="hainaauto"?"HainaAuto":"CN Transit"}</span></div></Link><div className="car-body"><small>{v.bodyType?v.bodyType.toUpperCase():"EXPORT AVAILABLE"}</small><Link href={`/vehicles/${v.slug}`}><h3>{v.title}</h3></Link><p>{specLine||v.location||"Export ready"}</p><div><b><Price cny={v.priceCNY}/></b><a href={WHATSAPP_URL}>Inquire →</a></div></div></article>}
+export function VehicleCard({v}:{v:VehicleIndexEntry}){const specLine=[v.year,v.mileageKm!=null?formatKm(v.mileageKm):null,v.fuel].filter(Boolean).join(" · ");const candidates=(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img));return <article className="car reveal"><Link href={`/vehicles/${v.slug}`}><div className="car-image"><ResilientVehicleImage candidates={candidates} alt={`${v.title} exterior`}/><span>{v.site==="hainaauto"?"HainaAuto":"CN Transit"}</span></div></Link><div className="car-body"><small>{v.bodyType?v.bodyType.toUpperCase():"EXPORT AVAILABLE"}</small><Link href={`/vehicles/${v.slug}`}><h3>{v.title}</h3></Link><p>{specLine||v.location||"Export ready"}</p><div><b><Price cny={v.priceCNY}/></b><a href={WHATSAPP_URL}>Inquire →</a></div></div></article>}

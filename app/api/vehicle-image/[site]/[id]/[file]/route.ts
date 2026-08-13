@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import https from "node:https";
 import type { IncomingMessage } from "node:http";
 import type { LookupAddress } from "node:dns";
+import sharp from "sharp";
 import { getVehicleBySlug } from "../../../../../../lib/vehicle-details";
 import type { VehicleSite } from "../../../../../../lib/format";
+
+// Mirrors the range Next's own optimizer would normally clamp to, so a
+// crafted ?w= can't force an absurd upscale/allocation.
+const MIN_WIDTH = 16;
+const MAX_WIDTH = 3840;
 
 const UPSTREAM: Record<VehicleSite, (file: string) => string> = {
   hainaauto: (file) => `https://img.hainaauto.com/vehicle/${encodeURIComponent(file)}`,
@@ -108,11 +114,39 @@ function nodeStreamToWeb(nodeStream: IncomingMessage): ReadableStream<Uint8Array
   });
 }
 
+function bufferStream(nodeStream: IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    nodeStream.on("data", (chunk) => chunks.push(chunk));
+    nodeStream.on("end", () => resolve(Buffer.concat(chunks)));
+    nodeStream.on("error", reject);
+  });
+}
+
+function parseWidth(raw: string | null): number | null {
+  if (!raw) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, n)));
+}
+
+function parseQuality(raw: string | null): number {
+  const n = raw ? Number(raw) : NaN;
+  if (!Number.isFinite(n)) return 75;
+  return Math.round(Math.min(100, Math.max(1, n)));
+}
+
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ site: string; id: string; file: string }> }
 ) {
   const { site, id, file } = await params;
+  // Only present when next/image's custom loader (lib/image-loader.ts) built
+  // this URL — direct/unparameterized requests (the Meta catalog feed, a
+  // browser navigating straight to the URL, etc.) always get the original
+  // full-size file untouched.
+  const width = parseWidth(request.nextUrl.searchParams.get("w"));
+  const quality = parseQuality(request.nextUrl.searchParams.get("q"));
 
   if (!isVehicleSite(site)) {
     return NextResponse.json({ error: "Unknown site." }, { status: 404 });
@@ -140,6 +174,29 @@ export async function GET(
   if (upstream.status < 200 || upstream.status >= 300) {
     upstream.body.resume();
     return NextResponse.json({ error: "Image source returned an error." }, { status: 502 });
+  }
+
+  if (width != null) {
+    let resized: Buffer;
+    try {
+      const original = await bufferStream(upstream.body);
+      resized = await sharp(original)
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality })
+        .toBuffer();
+    } catch {
+      // Corrupt/unrecognized source image — fall through to a 502 rather
+      // than serving something sharp couldn't actually process.
+      return NextResponse.json({ error: "Could not process the source image." }, { status: 502 });
+    }
+    return new NextResponse(new Uint8Array(resized), {
+      status: 200,
+      headers: {
+        "Content-Type": "image/webp",
+        "Content-Length": String(resized.length),
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
   }
 
   return new NextResponse(nodeStreamToWeb(upstream.body), {

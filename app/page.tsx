@@ -153,11 +153,11 @@ export default function Home(){
 
     <section className="export-hub"><div className="container">
       <div className="hub-grid">
-        <div className="hub-card">
+        <div className="hub-card reveal">
           <h3>Why Choose HainaAuto</h3>
           <div><ul className="hub-why-list">{whyChoose.map(([Icon,title,desc])=><li key={title}><span className="hub-why-icon"><Icon size={14}/></span><div><b>{title}</b><p>{desc}</p></div></li>)}</ul></div>
         </div>
-        <div className="hub-card">
+        <div className="hub-card reveal">
           <h3>Our Export Process</h3>
           <div><div className="hub-process">
             <div className="hub-process-row">
@@ -169,7 +169,7 @@ export default function Home(){
           </div></div>
           <Link className="hub-process-cta" href="/services">Learn More About Process →</Link>
         </div>
-        <div className="hub-card">
+        <div className="hub-card reveal">
           <h3>Export Destinations</h3>
           <div><div className="hub-dest">
             <div className="hub-dest-map"/>
@@ -185,7 +185,7 @@ export default function Home(){
       <div className="client-strength-grid">
         <div>
           <h3>What Our Clients Say</h3>
-          <div className="mini-testimonials">{testimonials.map(([avatar,name,place,quote])=><article className="mini-testimonial" key={name}><div className="mini-testimonial-head"><img src={avatar} alt=""/><div><b>{name}</b><span>{place}</span></div></div><div className="mini-testimonial-stars">★★★★★</div><p>&ldquo;{quote}&rdquo;</p></article>)}</div>
+          <div className="mini-testimonials">{testimonials.map(([avatar,name,place,quote])=><article className="mini-testimonial reveal" key={name}><div className="mini-testimonial-head"><img src={avatar} alt=""/><div><b>{name}</b><span>{place}</span></div></div><div className="mini-testimonial-stars">★★★★★</div><p>&ldquo;{quote}&rdquo;</p></article>)}</div>
         </div>
         <div>
           <h3>Company Strength</h3>
@@ -214,7 +214,7 @@ export default function Home(){
 
     <section className="section home-news-guides"><div className="container">
       <div className="section-head row"><div><span className="eyebrow">BUYER RESOURCES</span><h2>Latest export guides</h2></div><Link className="text-link" href="/news">View all guides →</Link></div>
-      <div className="news-grid">{guides.map((g,i)=><article className={i===0?"news featured":"news"} key={g[1]}><img src={g[0]} alt=""/><div><span className="eyebrow">EXPORT GUIDE</span><h2>{g[1]}</h2><p>{g[2]}</p><Link href={g[3]}>Read more →</Link></div></article>)}</div>
+      <div className="news-grid">{guides.map((g,i)=><article className={i===0?"news featured reveal":"news reveal"} key={g[1]}><img src={g[0]} alt=""/><div><span className="eyebrow">EXPORT GUIDE</span><h2>{g[1]}</h2><p>{g[2]}</p><Link href={g[3]}>Read more →</Link></div></article>)}</div>
     </div></section>
 
     <section className="home-faq section"><div className="container">
