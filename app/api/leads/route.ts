@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
     destination: str(b.destination) ?? null,
     quantity: num(b.quantity) ?? null,
     message: str(b.message) ?? null,
+    // Explicit boolean check — anything other than a literal true (missing,
+    // undefined, "true" as a string, etc.) is treated as no consent given.
+    publicConsent: b.publicConsent === true,
     source,
   };
 

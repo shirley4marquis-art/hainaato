@@ -20,7 +20,7 @@ export function GetInTouchSection(){
     const form=event.currentTarget;
     const data=new FormData(form);
     setState("sending");setError(null);
-    const result=await submitLead({name:field(data,"name"),contact:field(data,"contact"),vehicle:field(data,"brand_model"),budget:field(data,"budget"),destination:field(data,"destination"),message:field(data,"message"),source:"contact-section"});
+    const result=await submitLead({name:field(data,"name"),contact:field(data,"contact"),vehicle:field(data,"brand_model"),budget:field(data,"budget"),destination:field(data,"destination"),message:field(data,"message"),publicConsent:data.get("publicConsent")==="on",source:"contact-section"});
     if(result.ok){setRef(result.ref);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
   }
@@ -35,6 +35,7 @@ export function GetInTouchSection(){
         <label>Budget range<input name="budget" maxLength={128} placeholder="e.g. USD 15,000 – 25,000"/></label>
         <label className="wide">Destination country / port<input name="destination" maxLength={255} placeholder="e.g. Dubai, Vladivostok"/></label>
         <label className="wide">Additional requirements<textarea name="message" rows={4} maxLength={2000} placeholder="Color, fuel type, quantity, delivery timeline…"/></label>
+        <label className="wide requirements-consent"><input type="checkbox" name="publicConsent"/> Allow an anonymized status update (reference, destination and status only — never your name or contact details) to appear in the shipment updates ticker on this site.</label>
       </div><button type="submit" disabled={state==="sending"}><Send/>{state==="sending"?"Sending…":"Submit requirements"}</button>{state==="sent"&&<p className="requirements-success" role="status">Thank you. Our export desk will follow up within one business day{ref?` (reference ${ref})`:""}.</p>}{state==="error"&&<p className="requirements-error" role="alert">{error}</p>}</form></div>
     </div>
   </div></section>;

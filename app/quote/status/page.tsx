@@ -1,6 +1,7 @@
 "use client";
 import { FormEvent, useState } from "react";
 import { PageHero, SiteShell } from "../../ui";
+import { QUOTE_STATUS_LABELS } from "../../../lib/format";
 
 type QuoteStatus = {
   ref: string;
@@ -8,16 +9,6 @@ type QuoteStatus = {
   destinationCountry: string;
   quoteDate: string;
   updatedAt: string;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  quoted: "Quote received — under review",
-  negotiating: "In discussion with our export desk",
-  deposit_paid: "Deposit received — preparing order",
-  paid_full: "Paid in full — preparing shipment",
-  shipped: "Shipped — in transit",
-  delivered: "Delivered",
-  lost: "Closed",
 };
 
 type State = "idle" | "loading" | "found" | "not-found" | "error";
@@ -79,7 +70,7 @@ export default function Status() {
           )}
           {state === "found" && quote && (
             <p className="success" role="status">
-              <b>{quote.ref}</b> — {STATUS_LABELS[quote.status] || quote.status}
+              <b>{quote.ref}</b> — {QUOTE_STATUS_LABELS[quote.status] || quote.status}
               <br />
               Destination: {quote.destinationCountry} · Requested {quote.quoteDate} · Last updated {quote.updatedAt}
             </p>

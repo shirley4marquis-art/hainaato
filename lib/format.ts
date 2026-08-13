@@ -109,6 +109,16 @@ export function formatCNY(n: number | null | undefined): string {
   return `¥${n.toLocaleString("en-US")}`;
 }
 
+export const QUOTE_STATUS_LABELS: Record<string, string> = {
+  quoted: "Quote received — under review",
+  negotiating: "In discussion with our export desk",
+  deposit_paid: "Deposit received — preparing order",
+  paid_full: "Paid in full — preparing shipment",
+  shipped: "Shipped — in transit",
+  delivered: "Delivered",
+  lost: "Closed",
+};
+
 export function formatKm(n: number | null | undefined): string {
   if (n == null) return "—";
   return `${n.toLocaleString("en-US")} km`;

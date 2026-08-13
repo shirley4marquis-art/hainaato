@@ -27,8 +27,24 @@ function getDb(): DatabaseSync {
   }
   const instance = new DatabaseSync(DB_PATH);
   if (fs.existsSync(SCHEMA_PATH)) instance.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
+  migrate(instance);
   db = instance;
   return instance;
+}
+
+// Additive, guarded migration kept here rather than in the shared
+// carexportch/crm/schema.sql — that file belongs to a separate project's own
+// CLI tooling, which doesn't need to know about this column. Explicit column
+// lists in both codebases' INSERTs mean a new nullable-default column can't
+// break either side. Defaults to 0 (no consent) for every existing row,
+// including real historical customers already in this database — nothing
+// becomes publicly visible just because this column now exists.
+function migrate(instance: DatabaseSync): void {
+  const columns = instance.prepare("PRAGMA table_info(quotes)").all() as Row[];
+  const hasConsent = columns.some((c) => c.name === "public_consent");
+  if (!hasConsent) {
+    instance.exec("ALTER TABLE quotes ADD COLUMN public_consent INTEGER NOT NULL DEFAULT 0");
+  }
 }
 
 type Row = Record<string, unknown>;
@@ -79,7 +95,7 @@ function recalc(instance: DatabaseSync, ref: string): void {
 
 function createQuote(
   instance: DatabaseSync,
-  q: { customerId: number | bigint; destinationPort: string; destinationCountry: string; notes?: string | null; status?: string }
+  q: { customerId: number | bigint; destinationPort: string; destinationCountry: string; notes?: string | null; status?: string; publicConsent?: boolean }
 ): string {
   const ref = nextRef(instance);
   instance
@@ -87,8 +103,8 @@ function createQuote(
       `INSERT INTO quotes
         (ref, customer_id, quote_date, destination_port, destination_country, shipping_mode,
          container_note, freight_cost, insurance_cost, deposit_pct, duty_pct, duty_estimate_override,
-         currency, status, notes)
-       VALUES (?,?,date('now'),?,?,?,?,?,?,?,?,?,?,?,?)`
+         currency, status, notes, public_consent)
+       VALUES (?,?,date('now'),?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
     .run(
       ref,
@@ -104,7 +120,8 @@ function createQuote(
       null,
       "USD",
       q.status ?? "quoted",
-      q.notes ?? null
+      q.notes ?? null,
+      q.publicConsent ? 1 : 0
     );
   recalc(instance, ref);
   return ref;
@@ -127,6 +144,11 @@ export type WebLead = {
   quantity?: number | null;
   message?: string | null;
   source: string;
+  // Explicit opt-in only — never inferred, never defaulted to true. Controls
+  // whether this specific quote's anonymized status can appear in
+  // getShipmentUpdates(); the customer's name/phone/email are never exposed
+  // regardless of this flag.
+  publicConsent?: boolean;
 };
 
 // Mirrors the add-customer / add-quote pattern the CRM CLI already uses so web
@@ -154,6 +176,7 @@ export function saveLead(lead: WebLead): string {
     destinationCountry: lead.destination || "Not specified",
     notes: summaryLines.join(" · "),
     status: "quoted",
+    publicConsent: lead.publicConsent === true,
   });
   if (lead.message) addFollowUp(instance, ref, lead.message);
   return ref;
@@ -182,4 +205,31 @@ export function getQuoteStatus(ref: string): QuoteStatusResult | null {
     quoteDate: quote.quote_date as string,
     updatedAt: quote.updated_at as string,
   };
+}
+
+export type ShipmentUpdate = {
+  ref: string;
+  destinationCountry: string;
+  status: string;
+  updatedAt: string;
+};
+
+// Only quotes whose customer explicitly opted in at submission time
+// (public_consent = 1) — never name, phone, email, or any financial figure,
+// regardless of consent. Real historical rows created before this column
+// existed default to 0 and are excluded automatically.
+export function getShipmentUpdates(limit = 20): ShipmentUpdate[] {
+  const instance = getDb();
+  const rows = instance
+    .prepare(
+      `SELECT ref, destination_country, status, updated_at FROM quotes
+       WHERE public_consent = 1 ORDER BY updated_at DESC LIMIT ?`
+    )
+    .all(limit) as Row[];
+  return rows.map((r) => ({
+    ref: r.ref as string,
+    destinationCountry: r.destination_country as string,
+    status: r.status as string,
+    updatedAt: r.updated_at as string,
+  }));
 }
