@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Car, Copy, MapPin } from "lucide-react";
-import {TELEGRAM_URL,WECHAT_CONTACT_URL,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "../contact-links";
+import {TELEGRAM_URL,WECHAT_CONTACT_URL,TelegramIcon,WeChatIcon,WhatsAppIcon,buildVehicleWhatsAppUrl} from "../contact-links";
 import {
   buildListUrl,
   buildVehiclesUrl,
@@ -31,6 +31,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
   const href = `/vehicles/${v.slug}`;
   const [main, ...rest] = v.thumbs.length ? v.thumbs : v.thumb ? [v.thumb] : [];
   const displayDate=v.listedAt?.slice(0,10)??"Available now";
+  const whatsappUrl = buildVehicleWhatsAppUrl(v);
   return (
     <article className="vlist-item">
       <Link href={href} className="vlist-media">
@@ -82,11 +83,11 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-price"><Price cny={v.priceCNY}/></div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
-          <a className="is-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp inquiry"><WhatsAppIcon/></a>
+          <a className="is-wa" href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp inquiry"><WhatsAppIcon/></a>
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <a className="vlist-inquire" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><WhatsAppIcon aria-hidden="true"/>Inquire Now</a>
+        <a className="vlist-inquire" href={whatsappUrl} target="_blank" rel="noopener noreferrer"><WhatsAppIcon aria-hidden="true"/>Inquire Now</a>
       </div>
     </article>
   );
