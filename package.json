@@ -9,7 +9,8 @@
     "lint": "eslint",
     "data:build": "node scripts/build-vehicles.mjs",
     "data:compact": "node scripts/compact-vehicle-data.mjs && node scripts/shard-vehicle-data.mjs",
-    "audit:routes": "node scripts/debug-static-routes.mjs"
+    "audit:routes": "node scripts/debug-static-routes.mjs",
+    "supabase": "supabase"
   },
   "dependencies": {
     "lucide-react": "^1.31.0",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "supabase": "^2.114.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
