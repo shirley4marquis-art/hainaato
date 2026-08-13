@@ -9,6 +9,7 @@
     "lint": "eslint",
     "data:build": "node scripts/build-vehicles.mjs",
     "data:compact": "node scripts/compact-vehicle-data.mjs && node scripts/shard-vehicle-data.mjs",
+    "data:catalog-feed": "node scripts/build-meta-catalog-feed.mjs",
     "audit:routes": "node scripts/debug-static-routes.mjs",
     "supabase": "supabase"
   },
