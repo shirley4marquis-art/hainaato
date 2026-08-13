@@ -96,7 +96,7 @@ export default function Home(){
         <article><span><Globe2/></span><div><b>Export Ready</b><p>Logistics &amp; customs support</p></div></article>
       </div>
       <div className="mobile-gold-card"><h2>China Auto Export Gold Partner</h2><p>New &amp; used tracking · Safe pay workflow · Join the export flow</p><Link href="/vehicles">View listings</Link></div>
-      <div className="mobile-arrivals"><header><h2>Latest arrivals</h2><p>Thousands of vehicle listings updated every day</p><Link href="/vehicles">Browse all vehicles →</Link></header><div>{latest.slice(0,4).map(v=><Link className="mobile-arrival-row" href={`/vehicles/${v.slug}`} key={v.slug}><span className="mobile-arrival-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={`${v.title} exterior`} sizes="140px" minimumWidth={90} minimumHeight={60}/></span><span><b>{v.title}</b><small>{[v.year,v.mileageKm,v.fuel].filter(Boolean).join(" · ")}</small></span><strong>{formatCNY(v.priceCNY)}</strong></Link>)}</div></div>
+      <div className="mobile-arrivals"><header><h2>Latest arrivals</h2><p>Thousands of vehicle listings updated every day</p><Link href="/vehicles">Browse all vehicles →</Link></header><div>{latest.slice(0,5).map(v=><Link className="mobile-arrival-row" href={`/vehicles/${v.slug}`} key={v.slug}><span className="mobile-arrival-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={`${v.title} exterior`} sizes="140px" minimumWidth={90} minimumHeight={60}/></span><span><b>{v.title}</b><small>{[v.year,v.mileageKm,v.fuel].filter(Boolean).join(" · ")}</small></span><strong>{formatCNY(v.priceCNY)}</strong></Link>)}</div></div>
     </section>
 
     <section className="trust-bar trust-bar-before"><div className="container"><h2>Trusted by global buyers</h2><ul className="trust-flags">{trustCountries.map(([code,name])=><li key={code}><img src={`/flags/${code}.svg`} alt=""/>{name}</li>)}<li><Link href="/services">More →</Link></li></ul></div></section>
@@ -132,7 +132,7 @@ export default function Home(){
       <div className="quick-pills"><b>Popular searches</b>{brands.slice(0,6).map(b=><Link key={b.brand} href={`/vehicles?brand=${encodeURIComponent(b.brand)}`}>{b.brand}</Link>)}</div>
     </div></section>
 
-    <section className="section" style={{paddingTop:0}}><div className="container">
+    <section className="section home-popular-brands" style={{paddingTop:0}}><div className="container">
       <div className="section-head row"><div><span className="eyebrow">SOURCED DIRECT</span><h2>Popular brands</h2></div><Link className="text-link" href="/brands">View more →</Link></div>
       <div className="brand-cloud">{brands.map(b=><Link key={b.brand} href={`/vehicles?brand=${encodeURIComponent(b.brand)}`}><span className="home-brand-logo"><img src={`/brand-logos/${brandLogoSlug(b.brand)}.png`} alt={`${b.brand} logo`} width="140" height="76" loading="eager" decoding="sync"/></span><b>{b.brand}</b><small>{b.count.toLocaleString()} listed</small></Link>)}</div>
     </div></section>
@@ -212,7 +212,7 @@ export default function Home(){
       </div>
     </div></section>
 
-    <section className="section"><div className="container">
+    <section className="section home-news-guides"><div className="container">
       <div className="section-head row"><div><span className="eyebrow">BUYER RESOURCES</span><h2>Latest export guides</h2></div><Link className="text-link" href="/news">View all guides →</Link></div>
       <div className="news-grid">{guides.map((g,i)=><article className={i===0?"news featured":"news"} key={g[1]}><img src={g[0]} alt=""/><div><span className="eyebrow">EXPORT GUIDE</span><h2>{g[1]}</h2><p>{g[2]}</p><Link href={g[3]}>Read more →</Link></div></article>)}</div>
     </div></section>
