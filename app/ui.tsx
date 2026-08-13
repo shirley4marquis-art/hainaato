@@ -21,7 +21,7 @@ export function Gallery({site,id,images,title}:{site:VehicleSite,id:string,image
   const [active,setActive]=useState(0);
   const gallery=rankVehicleImages(images).map(img=>imagePath(site,id,img));
   const main=gallery[active];
-  return <div><div className="gallery-main"><ResilientVehicleImage candidates={[main,...gallery.filter(img=>img!==main)]} alt={title} sizes="(max-width: 900px) 100vw, 760px" priority/></div>{gallery.length>1&&<div className="gallery-thumbs">{gallery.slice(0,12).map((img,i)=><button key={img} type="button" className={i===active?"active":""} onClick={()=>setActive(i)} aria-label={`Show photo ${i+1}`}><ResilientVehicleImage candidates={[img]} alt="" sizes="120px" minimumWidth={80} minimumHeight={60}/></button>)}</div>}</div>;
+  return <div><div className="gallery-main"><ResilientVehicleImage candidates={[main,...gallery.filter(img=>img!==main)]} alt={title} sizes="(max-width: 900px) 100vw, 760px" priority/></div>{gallery.length>1&&<div className="gallery-thumbs">{gallery.slice(0,12).map((img,i)=><button key={img} type="button" className={i===active?"active":""} onClick={()=>setActive(i)} aria-label={`Show photo ${i+1}`}><ResilientVehicleImage candidates={[img]} alt="" sizes="120px"/></button>)}</div>}</div>;
 }
 
 const nav=[[/^\/$/,"/","Home"],[/^\/vehicles/,"/vehicles","Vehicles"],[/^\/brands/,"/brands","Used Cars"],[/^\/new-cars/,"/new-cars","New cars"],[/^\/news/,"/news","News"],[/^\/services/,"/services","Services"],[/^\/about/,"/about","About"]] as const;

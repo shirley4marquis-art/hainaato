@@ -9,7 +9,13 @@ import { rankVehicleImages } from "../lib/image-ranking";
 
 type Props = { candidates: Array<string | null | undefined>; alt: string; sizes?: string; priority?: boolean; className?: string; minimumWidth?: number; minimumHeight?: number };
 
-export function ResilientVehicleImage({ candidates, alt, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw", priority = false, className = "", minimumWidth = 240, minimumHeight = 160 }: Props) {
+// Next resizes each candidate to its actual rendered display width before the
+// browser ever sees it, so naturalWidth/naturalHeight reflect that resized
+// output — not the source photo's real resolution. A wide-aspect source
+// (e.g. a landscape car photo) legitimately decodes short at small thumbnail
+// widths, so the floor here only needs to catch near-zero-size images (a 1x1
+// tracking pixel or similar broken placeholder), not judge photo quality.
+export function ResilientVehicleImage({ candidates, alt, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw", priority = false, className = "", minimumWidth = 8, minimumHeight = 8 }: Props) {
   const ranked = useMemo(() => rankVehicleImages(candidates), [candidates]);
   return <ImageAttempt key={ranked.join("|")} ranked={ranked} alt={alt} sizes={sizes} priority={priority} className={className} minimumWidth={minimumWidth} minimumHeight={minimumHeight}/>;
 }

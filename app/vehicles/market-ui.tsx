@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Car, Copy, Mail, MapPin } from "lucide-react";
+import { Car, Copy, MapPin } from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "../contact-links";
 import {
   buildListUrl,
@@ -46,7 +46,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         {rest.length > 0 && (
           <div className="vlist-thumbs">
             {rest.slice(0, 3).map((t) => (
-              <span className="vlist-thumb" key={t}><ResilientVehicleImage candidates={[imagePath(v.site, v.id, t)]} alt="" sizes="90px" minimumWidth={80} minimumHeight={60}/></span>
+              <span className="vlist-thumb" key={t}><ResilientVehicleImage candidates={[imagePath(v.site, v.id, t)]} alt="" sizes="90px"/></span>
             ))}
           </div>
         )}
@@ -86,7 +86,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <Link className="vlist-inquire" href={href}><Mail aria-hidden="true"/>Inquire Now</Link>
+        <a className="vlist-inquire" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><WhatsAppIcon aria-hidden="true"/>Inquire Now</a>
       </div>
     </article>
   );

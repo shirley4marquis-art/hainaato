@@ -45,6 +45,12 @@ yarn-error.log*
 # local Claude Code tool state (machine-specific permissions/session data)
 /.claude/
 
+# real customer documents accidentally saved into the public static folder —
+# public/ is served directly to any site visitor with no access control.
+# Move these to a private location; never commit/deploy them from here.
+/public/Commercial_Invoice_*
+/public/table.csv
+
 # vercel
 .vercel
 
