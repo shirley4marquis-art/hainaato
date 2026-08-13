@@ -7,7 +7,6 @@ import {TELEGRAM_URL,WECHAT_CONTACT_URL,WHATSAPP_URL,TelegramIcon,WeChatIcon,Wha
 import {
   buildListUrl,
   buildVehiclesUrl,
-  formatCNY,
   formatKm,
   imagePath,
   normalizeBodyType,
@@ -17,6 +16,7 @@ import {
 } from "../../lib/format";
 import { swatchFor } from "../../lib/colors";
 import { ResilientVehicleImage } from "../vehicle-image";
+import { Price } from "../price";
 
 export type FilterOptions = {
   fuels: string[];
@@ -79,7 +79,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
       <div className="vlist-right">
         <div className="vlist-location"><MapPin aria-hidden="true"/>{v.location ?? "China"}</div>
         <div className="vlist-side-spacer"/>
-        <div className="vlist-price">{formatCNY(v.priceCNY)} <small>CNY</small></div>
+        <div className="vlist-price"><Price cny={v.priceCNY}/></div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
           <a className="is-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp inquiry"><WhatsAppIcon/></a>

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { formatCNY, imagePath, type VehicleSite } from "../lib/format";
+import { imagePath, type VehicleSite } from "../lib/format";
 import { ResilientVehicleImage } from "./vehicle-image";
+import { Price } from "./price";
 
 export type TickerVehicle = {
   slug: string;
@@ -21,7 +22,7 @@ function TickerItem({ v }: { v: TickerVehicle }) {
       </span>
       <b>{v.title}</b>
       <span className="ticker-detail">{v.stockCode}</span>
-      <code>{formatCNY(v.priceCNY)}</code>
+      <code><Price cny={v.priceCNY}/></code>
     </Link>
   );
 }

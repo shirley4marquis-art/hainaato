@@ -18,6 +18,7 @@ import {
 import { DetailTabs, Gallery, ShareButton, SiteShell, VehicleCard } from "../../ui";
 import { AddToCompareButton } from "../../compare-button";
 import { VehicleRequestForm } from "../../request-form";
+import { Price } from "../../price";
 import {WHATSAPP_URL} from "../../contact-links";
 import {
   formatCNY,
@@ -114,10 +115,10 @@ export default async function VehicleDetail({
           <div className="price-block">
             <small>Vehicle price</small>
             {vehicle.msrpCNY != null && vehicle.priceCNY != null && vehicle.msrpCNY > vehicle.priceCNY && (
-              <div className="msrp">MSRP {formatCNY(vehicle.msrpCNY)}</div>
+              <div className="msrp">MSRP <Price cny={vehicle.msrpCNY}/></div>
             )}
             <div className="sale">
-              {formatCNY(vehicle.priceCNY)} <span style={{ fontSize: 14, color: "var(--muted)" }}>CNY</span>
+              <Price cny={vehicle.priceCNY}/>
             </div>
           </div>
 

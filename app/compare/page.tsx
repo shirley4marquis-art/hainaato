@@ -3,7 +3,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHero, SiteShell } from "../ui";
 import { ResilientVehicleImage } from "../vehicle-image";
-import { formatCNY, formatKm } from "../../lib/format";
+import { formatKm } from "../../lib/format";
+import { formatPrice } from "../../lib/currency";
+import { useCurrency } from "../currency-store";
 import { COMPARE_MAX, removeFromCompare, useCompareSlugs } from "../compare-store";
 import styles from "./compare.module.css";
 
@@ -22,8 +24,9 @@ type CompareVehicle = {
   image: string | null;
 };
 
-const ROWS: [string, (v: CompareVehicle) => string][] = [
-  ["Price", (v) => formatCNY(v.priceCNY)],
+function buildRows(currency: ReturnType<typeof useCurrency>): [string, (v: CompareVehicle) => string][] {
+  return [
+  ["Price", (v) => formatPrice(v.priceCNY, currency)],
   ["Year", (v) => (v.year != null ? String(v.year) : "—")],
   ["Mileage", (v) => formatKm(v.mileageKm)],
   ["Fuel", (v) => v.fuel || "—"],
@@ -32,9 +35,12 @@ const ROWS: [string, (v: CompareVehicle) => string][] = [
   ["Drive type", (v) => v.driveType || "—"],
   ["Color", (v) => v.color || "—"],
   ["Location", (v) => v.location || "—"],
-];
+  ];
+}
 
 export default function Compare() {
+  const currency = useCurrency();
+  const rows = buildRows(currency);
   const slugs = useCompareSlugs();
   const key = slugs.join(",");
   const [fetchedVehicles, setFetchedVehicles] = useState<CompareVehicle[]>([]);
@@ -119,7 +125,7 @@ export default function Compare() {
                       </td>
                     ))}
                   </tr>
-                  {ROWS.map(([label, get]) => (
+                  {rows.map(([label, get]) => (
                     <tr key={label}>
                       <td className={styles.label}>{label}</td>
                       {vehicles.map((v) => (

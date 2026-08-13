@@ -5,14 +5,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ChangeEvent, ReactNode, useEffect, useState } from "react";
 import {Bot,CarFront,House,Menu,Newspaper,Search,Sparkles,UserRound,X} from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,WECHAT_USERNAME,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "./contact-links";
 import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
-import { formatCNY, formatKm, imagePath } from "../lib/format";
+import { formatKm, imagePath } from "../lib/format";
 import { ResilientVehicleImage, rankVehicleImages } from "./vehicle-image";
 import { InventoryTicker, type TickerVehicle } from "./inventory-ticker";
 import inventoryTicker from "../data/inventory-ticker.json";
+import { Price } from "./price";
+import { setCurrency, useCurrency } from "./currency-store";
+import { CURRENCIES, isCurrencyCode } from "../lib/currency";
 
 export function Gallery({site,id,images,title}:{site:VehicleSite,id:string,images:string[],title:string}) {
   const [active,setActive]=useState(0);
@@ -36,7 +39,7 @@ export function HeroSpotlight({vehicles}:{vehicles:VehicleIndexEntry[]}) {
       <div className="spotlight-head">
         <Link href={`/vehicles/${v.slug}`}>{v.title}</Link>
         <p>{specLine||"Export ready"}</p>
-        <div><small>Price</small><b>{formatCNY(v.priceCNY)}</b></div>
+        <div><small>Price</small><b><Price cny={v.priceCNY}/></b></div>
         <span>Export Ready</span>
       </div>
       <div className="spotlight-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={v.title} sizes="(max-width: 600px) 90vw, 430px" priority/></div>
@@ -96,6 +99,15 @@ export function ShareButton({title}:{title:string}) {
   return <button type="button" onClick={share}>{copied?"Link copied":"Share"}</button>;
 }
 
+function CurrencySelect(){
+  const currency=useCurrency();
+  function onChange(event:ChangeEvent<HTMLSelectElement>){
+    const {value}=event.currentTarget;
+    if(isCurrencyCode(value)) setCurrency(value);
+  }
+  return <label className="ah-currency-select"><span>Currency</span><select aria-label="Currency" value={currency} onChange={onChange}>{CURRENCIES.map(({code})=><option key={code} value={code}>{code}</option>)}</select></label>;
+}
+
 export function SiteShell({children}:{children:ReactNode}) {
   const path=usePathname();
   const [open,setOpen]=useState(false);
@@ -105,10 +117,10 @@ export function SiteShell({children}:{children:ReactNode}) {
       <div className="mobile-header-minimal"><button type="button" className="mobile-menu-trigger" onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu-panel" aria-label={open?"Close menu":"Open menu"}>{open?<X/>:<Menu/>}</button><form className="mobile-header-search" action="/vehicles"><Search/><input name="q" type="search" placeholder="Search vehicle" aria-label="Search vehicle"/></form><Link className="mobile-header-quote" href="/quote">Get Quote</Link></div>
       <div id="mobile-menu-panel" className={`mobile-menu-panel${open?" open":""}`}>{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div>
       <div className="ah-header-brand-row">
-        <Link className="ah-brand-lockup" href="/"><img src="https://img.hainaauto.com/vehicle/site_187121eacd6e44cc.webp" alt="HainaAuto" className="ah-header-brand-logo"/><div className="ah-brand-copy"><div className="ah-brand-headline"><span className="ah-brand-title">HainaAuto.com</span><span className="ah-brand-ribbon">China auto export</span></div><span className="ah-brand-lead">Used &amp; new vehicles from China — transparent condition, export-ready docs, worldwide delivery.</span><span className="ah-brand-tagline">◎ <span>From China, to the world</span></span></div></Link>
+        <Link className="ah-brand-lockup" href="/"><img src="https://img.hainaauto.com/vehicle/site_187121eacd6e44cc.webp" alt="HainaAuto" className="ah-header-brand-logo"/><div className="ah-brand-copy"><div className="ah-brand-headline"><span className="ah-brand-title">HAINA AUTO</span><span className="ah-brand-ribbon">China auto export</span></div><span className="ah-brand-lead">Used &amp; new vehicles from China — transparent condition, export-ready docs, worldwide delivery.</span><span className="ah-brand-tagline">◎ <span>From China, to the world</span></span></div></Link>
         <div className="ah-header-aside"><div className="ah-header-actions"><Link className="ah-btn-gold" href="/quote">Request Quote</Link><Link className="ah-btn-outline" href="/contact">Contact</Link></div><div className="ah-header-meta"><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp at +8615060610146"><WhatsAppIcon/> +8615060610146</a><a href="mailto:info@hainaauto.com">✉ info@hainaauto.com</a><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>WhatsApp</a><a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"><TelegramIcon/>Telegram</a><a href={WECHAT_CONTACT_URL}><WeChatIcon/>WeChat</a></div></div>
       </div>
-      <div className="ah-header-nav-wrap"><button className="menu" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">{open?"×":"☰"}</button><nav className={open?"open":""}><div className="ah-nav-links">{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div><div className="ah-nav-end"><form className="ah-header-search" action="/vehicles"><input type="search" name="q" placeholder="Quick search..." aria-label="Search vehicles"/><button type="submit">Search</button></form></div></nav></div>
+      <div className="ah-header-nav-wrap"><button className="menu" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">{open?"×":"☰"}</button><nav className={open?"open":""}><div className="ah-nav-links">{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div><div className="ah-nav-end"><form className="ah-header-search" action="/vehicles"><input type="search" name="q" placeholder="Quick search..." aria-label="Search vehicles"/><button type="submit">Search</button></form><CurrencySelect/></div></nav></div>
     </div>
     <InventoryTicker vehicles={inventoryTicker as TickerVehicle[]}/>
     </header>
@@ -125,4 +137,4 @@ export function PageHero({kicker,title,copy}:{kicker:string,title:string,copy:st
 
 export function SortSelect({sort,hidden}:{sort:string,hidden:Record<string,string|undefined>}){return <form method="get">{Object.entries(hidden).map(([k,v])=>v?<input key={k} type="hidden" name={k} value={v}/>:null)}<select name="sort" aria-label="Sort" defaultValue={sort} onChange={(e)=>e.currentTarget.form?.submit()}><option value="latest">Latest listings</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></form>}
 
-export function VehicleCard({v}:{v:VehicleIndexEntry}){const specLine=[v.year,v.mileageKm!=null?formatKm(v.mileageKm):null,v.fuel].filter(Boolean).join(" · ");const candidates=(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img));return <article className="car"><Link href={`/vehicles/${v.slug}`}><div className="car-image"><ResilientVehicleImage candidates={candidates} alt={`${v.title} exterior`}/><span>{v.site==="hainaauto"?"HainaAuto":"CN Transit"}</span></div></Link><div className="car-body"><small>{v.bodyType?v.bodyType.toUpperCase():"EXPORT AVAILABLE"}</small><Link href={`/vehicles/${v.slug}`}><h3>{v.title}</h3></Link><p>{specLine||v.location||"Export ready"}</p><div><b>{formatCNY(v.priceCNY)}</b><a href={WHATSAPP_URL}>Inquire →</a></div></div></article>}
+export function VehicleCard({v}:{v:VehicleIndexEntry}){const specLine=[v.year,v.mileageKm!=null?formatKm(v.mileageKm):null,v.fuel].filter(Boolean).join(" · ");const candidates=(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img));return <article className="car"><Link href={`/vehicles/${v.slug}`}><div className="car-image"><ResilientVehicleImage candidates={candidates} alt={`${v.title} exterior`}/><span>{v.site==="hainaauto"?"HainaAuto":"CN Transit"}</span></div></Link><div className="car-body"><small>{v.bodyType?v.bodyType.toUpperCase():"EXPORT AVAILABLE"}</small><Link href={`/vehicles/${v.slug}`}><h3>{v.title}</h3></Link><p>{specLine||v.location||"Export ready"}</p><div><b><Price cny={v.priceCNY}/></b><a href={WHATSAPP_URL}>Inquire →</a></div></div></article>}
