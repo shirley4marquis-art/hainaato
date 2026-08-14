@@ -181,9 +181,22 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
 // first few) so they show up regardless of scrape order.
 const FEATURED_LATEST_MODELS = ["highlander", "rav4", "corolla"];
 
+// Kept out of the homepage spotlight specifically — hainaauto-33511934's photo
+// set had 6 of 12 images belonging to unrelated vehicles (two different
+// sedans and a black Tang, mixed in with the actual white Song Pro). The
+// stray images were removed from its own listing (data/vehicles/), but it's
+// still excluded here rather than risk showing more of the same on the
+// homepage where it's most visible.
+const LATEST_ARRIVALS_EXCLUDE = new Set(["hainaauto-33511934"]);
+
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
   const pool = loadIndex().filter(
-    (v) => v.imageCount > 0 && v.availability === "available" && v.condition === "new" && v.year === 2026
+    (v) =>
+      v.imageCount > 0 &&
+      v.availability === "available" &&
+      v.condition === "new" &&
+      v.year === 2026 &&
+      !LATEST_ARRIVALS_EXCLUDE.has(v.slug)
   );
   const featured: VehicleIndexEntry[] = [];
   const rest: VehicleIndexEntry[] = [];
