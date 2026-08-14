@@ -166,6 +166,71 @@ if (collisions.length > 0) {
   console.warn("");
 }
 
+// A shared filename is usually harmless re-listing (see above), but some are
+// genuinely the wrong photo: a vehicle whose own title has nothing in common
+// with any other listing using that same image almost certainly isn't
+// pictured in it (e.g. a sedan's title sharing a photo pool with a dozen
+// unrelated SUV/EV listings under the same brand). Strip those specific
+// images from that vehicle's own gallery — falls back to "Image unavailable"
+// if nothing else remains, which is more honest than a wrong photo.
+const CONTAMINATION_STOPWORDS = new Set([
+  "automatic", "transmission", "edition", "manual", "standard", "deluxe", "luxury", "premium",
+  "sport", "sports", "comfort", "elite", "flagship", "pro", "plus", "max", "ultra", "model", "year",
+  "drive", "awd", "fwd", "rwd", "wheel", "seat", "seater", "smart", "enjoy", "style", "dynamic",
+  "exclusive", "limited", "special", "new", "generation", "gen", "package", "trim", "version",
+  "type", "series", "line", "imported", "cvt", "dct", "amt", "hybrid", "phev", "ev", "gasoline",
+  "diesel", "electric", "turbo", "intelligent", "driving", "national", "china", "chinese", "glory",
+  "freedom", "vitality", "flying", "the", "and", "for", "with", "of", "master", "top", "grace",
+  "advance", "value", "pioneer", "shadow", "play", "champion", "explore", "knight", "core", "air",
+  "world", "classic", "joy", "chic", "fun", "road", "urban", "city", "long", "range", "short",
+  "wheelbase", "mid", "roof", "high", "low", "front", "rear",
+]);
+function significantWords(title) {
+  return new Set(
+    (title || "")
+      .toLowerCase()
+      .replace(/[()"',.]/g, " ")
+      .split(/[\s/-]+/)
+      .filter((w) => w.length >= 3 && /^[a-z]+$/.test(w) && !CONTAMINATION_STOPWORDS.has(w))
+  );
+}
+
+const galleryOwners = new Map(); // "site:file" -> [{id, words}]
+for (const v of Object.values(details)) {
+  const words = significantWords(v.title);
+  for (const file of v.images) {
+    const key = `${v.site}:${file}`;
+    if (!galleryOwners.has(key)) galleryOwners.set(key, []);
+    galleryOwners.get(key).push({ id: v.id, words });
+  }
+}
+
+const indexBySlug = new Map(index.map((entry) => [entry.slug, entry]));
+let strippedInstances = 0;
+const strippedVehicleSlugs = new Set();
+for (const v of Object.values(details)) {
+  const words = significantWords(v.title);
+  const kept = v.images.filter((file) => {
+    const owners = galleryOwners.get(`${v.site}:${file}`);
+    if (owners.length <= 1) return true;
+    return owners.some((o) => o.id !== v.id && [...words].some((w) => o.words.has(w)));
+  });
+  if (kept.length === v.images.length) continue;
+  strippedInstances += v.images.length - kept.length;
+  strippedVehicleSlugs.add(v.slug);
+  v.images = kept;
+  writeVehicle(v);
+  const entry = indexBySlug.get(v.slug);
+  if (entry) {
+    entry.thumb = kept[0] ?? null;
+    entry.thumbs = kept.slice(0, 4);
+    entry.imageCount = kept.length;
+  }
+}
+if (strippedInstances > 0) {
+  console.warn(`\n⚠ Stripped ${strippedInstances} contaminated image(s) from ${strippedVehicleSlugs.size} vehicle(s) — shared photo with no title corroboration from this listing.`);
+}
+
 fs.writeFileSync(path.join(outDir, "vehicles-index.json"), JSON.stringify(index));
 fs.writeFileSync(path.join(outDir, "vehicle-details.json"), JSON.stringify(details));
 
