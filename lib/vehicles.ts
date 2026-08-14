@@ -176,8 +176,29 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
   return loadIndex().filter(v=>v.imageCount>0&&v.availability==="available").slice(0,count);
 }
 
+// Models pinned to the front of the homepage's "Latest new-car arrivals" list
+// (both the desktop grid and the mobile rail, which just shows this list's
+// first few) so they show up regardless of scrape order.
+const FEATURED_LATEST_MODELS = ["highlander", "rav4", "corolla"];
+
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
-  return loadIndex().filter(v=>v.imageCount>0&&v.availability==="available"&&v.condition==="new").slice(0,count);
+  const pool = loadIndex().filter(
+    (v) => v.imageCount > 0 && v.availability === "available" && v.condition === "new" && v.year === 2026
+  );
+  const featured: VehicleIndexEntry[] = [];
+  const rest: VehicleIndexEntry[] = [];
+  const claimedModels = new Set<string>();
+  for (const v of pool) {
+    const title = v.title.toLowerCase();
+    const model = FEATURED_LATEST_MODELS.find((m) => !claimedModels.has(m) && title.includes(m));
+    if (model) {
+      claimedModels.add(model);
+      featured.push(v);
+    } else {
+      rest.push(v);
+    }
+  }
+  return [...featured, ...rest].slice(0, count);
 }
 
 export function getBrandAggregates(limit=24){
