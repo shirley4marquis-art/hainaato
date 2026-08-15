@@ -26,6 +26,11 @@ const outPath = path.join(root, "public", "meta-catalog-feed.csv");
 const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainaauto.vercel.app";
 const MAX_ADDITIONAL_IMAGES = 10;
 
+// Same snapshot CNY->USD rate as lib/currency.ts (RATE_PER_CNY.USD) — keep in
+// sync with that file. Meta's product feed spec wants a single currency per
+// feed, and USD matches DEFAULT_CURRENCY there.
+const USD_PER_CNY = 0.139;
+
 function imagePath(site, id, file) {
   return `${SITE_URL}/api/vehicle-image/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
 }
@@ -72,7 +77,7 @@ for (const v of eligible) {
     buildDescription(v),
     "in stock",
     v.condition,
-    `${v.priceCNY.toFixed(2)} CNY`,
+    `${(v.priceCNY * USD_PER_CNY).toFixed(2)} USD`,
     `${SITE_URL}/vehicles/${v.slug}`,
     imagePath(v.site, v.id, v.thumb),
     brand,

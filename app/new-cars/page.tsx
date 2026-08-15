@@ -5,14 +5,15 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SiteShell } from "../ui";
 import { ResilientVehicleImage } from "../vehicle-image";
+import { Price } from "../price";
 import styles from "./new-cars.module.css";
 
 type Vehicle = {
   image: string;
   title: string;
   stock: string;
-  msrp: string;
-  price: string;
+  msrpCNY: number;
+  priceCNY: number | null;
   note?: string;
   pinned?: boolean;
 };
@@ -22,33 +23,33 @@ const PAGE_SIZE = 12;
 const commonNote = "This price only includes the vehicle purchase cost. Service fees, domestic logistics, port charges, handling fees and international freight shall be calculated separately for the final export order.";
 
 const authorized: Vehicle[] = [
-  {image:"https://img.hainaauto.com/vehicle/newcar_da7a7c6c313bedaa.webp",title:"Xiaomi YU7 2025 Long Range Rear Drive Edition",stock:"new car",msrp:"¥253,500 CNY",price:"¥155,400 CNY",note:"The export documents have been completed and you can leave China at any time. new car",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_c223dc6feffa8c24.webp",title:"Zhengzhou Nissan Rich Pickup Automatic Diesel 4WD",stock:"White",msrp:"¥116,800 CNY",price:"¥61,272 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_0c748a461c06f979.webp",title:"Zhengzhou Nissan Fengtan PHEV 135km AWD Ultimate Edition",stock:"Gray/Black/Yellow",msrp:"¥219,900 CNY",price:"¥78,660 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_eeba00e929bbeb08.webp",title:"Zhengzhou Nissan Z9 PHEV 135km AWD Explore Edition",stock:"Yellow/Gray/Black",msrp:"¥179,900 CNY",price:"¥95,634 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_2283ac1477e80687.webp",title:"Changan 4th Generation CS75 Plus 1.5T New Blue Whale Smart Ultimate Edition",stock:"White & Gray",msrp:"¥121,900 CNY",price:"¥56,304 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_6f8650670315ce54.webp",title:"Changan CS75 Pro 1.5T Enjoy Edition",stock:"White & Gray",msrp:"¥113,900 CNY",price:"¥45,954 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_dd550c03561fec50.webp",title:"Changan CS75 Pro 1.5T Advance Edition",stock:"White & Gray",msrp:"¥119,900 CNY",price:"¥47,610 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_aec2e4fb98d22d17.webp",title:"Changan Hunter Knight Flagship Dual-Motor AWD Standard Bed Extended Range",stock:"White/Mecha Gray/Star Moon Gray",msrp:"¥177,900 CNY",price:"¥91,080 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_75c2708556349172.webp",title:"Changan Q07 215 Flagship Plus",stock:"White/Black/Black/Orange",msrp:"¥171,800 CNY",price:"¥71,622 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_c8e8b2de91f9c99b.webp",title:"Changan Deepal S07 230 Ultra",stock:"Gray/Orange/Gray/Purple/Black/Purple",msrp:"¥166,900 CNY",price:"¥76,590 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_a015d59749c3ac9e.webp",title:"Changan Deepal SL03 Extended Range Elite Edition",stock:"White/Gray",msrp:"¥129,900 CNY",price:"¥50,922 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_158c18aea4c6cd61.webp",title:"Changan 4th Generation CS55 Plus New Blue Whale 1.5T Lead Edition",stock:"White/Gray/Black",msrp:"¥98,900 CNY",price:"¥46,782 CNY"},
+  {image:"https://img.hainaauto.com/vehicle/newcar_da7a7c6c313bedaa.webp",title:"Xiaomi YU7 2025 Long Range Rear Drive Edition",stock:"new car",msrpCNY:253500,priceCNY:155400,note:"The export documents have been completed and you can leave China at any time. new car",pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_c223dc6feffa8c24.webp",title:"Zhengzhou Nissan Rich Pickup Automatic Diesel 4WD",stock:"White",msrpCNY:116800,priceCNY:61272},
+  {image:"https://img.hainaauto.com/vehicle/col_0c748a461c06f979.webp",title:"Zhengzhou Nissan Fengtan PHEV 135km AWD Ultimate Edition",stock:"Gray/Black/Yellow",msrpCNY:219900,priceCNY:78660},
+  {image:"https://img.hainaauto.com/vehicle/col_eeba00e929bbeb08.webp",title:"Zhengzhou Nissan Z9 PHEV 135km AWD Explore Edition",stock:"Yellow/Gray/Black",msrpCNY:179900,priceCNY:95634},
+  {image:"https://img.hainaauto.com/vehicle/col_2283ac1477e80687.webp",title:"Changan 4th Generation CS75 Plus 1.5T New Blue Whale Smart Ultimate Edition",stock:"White & Gray",msrpCNY:121900,priceCNY:56304},
+  {image:"https://img.hainaauto.com/vehicle/col_6f8650670315ce54.webp",title:"Changan CS75 Pro 1.5T Enjoy Edition",stock:"White & Gray",msrpCNY:113900,priceCNY:45954},
+  {image:"https://img.hainaauto.com/vehicle/col_dd550c03561fec50.webp",title:"Changan CS75 Pro 1.5T Advance Edition",stock:"White & Gray",msrpCNY:119900,priceCNY:47610},
+  {image:"https://img.hainaauto.com/vehicle/col_aec2e4fb98d22d17.webp",title:"Changan Hunter Knight Flagship Dual-Motor AWD Standard Bed Extended Range",stock:"White/Mecha Gray/Star Moon Gray",msrpCNY:177900,priceCNY:91080},
+  {image:"https://img.hainaauto.com/vehicle/col_75c2708556349172.webp",title:"Changan Q07 215 Flagship Plus",stock:"White/Black/Black/Orange",msrpCNY:171800,priceCNY:71622},
+  {image:"https://img.hainaauto.com/vehicle/col_c8e8b2de91f9c99b.webp",title:"Changan Deepal S07 230 Ultra",stock:"Gray/Orange/Gray/Purple/Black/Purple",msrpCNY:166900,priceCNY:76590},
+  {image:"https://img.hainaauto.com/vehicle/col_a015d59749c3ac9e.webp",title:"Changan Deepal SL03 Extended Range Elite Edition",stock:"White/Gray",msrpCNY:129900,priceCNY:50922},
+  {image:"https://img.hainaauto.com/vehicle/col_158c18aea4c6cd61.webp",title:"Changan 4th Generation CS55 Plus New Blue Whale 1.5T Lead Edition",stock:"White/Gray/Black",msrpCNY:98900,priceCNY:46782},
 ];
 
 const modified: Vehicle[] = [
-  {image:"https://img.hainaauto.com/vehicle/col_9ee5a3b29e624357.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Grace Pro (zhiya pro)",stock:"Red",msrp:"¥153,800 CNY",price:"¥86,093 CNY",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_3cf55a3b0ecd8ada.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Comfort Model",stock:"White/Gray",msrp:"¥125,800 CNY",price:"¥70,180 CNY",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_b12c04b2e03097cb.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Edition (zhishang)",stock:"Blue",msrp:"¥135,800 CNY",price:"¥73,036 CNY",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_5f94e7952332352a.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Edition (zhiya) + Comfort Package",stock:"White/Black",msrp:"¥149,800 CNY",price:"N/A",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_e8d11aa334b87897.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Pro (zhishang pro)",stock:"White/Gray",msrp:"¥139,800 CNY",price:"¥75,077 CNY",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/newcar_adad5e2b30e35e12.webp",title:"Highlander 2026 380T 4WD Prestige Edition 7-seater",stock:"Black, white",msrp:"¥295,800 CNY",price:"¥153,744 CNY",note:"2.0T 248 hp L4 · No need to wait 180 days.",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/newcar_f06aff88b61a185b.webp",title:"Geely Binyue L (Geely Coolray) 2025 Model 1.5TD DCT Star Edition",stock:"Black top, grey exterior",msrp:"¥96,800 CNY",price:"¥48,720 CNY",note:"1.5T 181HP L4 · No need to wait 180 days.",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/newcar_a08d84497cf66c58.webp",title:"Geely Binyue (Geely Coolray) 2025 1.5L Manual Super Edition",stock:"Black top, grey exterior",msrp:"¥66,800 CNY",price:"¥33,180 CNY",note:"1.5L 126hp L4 · No need to wait 180 days.",pinned:true},
-  {image:"https://img.hainaauto.com/vehicle/col_a31575d3fc9e020c.webp",title:"FAW Toyota Corolla Hybrid Elite Edition",stock:"White/Black/Black/Black/Silver/Black",msrp:"¥136,800 CNY",price:"¥60,444 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_529cc5f6ba6a3ed6.webp",title:"FAW Toyota Frontlander Hybrid Elite Edition",stock:"White Exterior/Black Interior",msrp:"¥149,800 CNY",price:"¥64,170 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_1f63be1e35a4e9bb.webp",title:"FAW Toyota RAV4 Gasoline Deluxe Edition",stock:"White/Black",msrp:"¥189,800 CNY",price:"¥105,570 CNY"},
-  {image:"https://img.hainaauto.com/vehicle/col_f4c5ea29913dd9a3.webp",title:"FAW-Volkswagen Jetta Automatic Pioneer Edition (Shadow Play Edition)",stock:"Black/White",msrp:"¥98,900 CNY",price:"¥50,508 CNY"},
+  {image:"https://img.hainaauto.com/vehicle/col_9ee5a3b29e624357.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Grace Pro (zhiya pro)",stock:"Red",msrpCNY:153800,priceCNY:86093,pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_3cf55a3b0ecd8ada.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Comfort Model",stock:"White/Gray",msrpCNY:125800,priceCNY:70180,pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_b12c04b2e03097cb.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Edition (zhishang)",stock:"Blue",msrpCNY:135800,priceCNY:73036,pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_5f94e7952332352a.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Edition (zhiya) + Comfort Package",stock:"White/Black",msrpCNY:149800,priceCNY:null,pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_e8d11aa334b87897.webp",title:"Mazda CX-5 2025 2.0L Automatic 2WD Smart Pro (zhishang pro)",stock:"White/Gray",msrpCNY:139800,priceCNY:75077,pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/newcar_adad5e2b30e35e12.webp",title:"Highlander 2026 380T 4WD Prestige Edition 7-seater",stock:"Black, white",msrpCNY:295800,priceCNY:153744,note:"2.0T 248 hp L4 · No need to wait 180 days.",pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/newcar_f06aff88b61a185b.webp",title:"Geely Binyue L (Geely Coolray) 2025 Model 1.5TD DCT Star Edition",stock:"Black top, grey exterior",msrpCNY:96800,priceCNY:48720,note:"1.5T 181HP L4 · No need to wait 180 days.",pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/newcar_a08d84497cf66c58.webp",title:"Geely Binyue (Geely Coolray) 2025 1.5L Manual Super Edition",stock:"Black top, grey exterior",msrpCNY:66800,priceCNY:33180,note:"1.5L 126hp L4 · No need to wait 180 days.",pinned:true},
+  {image:"https://img.hainaauto.com/vehicle/col_a31575d3fc9e020c.webp",title:"FAW Toyota Corolla Hybrid Elite Edition",stock:"White/Black/Black/Black/Silver/Black",msrpCNY:136800,priceCNY:60444},
+  {image:"https://img.hainaauto.com/vehicle/col_529cc5f6ba6a3ed6.webp",title:"FAW Toyota Frontlander Hybrid Elite Edition",stock:"White Exterior/Black Interior",msrpCNY:149800,priceCNY:64170},
+  {image:"https://img.hainaauto.com/vehicle/col_1f63be1e35a4e9bb.webp",title:"FAW Toyota RAV4 Gasoline Deluxe Edition",stock:"White/Black",msrpCNY:189800,priceCNY:105570},
+  {image:"https://img.hainaauto.com/vehicle/col_f4c5ea29913dd9a3.webp",title:"FAW-Volkswagen Jetta Automatic Pioneer Edition (Shadow Play Edition)",stock:"Black/White",msrpCNY:98900,priceCNY:50508},
 ];
 
 function filterVehicles(vehicles: Vehicle[], query: string): Vehicle[] {
@@ -72,8 +73,8 @@ function VehicleCard({vehicle,view}:{vehicle:Vehicle;view:"grid"|"list"}) {
       {vehicle.note && <p className={styles.vehicleNote}>{vehicle.note}</p>}
       <p className={styles.stock}><span>Stock</span> <b>{vehicle.stock}</b></p>
       <dl>
-        <div><dt>MSRP (reference)</dt><dd>{vehicle.msrp}</dd></div>
-        <div><dt>Selling price</dt><dd className={styles.price}>{vehicle.price}</dd></div>
+        <div><dt>MSRP (reference)</dt><dd><Price cny={vehicle.msrpCNY}/></dd></div>
+        <div><dt>Selling price</dt><dd className={styles.price}><Price cny={vehicle.priceCNY}/></dd></div>
       </dl>
       <p className={styles.disclaimer}>{vehicle.note?.includes("export documents") ? vehicle.note : commonNote}</p>
       <Link className={styles.cardLink} href="/contact#contact" aria-label={`View details: ${vehicle.title}`}>View details</Link>
