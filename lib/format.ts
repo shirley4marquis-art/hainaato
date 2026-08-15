@@ -46,6 +46,19 @@ export type Vehicle = {
   overview: string | null;
   specs: Record<string, string>;
   images: string[];
+  // Photos this vehicle's gallery shared with a same-model sibling recorded
+  // in a different color — separated out rather than mixed into `images`,
+  // since they show a different physical unit, not this one. See
+  // scripts/build-vehicles.mjs.
+  otherColorPhotos: OtherColorPhoto[];
+};
+
+export type OtherColorPhoto = {
+  file: string;
+  color: string;
+  slug: string;
+  site: VehicleSite;
+  id: string;
 };
 
 export function normalizeFuel(fuel: string): string {

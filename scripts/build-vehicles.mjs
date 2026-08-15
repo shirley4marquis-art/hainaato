@@ -48,6 +48,11 @@ function normalize(raw, site) {
     overview: raw.overview ?? null,
     specs,
     images: Array.isArray(raw.images) ? raw.images : [],
+    // Populated below (after all vehicles are loaded) for photos this
+    // vehicle's own gallery shares with a same-model sibling recorded in a
+    // different color — pulled out of `images` rather than left mixed in,
+    // since they depict a different physical unit's color, not this one's.
+    otherColorPhotos: [],
   };
 }
 
@@ -195,40 +200,87 @@ function significantWords(title) {
   );
 }
 
-const galleryOwners = new Map(); // "site:file" -> [{id, words}]
+const galleryOwners = new Map(); // "site:file" -> [{id, slug, words, color}]
 for (const v of Object.values(details)) {
   const words = significantWords(v.title);
+  const color = (v.color || "").trim().toLowerCase();
   for (const file of v.images) {
     const key = `${v.site}:${file}`;
     if (!galleryOwners.has(key)) galleryOwners.set(key, []);
-    galleryOwners.get(key).push({ id: v.id, words });
+    galleryOwners.get(key).push({ id: v.id, slug: v.slug, words, color });
   }
 }
 
+// Caps how many distinct other-color examples a single listing shows —
+// some model families (BYD Seagull, Geely Boyue) have 80+ siblings.
+const MAX_OTHER_COLORS = 8;
+
 const indexBySlug = new Map(index.map((entry) => [entry.slug, entry]));
 let strippedInstances = 0;
+let movedInstances = 0;
 const strippedVehicleSlugs = new Set();
+const otherColorVehicleSlugs = new Set();
+
 for (const v of Object.values(details)) {
   const words = significantWords(v.title);
-  const kept = v.images.filter((file) => {
+  const myColor = (v.color || "").trim().toLowerCase();
+  const primary = [];
+  const otherColorsByColor = new Map(); // color -> {file, color, slug, site, id}
+
+  for (const file of v.images) {
     const owners = galleryOwners.get(`${v.site}:${file}`);
-    if (owners.length <= 1) return true;
-    return owners.some((o) => o.id !== v.id && [...words].some((w) => o.words.has(w)));
-  });
-  if (kept.length === v.images.length) continue;
-  strippedInstances += v.images.length - kept.length;
-  strippedVehicleSlugs.add(v.slug);
-  v.images = kept;
+    if (owners.length <= 1) {
+      primary.push(file);
+      continue;
+    }
+    const corroborating = owners.filter((o) => o.id !== v.id && [...words].some((w) => o.words.has(w)));
+    if (corroborating.length === 0) continue; // no title corroboration at all — pure contamination, drop
+    const differentColorSibling = myColor ? corroborating.find((o) => o.color && o.color !== myColor) : undefined;
+    const isFreshOtherColor = differentColorSibling && !otherColorsByColor.has(differentColorSibling.color) && otherColorsByColor.size < MAX_OTHER_COLORS;
+    if (isFreshOtherColor) {
+      otherColorsByColor.set(differentColorSibling.color, {
+        file,
+        color: differentColorSibling.color,
+        slug: differentColorSibling.slug,
+        site: v.site,
+        id: differentColorSibling.id,
+      });
+    } else {
+      // Corroborated but not pulled into otherColorPhotos this time (same
+      // color as this vehicle, or a repeat/over-the-cap color) — keep it as
+      // this vehicle's own photo rather than dropping it; we have no signal
+      // suggesting it doesn't belong here.
+      primary.push(file);
+    }
+  }
+
+  const otherColors = [...otherColorsByColor.values()];
+  const droppedCount = v.images.length - primary.length - otherColors.length;
+  if (droppedCount <= 0 && otherColors.length === 0) continue;
+
+  if (droppedCount > 0) {
+    strippedInstances += droppedCount;
+    strippedVehicleSlugs.add(v.slug);
+  }
+  if (otherColors.length > 0) {
+    movedInstances += otherColors.length;
+    otherColorVehicleSlugs.add(v.slug);
+  }
+  v.images = primary;
+  v.otherColorPhotos = otherColors;
   writeVehicle(v);
   const entry = indexBySlug.get(v.slug);
   if (entry) {
-    entry.thumb = kept[0] ?? null;
-    entry.thumbs = kept.slice(0, 4);
-    entry.imageCount = kept.length;
+    entry.thumb = primary[0] ?? null;
+    entry.thumbs = primary.slice(0, 4);
+    entry.imageCount = primary.length;
   }
 }
 if (strippedInstances > 0) {
   console.warn(`\n⚠ Stripped ${strippedInstances} contaminated image(s) from ${strippedVehicleSlugs.size} vehicle(s) — shared photo with no title corroboration from this listing.`);
+}
+if (movedInstances > 0) {
+  console.warn(`⚠ Moved ${movedInstances} shared photo(s) on ${otherColorVehicleSlugs.size} vehicle(s) into otherColorPhotos — same model, a differently-colored sibling listing.`);
 }
 
 fs.writeFileSync(path.join(outDir, "vehicles-index.json"), JSON.stringify(index));

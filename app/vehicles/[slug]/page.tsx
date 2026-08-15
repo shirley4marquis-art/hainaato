@@ -19,6 +19,7 @@ import { DetailTabs, Gallery, ShareButton, SiteShell, VehicleCard } from "../../
 import { AddToCompareButton } from "../../compare-button";
 import { VehicleRequestForm } from "../../request-form";
 import { Price } from "../../price";
+import { ResilientVehicleImage } from "../../vehicle-image";
 import {WHATSAPP_URL} from "../../contact-links";
 import {
   formatCNY,
@@ -26,7 +27,12 @@ import {
   getFeaturedVehicles,
   getTotalVehicleCount,
 } from "../../../lib/vehicles";
+import { imagePath } from "../../../lib/format";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 const SKIP_SPEC_KEYS = new Set(["selling price", "seller-tags"]);
 
@@ -98,6 +104,31 @@ export default async function VehicleDetail({
             <span className="alt">Inspection Available</span>
           </div>
           <Gallery site={vehicle.site} id={vehicle.id} images={vehicle.images} title={vehicle.title} />
+
+          {vehicle.otherColorPhotos.length > 0 && (
+            <div className="other-colors">
+              <h3>Also Available In Other Colors</h3>
+              <p className="other-colors-note">
+                These are photos of the same model from other listings, not this specific unit — click through to see that listing&apos;s own details and price.
+              </p>
+              <div className="other-colors-grid">
+                {vehicle.otherColorPhotos.map((oc) => (
+                  <Link key={oc.slug} href={`/vehicles/${oc.slug}`} className="other-color-card">
+                    <span className="other-color-image">
+                      <ResilientVehicleImage
+                        candidates={[imagePath(oc.site, oc.id, oc.file)]}
+                        alt={`${vehicle.title} in ${oc.color}`}
+                        sizes="110px"
+                        minimumWidth={0}
+                        minimumHeight={0}
+                      />
+                    </span>
+                    <span className="other-color-label">{capitalize(oc.color)}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <span className="vehicle-title">
             {vehicle.site === "hainaauto" ? "HAINAAUTO LISTING" : "PARTNER LISTING"}
