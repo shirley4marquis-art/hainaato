@@ -1,10 +1,10 @@
 {
   "hainaauto-09657985": {
-    "priceCNY": 278000,
-    "note": "Manual correction 2026-08-15: business owner confirmed -¥130,000 from the scraped/formula price (¥408,000 -> ¥278,000)."
+    "priceCNY": 228000,
+    "note": "Manual correction 2026-08-15: -¥130,000 from formula price (¥408,000 -> ¥278,000), then a further -¥50,000 (¥278,000 -> ¥228,000)."
   },
   "hainaauto-98279531": {
-    "priceCNY": 288800,
-    "note": "Manual correction 2026-08-15: business owner confirmed -¥130,000 from the scraped/formula price (¥418,800 -> ¥288,800)."
+    "priceCNY": 238800,
+    "note": "Manual correction 2026-08-15: -¥130,000 from formula price (¥418,800 -> ¥288,800), then a further -¥50,000 (¥288,800 -> ¥238,800)."
   }
 }
