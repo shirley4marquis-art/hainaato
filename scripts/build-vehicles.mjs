@@ -26,17 +26,32 @@ function toNumber(v) {
 // suggested price), not "our" price.
 const SALE_PRICE_MULTIPLIER = 0.6;
 
+// Hand-maintained, per-listing price corrections keyed by slug (site-id) —
+// this file is never written by this script, only read, so business-owner
+// edits to it always survive a rebuild. Takes priority over the formula
+// price above for whichever specific units are listed here.
+const PRICE_OVERRIDES_PATH = path.join(outDir, "price-overrides.json");
+const priceOverrides = fs.existsSync(PRICE_OVERRIDES_PATH)
+  ? JSON.parse(fs.readFileSync(PRICE_OVERRIDES_PATH, "utf8"))
+  : {};
+
+const appliedPriceOverrides = new Set();
+
 function normalize(raw, site) {
   const specs = raw.specs ?? {};
+  const slug = `${site}-${raw.id}`;
   const scrapedPriceCNY = toNumber(raw.price?.salePriceCNY);
+  const formulaPriceCNY = scrapedPriceCNY == null ? null : Math.round(scrapedPriceCNY * SALE_PRICE_MULTIPLIER);
+  const override = priceOverrides[slug];
+  if (override) appliedPriceOverrides.add(slug);
   return {
-    slug: `${site}-${raw.id}`,
+    slug,
     site,
     id: String(raw.id),
     url: raw.url ?? null,
     title: raw.title ?? "Untitled vehicle",
     year: raw.year ?? null,
-    priceCNY: scrapedPriceCNY == null ? null : Math.round(scrapedPriceCNY * SALE_PRICE_MULTIPLIER),
+    priceCNY: override ? override.priceCNY : formulaPriceCNY,
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
     mileageKm: toNumber(raw.mileage ?? specs["Mileage"]),
     fuel: raw.fuel ?? specs["Energy type"] ?? null,
@@ -325,4 +340,11 @@ fs.mkdirSync(shardDir, { recursive: true });
 detailShards.forEach((shard, shardNumber) => {
   fs.writeFileSync(path.join(shardDir, `${shardNumber}.json`), JSON.stringify(shard));
 });
+if (appliedPriceOverrides.size > 0) {
+  console.log(`Applied ${appliedPriceOverrides.size} manual price override(s) from data/price-overrides.json: ${[...appliedPriceOverrides].join(", ")}`);
+}
+const unusedOverrides = Object.keys(priceOverrides).filter((slug) => !appliedPriceOverrides.has(slug));
+if (unusedOverrides.length > 0) {
+  console.warn(`⚠ ${unusedOverrides.length} price override(s) in data/price-overrides.json didn't match any vehicle (removed/renamed listing?): ${unusedOverrides.join(", ")}`);
+}
 console.log(`Total: ${index.length} vehicles indexed`);
