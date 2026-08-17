@@ -3,11 +3,11 @@
 // `resend` package — no email provider was configured before this, so this
 // picks the option needing the least new infra: no SMTP server, no dependency.
 //
-// Required env vars (unset today — see .env.local):
+// Required env vars (see .env.local):
 //   RESEND_API_KEY   - API key from resend.com
-//   LEADS_FROM_EMAIL - a sender address verified with Resend (e.g. leads@hainaauto.com,
+//   LEADS_FROM_EMAIL - a sender address verified with Resend (e.g. leads@hainaautochina.com,
 //                       or onboarding@resend.dev while testing without a verified domain)
-//   LEADS_TO_EMAIL   - optional, defaults to info@hainaauto.com
+//   LEADS_TO_EMAIL   - optional, defaults to sales@hainaautochina.com
 import type { WebLead } from "./crm";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -15,7 +15,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 export async function sendLeadNotification(lead: WebLead, ref: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.LEADS_FROM_EMAIL;
-  const to = process.env.LEADS_TO_EMAIL || "info@hainaauto.com";
+  const to = process.env.LEADS_TO_EMAIL || "sales@hainaautochina.com";
 
   if (!apiKey || !from) {
     console.warn(`[leads] Email not sent for ${ref} — set RESEND_API_KEY and LEADS_FROM_EMAIL to enable notifications.`);

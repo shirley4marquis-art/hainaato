@@ -271,7 +271,7 @@ export default async function VehicleDetail({
             <span className="avatar">HA</span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-            <a href="mailto:info@hainaauto.com">info@hainaauto.com</a>
+            <a href="mailto:sales@hainaautochina.com">sales@hainaautochina.com</a>
             <p>We typically respond within 24 hours.</p>
           </div>
           <div className="side-card">
