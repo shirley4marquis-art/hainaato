@@ -7,7 +7,7 @@ import { getShipmentUpdates } from "../../../lib/crm";
 // returned in the first place.
 export async function GET() {
   try {
-    const updates = getShipmentUpdates(20);
+    const updates = await getShipmentUpdates(20);
     return NextResponse.json({ ok: true, updates });
   } catch (error) {
     console.error("[shipment-updates] CRM query failed:", error);

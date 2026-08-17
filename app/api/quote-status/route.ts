@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   let result;
   try {
-    result = getQuoteStatus(ref);
+    result = await getQuoteStatus(ref);
   } catch (error) {
     console.error("[quote-status] CRM lookup failed:", error);
     return NextResponse.json({ ok: false, error: "Status lookup is temporarily unavailable. Please try again shortly." }, { status: 502 });

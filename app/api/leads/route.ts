@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
   let ref: string;
   try {
-    ref = saveLead(lead);
+    ref = await saveLead(lead);
   } catch (error) {
     console.error("[leads] Failed to save lead to CRM:", error);
     return NextResponse.json(
