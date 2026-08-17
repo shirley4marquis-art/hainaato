@@ -107,6 +107,17 @@ function productType(v, brand) {
   return parts.join(" > ");
 }
 
+// Commerce Manager's product-set Value field is a type-ahead dropdown over
+// values already present in the catalog, not free text — so filtering on
+// product_type (a unique "Category > Brand > Model" string per listing) never
+// offers a "4x4 Trucks" option to pick, only ~800 individual full strings.
+// custom_label_0 carries just the bare category (one of 5 fixed values), so
+// it shows up as a short, pickable list: Attribute "Custom label 0",
+// Condition "is any of these", Value "4x4 Trucks".
+function customLabel0(v) {
+  return categoryLabel(v);
+}
+
 // Deterministic even-stride sample of `count` items spread across `list`,
 // rather than just the first `count` (which would skew toward whichever
 // site/dealer happens to sort first).
@@ -190,7 +201,7 @@ const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
 const eligible = index.filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb != null);
 const selected = curateSelection(eligible);
 
-const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type"];
+const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0"];
 const lines = [header.join(",")];
 
 let totalAdditionalImages = 0;
@@ -213,6 +224,7 @@ for (const v of selected) {
     brand,
     additionalImages,
     productType(v, brand),
+    customLabel0(v),
   ];
   lines.push(row.map(csvField).join(","));
 }
