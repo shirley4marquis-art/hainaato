@@ -334,13 +334,16 @@ body{background:#f4f6f9;color:#1a2332}.ah-header{position:sticky;top:0;z-index:1
 }
 @media(max-width:390px){.ah-brand-title{font-size:18px}.ah-brand-lead{font-size:11px}.mobile-arrival-row{grid-template-columns:112px 1fr}.mobile-arrival-row>img{width:112px}.mobile-arrival-row>strong{display:none}}
 
-/* Unified vehicle imagery: stable 4:3 frames with resilient loading. */
-.vehicle-image{object-fit:cover;object-position:center;opacity:0;transition:opacity .18s ease;transform:none!important}
+/* Unified vehicle imagery: stable 4:3 frames with resilient loading. Contain
+   (not cover) so the full vehicle is always visible — cover was cropping into
+   photos to fill the frame, which could cut off the roof, wheels or ends of
+   the car depending on its aspect ratio. */
+.vehicle-image{object-fit:contain;object-position:center;opacity:0;transition:opacity .18s ease;transform:none!important}
 .vehicle-image.is-loaded{opacity:1}
 .vehicle-image-fallback{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:7px;background:linear-gradient(145deg,#f1f5f9,#e2e8f0);color:#64748b;font-size:11px;font-weight:700;text-align:center}
 .vehicle-image-fallback svg{width:34px;height:34px;stroke-width:1.5}
 .car-image{position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:10px 10px 0 0;background:#eef2f6}
-.car-image img,.spotlight-image img,.gallery-main img,.gallery-thumbs img,.vlist-head-image img,.vlist-thumb img,.mobile-arrival-image img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important}
+.car-image img,.spotlight-image img,.gallery-main img,.gallery-thumbs img,.vlist-head-image img,.vlist-thumb img,.mobile-arrival-image img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important}
 .spotlight-image{position:relative;aspect-ratio:4/3;height:auto!important;background:#eef2f6}
 .vlist-head-image{aspect-ratio:4/3}
 .vlist-head-image>img{height:100%!important}
@@ -423,12 +426,13 @@ body{background:#f4f6f9;color:#1a2332}.ah-header{position:sticky;top:0;z-index:1
 @media(max-width:600px){.vehicle-categories{padding:52px 0}.vehicle-category-rows{gap:34px}.vehicle-category-row>header{align-items:start}.vehicle-category-row h3{font-size:20px}.vehicle-category-row header p{font-size:11px}.vehicle-category-row header>a{max-width:95px;text-align:right}.vehicle-category-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.vehicle-category-grid .car{flex:0 0 78vw;scroll-snap-align:start}.vehicle-category-grid .car-image img{height:180px}}
 .wechat-modal-backdrop{display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;padding:18px;background:#06101dcc;backdrop-filter:blur(7px)}.wechat-modal-backdrop:target{display:flex}.wechat-modal{position:relative;width:min(440px,100%);max-height:calc(100vh - 36px);overflow:auto;padding:28px 28px 24px;border-radius:22px;background:#fff;text-align:center;box-shadow:0 28px 90px #0008}.wechat-modal>svg{width:38px;height:38px;color:#07c160;margin:auto}.wechat-modal h2{font:800 clamp(20px,4vw,27px)/1.2 var(--sans);text-transform:uppercase;color:#0b1f35;margin:10px auto 7px}.wechat-modal p{font-size:13px;line-height:1.5;color:#5c6c7e;margin:0 auto 15px}.wechat-modal-qr{width:min(100%,310px);height:auto;margin:0 auto 13px;border:1px solid #e4e9ef;border-radius:12px}.wechat-modal>small{display:block;color:#758294;font-size:10px;text-transform:uppercase;letter-spacing:.12em}.wechat-modal>strong{display:block;color:#0b1f35;margin-top:3px;user-select:all}.wechat-modal-close{position:absolute;right:13px;top:10px;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#eff3f7;color:#172638;font-size:28px;line-height:1}.wechat-modal-close:hover{background:#e1e7ee}
 
-/* Site-wide motion: scroll-reveal (app/reveal.tsx toggles .is-visible) plus
-   hover-lift on card-style components. Disabled under prefers-reduced-motion
-   rather than just slowed down, per the OS-level accessibility setting. */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
-.reveal.is-visible{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+/* .reveal sections used to sit at opacity:0 until app/reveal.tsx's
+   IntersectionObserver added .is-visible — if that JS was ever slow, blocked,
+   or missed an element, the section stayed permanently blank. Content is
+   shown immediately now instead of gambling on that. */
+.reveal{opacity:1;transform:none}
+.car,.hub-card,.mini-testimonial,.news,.model-grid article{transition:transform .25s ease,box-shadow .25s ease}
+.car:hover,.news:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(15,23,42,.12)}
 .car,.hub-card,.mini-testimonial,.news,.model-grid article{transition:transform .25s ease,box-shadow .25s ease}
 .car:hover,.news:hover{transform:translateY(-6px);box-shadow:0 16px 32px rgba(15,23,42,.12)}
 .hub-card:hover,.model-grid article:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(15,23,42,.1)}
