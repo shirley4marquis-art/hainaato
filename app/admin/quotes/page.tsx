@@ -5,6 +5,14 @@ import { adminListQuotes } from "../../../lib/crm";
 import { STATUS_META, type QuoteStatus } from "../status";
 import styles from "../admin.module.css";
 
+// Without this, Next.js sees no cookies()/headers() call inside the page
+// itself (the auth check happens one layer up, in proxy.ts) and treats it as
+// a plain static page — cached from whichever request first rendered it
+// (build time or first hit after a deploy) and never re-queried again. A
+// staff dashboard showing every quote/lead must always read the DB fresh;
+// caching it silently hid every quote created after that first render.
+export const dynamic = "force-dynamic";
+
 export default async function AdminQuotesList() {
   const quotes = await adminListQuotes();
 

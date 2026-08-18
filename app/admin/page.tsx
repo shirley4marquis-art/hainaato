@@ -9,6 +9,12 @@ import styles from "./admin.module.css";
 // just a later slice of the same status lifecycle (see supabase/crm-schema.sql).
 const ORDER_STATUSES = new Set(["deposit_paid", "paid_full", "shipped", "delivered"]);
 
+// See the identical note in app/admin/quotes/page.tsx — without this, this
+// page gets statically cached (no cookies()/headers() call of its own to
+// signal otherwise) and silently stops reflecting new quotes after the
+// first render.
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const quotes = await adminListQuotes();
 

@@ -31,6 +31,16 @@ import {
 import { imagePath } from "../../../lib/format";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 
+// Was fully dynamic (re-rendered server-side on every single view, of
+// 15,000+ listings) despite depending on nothing per-visitor — currency
+// (Price), cart/compare state, and the request form are all client-side
+// (localStorage), not read from cookies/headers here. ISR caches each
+// listing's render after its first visit and serves that for an hour,
+// which matches how often the underlying data actually changes (data:build
+// is run manually, not continuously) rather than the default of never
+// caching at all.
+export const revalidate = 3600;
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
