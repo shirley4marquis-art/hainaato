@@ -37,6 +37,13 @@ const priceOverrides = fs.existsSync(PRICE_OVERRIDES_PATH)
 
 const appliedPriceOverrides = new Set();
 
+// Scraped odometer readings read high by a consistent factor — applied here
+// so it survives every future data:build. Condition (new vs. used) is
+// classified from the raw pre-division reading, not the corrected one:
+// dividing first would push ~67 genuinely-used vehicles (100–240 raw km)
+// under the <=100km "new" threshold, misclassifying them.
+const MILEAGE_DIVISOR = 2.4;
+
 function normalize(raw, site) {
   const specs = raw.specs ?? {};
   const slug = `${site}-${raw.id}`;
@@ -44,6 +51,8 @@ function normalize(raw, site) {
   const formulaPriceCNY = scrapedPriceCNY == null ? null : Math.round(scrapedPriceCNY * SALE_PRICE_MULTIPLIER);
   const override = priceOverrides[slug];
   if (override) appliedPriceOverrides.add(slug);
+  const rawMileageKm = toNumber(raw.mileage ?? specs["Mileage"]);
+  const condition = rawMileageKm != null && rawMileageKm <= 100 ? "new" : "used";
   return {
     slug,
     site,
@@ -53,7 +62,8 @@ function normalize(raw, site) {
     year: raw.year ?? null,
     priceCNY: override ? override.priceCNY : formulaPriceCNY,
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
-    mileageKm: toNumber(raw.mileage ?? specs["Mileage"]),
+    mileageKm: rawMileageKm == null ? null : Math.round(rawMileageKm / MILEAGE_DIVISOR),
+    condition,
     fuel: raw.fuel ?? specs["Energy type"] ?? null,
     bodyType: specs["Body Type"] ?? null,
     gearbox: specs["Gearbox"] ?? null,
@@ -100,7 +110,7 @@ function indexEntry(v) {
     color: v.color,
     brand,
     model: titleWords.slice(1, 4).join(" ") || v.title,
-    condition: v.mileageKm != null && v.mileageKm <= 100 ? "new" : "used",
+    condition: v.condition,
     availability: "available",
     transmission: v.gearbox,
     stockCode: `${v.site === "hainaauto" ? "HA" : "CN"}-${v.id}`,

@@ -25,21 +25,30 @@ function TickerItem({ u }: { u: ShipmentUpdate }) {
 // lib/crm.ts getShipmentUpdates). No name, phone, email or amount is ever
 // fetched, let alone shown. Renders nothing until at least one customer has
 // actually consented — no placeholder/sample content while empty.
+const POLL_INTERVAL_MS = 30_000;
+
 export function ShipmentTicker() {
   const [updates, setUpdates] = useState<ShipmentUpdate[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/shipment-updates")
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        if (!cancelled) setUpdates(Array.isArray(data.updates) ? data.updates : []);
-      })
-      .catch(() => {
-        if (!cancelled) setUpdates([]);
-      });
+    const load = () => {
+      fetch("/api/shipment-updates")
+        .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+        .then((data) => {
+          if (!cancelled) setUpdates(Array.isArray(data.updates) ? data.updates : []);
+        })
+        .catch(() => {
+          if (!cancelled) setUpdates((current) => current ?? []);
+        });
+    };
+    load();
+    // Polled rather than fetched once — new consented status updates should
+    // appear in the ticker without the visitor having to reload the page.
+    const interval = setInterval(load, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, []);
 

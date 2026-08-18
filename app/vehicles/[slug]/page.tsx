@@ -168,7 +168,7 @@ export default async function VehicleDetail({
 
           <div className="detail-actions">
             <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}`}>
-              Get Free Quote
+              Get Quote
             </Link>
             <a
               className="btn btn-whatsapp"
