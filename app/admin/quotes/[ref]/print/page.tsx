@@ -99,7 +99,7 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
           <div className={`${styles.summaryItem} ${styles.summaryTotal}`}>
             <span className={styles.summaryLabel}>{t.total}</span>
             <span className={styles.summaryValue}>
-              {quote.currency} {formatMoney(grandTotal, quote.currency)}
+              {quote.currency} {formatMoney(quote.cifTotal, quote.currency)}
             </span>
           </div>
         </div>
@@ -146,17 +146,26 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
         </table>
 
         <div className={styles.totalsBlock}>
-          <div className={styles.subtotalRow}>
-            <span>{t.subtotal}</span>
-            <span>{formatMoney(quote.cifTotal, quote.currency)}</span>
-          </div>
           <div className={styles.grandTotalRow}>
-            <span className={styles.grandTotalLabel}>{t.total}</span>
+            <span className={styles.grandTotalLabel}>{t.payable}</span>
             <span className={styles.grandTotalValue}>
               <span className={styles.grandTotalCurrency}>{quote.currency}</span>
-              {formatMoney(grandTotal, quote.currency)}
+              {formatMoney(quote.cifTotal, quote.currency)}
             </span>
           </div>
+          {quote.dutyEstimate != null && (
+            <>
+              <div className={styles.estimateRow}>
+                <span className={styles.estimateLabel}>{t.destinationEstimate}</span>
+                <span className={styles.estimateValue}>{formatMoney(quote.dutyEstimate, quote.currency)}</span>
+              </div>
+              <p className={styles.estimateNote}>{t.destinationEstimateNote}</p>
+              <div className={styles.costToOwnRow}>
+                <span className={styles.costToOwnLabel}>{t.costToOwn}</span>
+                <span className={styles.costToOwnValue}>{formatMoney(grandTotal, quote.currency)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         <div className={styles.termsBlock}>

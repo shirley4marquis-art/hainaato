@@ -1,18 +1,9 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, FileText, Truck, Wallet, Inbox } from "lucide-react";
 import { AdminShell } from "./admin-shell";
 import { adminListQuotes } from "../../lib/crm";
+import { STATUS_META, STATUS_ORDER, type QuoteStatus } from "./status";
 import styles from "./admin.module.css";
-
-const STATUS_LABELS: Record<string, string> = {
-  quoted: "Quoted",
-  negotiating: "Negotiating",
-  deposit_paid: "Deposit paid",
-  paid_full: "Paid in full",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  lost: "Lost",
-};
 
 // "Orders" = quotes that have moved past the negotiation stage — same table,
 // just a later slice of the same status lifecycle (see supabase/crm-schema.sql).
@@ -39,29 +30,48 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      <div className={styles.grid} style={{ marginBottom: 26 }}>
-        <div className={styles.itemCard}>
-          <b style={{ fontSize: 11, color: "#6b7684" }}>OPEN QUOTES</b>
-          <p style={{ fontSize: 28, fontWeight: 800, margin: "6px 0 0" }}>{openQuotes}</p>
+      <div className={styles.statGrid}>
+        <div className={styles.statCard}>
+          <span className={`${styles.statIcon} ${styles.statIconBlue}`}>
+            <FileText size={18} />
+          </span>
+          <div>
+            <p className={styles.statLabel}>Open quotes</p>
+            <p className={styles.statValue}>{openQuotes}</p>
+          </div>
         </div>
-        <div className={styles.itemCard}>
-          <b style={{ fontSize: 11, color: "#6b7684" }}>ACTIVE ORDERS</b>
-          <p style={{ fontSize: 28, fontWeight: 800, margin: "6px 0 0" }}>{activeOrders}</p>
+        <div className={styles.statCard}>
+          <span className={`${styles.statIcon} ${styles.statIconGreen}`}>
+            <Truck size={18} />
+          </span>
+          <div>
+            <p className={styles.statLabel}>Active orders</p>
+            <p className={styles.statValue}>{activeOrders}</p>
+          </div>
         </div>
-        <div className={styles.itemCard}>
-          <b style={{ fontSize: 11, color: "#6b7684" }}>OPEN PIPELINE VALUE</b>
-          <p style={{ fontSize: 28, fontWeight: 800, margin: "6px 0 0" }}>${pipelineValue.toLocaleString()}</p>
+        <div className={styles.statCard}>
+          <span className={`${styles.statIcon} ${styles.statIconAmber}`}>
+            <Wallet size={18} />
+          </span>
+          <div>
+            <p className={styles.statLabel}>Open pipeline value</p>
+            <p className={styles.statValue}>${pipelineValue.toLocaleString()}</p>
+          </div>
         </div>
       </div>
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>By status</h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {Object.entries(STATUS_LABELS).map(([key, label]) => (
-            <span className={styles.statusPill} key={key}>
-              {label}: {counts.get(key) ?? 0}
-            </span>
-          ))}
+          {STATUS_ORDER.map((key) => {
+            const meta = STATUS_META[key];
+            const Icon = meta.icon;
+            return (
+              <span className={styles.statusPill} data-tone={meta.tone} key={key}>
+                <Icon size={11} /> {meta.label}: {counts.get(key) ?? 0}
+              </span>
+            );
+          })}
         </div>
       </div>
 
@@ -71,22 +81,33 @@ export default async function AdminDashboard() {
           <Link className={styles.btnGhost} href="/admin/quotes">View all</Link>
         </div>
         {recent.length === 0 ? (
-          <div className={styles.emptyState}>No quotes yet.</div>
+          <div className={styles.emptyState}>
+            <Inbox size={28} />
+            <p style={{ margin: 0 }}>No quotes yet.</p>
+          </div>
         ) : (
           <table className={styles.table}>
             <thead>
               <tr><th>Ref</th><th>Customer</th><th>Vehicle(s)</th><th>Status</th><th>Created</th></tr>
             </thead>
             <tbody>
-              {recent.map((q) => (
-                <tr key={q.ref}>
-                  <td><Link href={`/admin/quotes/${q.ref}`}>{q.documentNumber ?? q.ref}</Link></td>
-                  <td>{q.customerName}</td>
-                  <td>{q.vehicleSummary}</td>
-                  <td><span className={styles.statusPill}>{q.status.replace(/_/g, " ")}</span></td>
-                  <td>{new Date(q.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
+              {recent.map((q) => {
+                const meta = STATUS_META[q.status as QuoteStatus];
+                const Icon = meta.icon;
+                return (
+                  <tr key={q.ref}>
+                    <td><Link href={`/admin/quotes/${q.ref}`}>{q.documentNumber ?? q.ref}</Link></td>
+                    <td>{q.customerName}</td>
+                    <td>{q.vehicleSummary}</td>
+                    <td>
+                      <span className={styles.statusPill} data-tone={meta.tone}>
+                        <Icon size={11} /> {meta.label}
+                      </span>
+                    </td>
+                    <td>{new Date(q.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

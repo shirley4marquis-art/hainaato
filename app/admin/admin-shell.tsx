@@ -1,11 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { LayoutDashboard, FileText, LogOut } from "lucide-react";
 import styles from "./admin.module.css";
+
+const LINKS = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/quotes", label: "Quotes", icon: FileText },
+] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -16,12 +23,25 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <nav className={styles.nav}>
-        <span className={styles.navBrand}>HainaAuto Admin</span>
+        <Link className={styles.navBrand} href="/admin">
+          <img src="/hainaauto-logo.webp" alt="" className={styles.navBrandMark} />
+          <span className={styles.navBrandText}>
+            <b>HainaAuto</b>
+            <span className={styles.navBrandRibbon}>Admin</span>
+          </span>
+        </Link>
         <div className={styles.navLinks}>
-          <Link href="/admin">Dashboard</Link>
-          <Link href="/admin/quotes">Quotes</Link>
+          {LINKS.map(({ href, label, icon: Icon }) => {
+            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+            return (
+              <Link key={href} href={href} className={active ? styles.navLinkActive : undefined}>
+                <Icon size={14} />
+                {label}
+              </Link>
+            );
+          })}
           <button className={styles.navLogout} onClick={logout} type="button">
-            Log out
+            <LogOut size={13} /> Log out
           </button>
         </div>
       </nav>

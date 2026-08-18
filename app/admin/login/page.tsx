@@ -1,7 +1,7 @@
 "use client";
 import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Mail, Lock } from "lucide-react";
 import styles from "../admin.module.css";
 
 function LoginForm() {
@@ -56,7 +56,7 @@ function LoginForm() {
           <p>SIGN IN</p>
           <h2>Welcome back</h2>
           <span>Use the email and password your administrator set up for you.</span>
-          <label htmlFor="admin-email">Email</label>
+          <label htmlFor="admin-email"><Mail size={13} /> Email</label>
           <input
             id="admin-email"
             type="email"
@@ -66,7 +66,7 @@ function LoginForm() {
             autoFocus
             required
           />
-          <label htmlFor="admin-password">Password</label>
+          <label htmlFor="admin-password"><Lock size={13} /> Password</label>
           <input
             id="admin-password"
             type="password"

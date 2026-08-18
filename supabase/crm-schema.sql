@@ -122,8 +122,31 @@ CREATE TABLE IF NOT EXISTS follow_ups (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Where a quote came from ('cart-checkout' for the automated customer-facing
+-- flow in app/api/quote-requests/route.ts; null for quotes staff draft
+-- directly in the admin panel) — lets the admin list show provenance without
+-- parsing free-text notes.
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS source TEXT;
+
+-- One row per outbound quotation email attempt (the automated send on
+-- request, and any staff resend afterward) — lets admin show delivery status
+-- and the exact email content sent, per quote (see lib/crm.ts's
+-- recordQuoteEmail / listQuoteEmails).
+CREATE TABLE IF NOT EXISTS quote_emails (
+  id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  quote_id          BIGINT NOT NULL REFERENCES quotes(id),
+  to_email          TEXT NOT NULL,
+  subject           TEXT NOT NULL,
+  html              TEXT NOT NULL,
+  status            TEXT NOT NULL CHECK (status IN ('sent', 'failed')),
+  error             TEXT,
+  provider_message_id TEXT,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_quotes_customer ON quotes(customer_id);
 CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status);
 CREATE INDEX IF NOT EXISTS idx_items_quote ON quote_items(quote_id);
 CREATE INDEX IF NOT EXISTS idx_item_photos_item ON quote_item_photos(quote_item_id);
 CREATE INDEX IF NOT EXISTS idx_followups_quote ON follow_ups(quote_id);
+CREATE INDEX IF NOT EXISTS idx_quote_emails_quote ON quote_emails(quote_id);

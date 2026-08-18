@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, User, FileText, Car, Image as ImageIcon } from "lucide-react";
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 
@@ -162,7 +162,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   return (
     <div className={styles.form}>
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Customer</h2>
+        <h2 className={styles.sectionTitle}><User size={14} /> Customer</h2>
         <div className={styles.grid}>
           <label>Full name *<input value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} /></label>
           <label>Phone / WhatsApp<input value={customer.phone ?? ""} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} /></label>
@@ -175,7 +175,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Quote details</h2>
+        <h2 className={styles.sectionTitle}><FileText size={14} /> Quote details</h2>
         <div className={styles.grid}>
           <label>Status
             <select value={quote.status} onChange={(e) => setQuote({ ...quote, status: e.target.value })}>
@@ -218,7 +218,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Vehicles</h2>
+        <h2 className={styles.sectionTitle}><Car size={14} /> Vehicles</h2>
         {items.map((item, index) => (
           <div className={styles.itemCard} key={item.key}>
             <div className={styles.itemCardHead}>
@@ -254,7 +254,9 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
             </div>
 
             <div style={{ marginTop: 10 }}>
-              <b style={{ fontSize: 11, color: "#4b5563" }}>Photos (used in the printed PDF)</b>
+              <b style={{ fontSize: 11, color: "#4b5563", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <ImageIcon size={12} /> Photos (used in the printed PDF)
+              </b>
               {(item.photos ?? []).map((photo, pIndex) => (
                 <div className={styles.photoRow} key={pIndex}>
                   <input placeholder="Image URL" value={photo.url} onChange={(e) => updatePhoto(item.key, pIndex, { url: e.target.value })} />

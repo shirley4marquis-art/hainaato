@@ -22,6 +22,19 @@ function loadIndex(): VehicleIndexEntry[] {
   return indexCache!;
 }
 
+let indexBySlugCache: Map<string, VehicleIndexEntry> | null = null;
+
+// Index-side fields (brand/model/condition/stockCode/transmission) aren't on
+// the full Vehicle detail type (lib/format.ts) — callers that need both (e.g.
+// building a quote line item from a cart slug) look up here for those and
+// getVehicleBySlug (lib/vehicle-details.ts) for images/specs/mileage.
+export function getVehicleIndexEntryBySlug(slug: string): VehicleIndexEntry | null {
+  if (!indexBySlugCache) {
+    indexBySlugCache = new Map(loadIndex().map((v) => [v.slug, v]));
+  }
+  return indexBySlugCache.get(slug) ?? null;
+}
+
 export function getFilterOptions(scope?: { condition?: "new" | "used" }) {
   const index = scope?.condition ? loadIndex().filter((v) => v.condition === scope.condition) : loadIndex();
   const fuels = new Map<string, string>();
@@ -187,7 +200,17 @@ const FEATURED_LATEST_MODELS = ["highlander", "rav4", "corolla"];
 // stray images were removed from its own listing (data/vehicles/), but it's
 // still excluded here rather than risk showing more of the same on the
 // homepage where it's most visible.
-const LATEST_ARRIVALS_EXCLUDE = new Set(["hainaauto-33511934"]);
+// Listings excluded from homepage previews when their source imagery does not
+// meet the presentation standard. The listing remains available in search and
+// on its own detail page; only promotional homepage placements are affected.
+const HOMEPAGE_PREVIEW_EXCLUDE = new Set([
+  "hainaauto-33511934",
+  "hainaauto-66605435",
+]);
+
+export function isHomepagePreviewEligible(vehicle: VehicleIndexEntry): boolean {
+  return !HOMEPAGE_PREVIEW_EXCLUDE.has(vehicle.slug);
+}
 
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
   const pool = loadIndex().filter(
@@ -196,7 +219,7 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
       v.availability === "available" &&
       v.condition === "new" &&
       v.year === 2026 &&
-      !LATEST_ARRIVALS_EXCLUDE.has(v.slug)
+      isHomepagePreviewEligible(v)
   );
   const featured: VehicleIndexEntry[] = [];
   const rest: VehicleIndexEntry[] = [];

@@ -5,7 +5,7 @@ import {Camera,Car,Clock,CreditCard,FileText,Globe2,Landmark,MessageSquare,Packa
 import {Fragment} from "react";
 import {NewsSpotlight,SiteShell,VehicleCard} from "./ui";
 import {HomeRequestForm} from "./request-form";
-import {getBrandAggregates,getFilterOptions,getLatestNewVehicles,getTotalVehicleCount,searchVehicles} from "../lib/vehicles";
+import {getBrandAggregates,getFilterOptions,getLatestNewVehicles,getTotalVehicleCount,isHomepagePreviewEligible,searchVehicles} from "../lib/vehicles";
 import {imagePath} from "../lib/format";
 import {ResilientVehicleImage} from "./vehicle-image";
 import {Price} from "./price";
@@ -72,7 +72,7 @@ export default function Home(){
   const brands=getBrandAggregates(12);
   const options=getFilterOptions();
   const totalVehicles=getTotalVehicleCount();
-  const categoryRows=homeVehicleCategories.map(category=>({...category,vehicles:searchVehicles({type:category.type,availability:"available",pageSize:4}).vehicles}));
+  const categoryRows=homeVehicleCategories.map(category=>({...category,vehicles:searchVehicles({type:category.type,availability:"available",pageSize:8}).vehicles.filter(isHomepagePreviewEligible).slice(0,4)}));
 
   return <SiteShell>
     <section className="ref-hero">

@@ -23,6 +23,10 @@ export default function Cart() {
   // Tracks which slug set fetchedVehicles corresponds to, so "loading" is
   // derived during render instead of set synchronously inside the effect.
   const [fetchedKey, setFetchedKey] = useState<string | null>(null);
+  // Owned here, not inside CartRequestForm: submitting clears the cart,
+  // which empties `slugs` and would otherwise unmount the form (and any
+  // local "submitted" state it held) before a confirmation could ever show.
+  const [submitted, setSubmitted] = useState<{ ref: string; documentNumber: string | null } | null>(null);
 
   useEffect(() => {
     if (slugs.length === 0) return;
@@ -46,7 +50,7 @@ export default function Cart() {
 
   const loading = slugs.length > 0 && fetchedKey !== key;
   const vehicles = slugs.length === 0 ? [] : fetchedVehicles;
-  const showEmpty = !loading && slugs.length === 0;
+  const showEmpty = !loading && slugs.length === 0 && !submitted;
 
   return (
     <SiteShell>
@@ -57,7 +61,19 @@ export default function Cart() {
       />
       <section className="section">
         <div className="container form-page">
-          {loading && <p>Loading…</p>}
+          {submitted && (
+            <div className="empty-state">
+              <h2>Quotation sent</h2>
+              <p>
+                Your personalized quotation{submitted.documentNumber ? ` (${submitted.documentNumber})` : ` (${submitted.ref})`} has
+                been generated and emailed to you. Check your inbox, or reply to that email with any questions.
+              </p>
+              <Link className="btn primary" href="/vehicles">
+                Continue browsing
+              </Link>
+            </div>
+          )}
+          {!submitted && loading && <p>Loading…</p>}
           {showEmpty && (
             <div className="empty-state">
               <h2>Your cart is empty</h2>
@@ -67,7 +83,7 @@ export default function Cart() {
               </Link>
             </div>
           )}
-          {!loading && vehicles.length > 0 && (
+          {!submitted && !loading && vehicles.length > 0 && (
             <>
               <ul className={styles.list}>
                 {vehicles.map((v) => (
@@ -95,7 +111,10 @@ export default function Cart() {
                   Add more vehicles
                 </Link>
               </div>
-              <CartRequestForm vehicles={vehicles.map((v) => ({ slug: v.slug, title: v.title }))} />
+              <CartRequestForm
+                vehicles={vehicles.map((v) => ({ slug: v.slug, title: v.title }))}
+                onSubmitted={(ref, documentNumber) => setSubmitted({ ref, documentNumber })}
+              />
             </>
           )}
         </div>

@@ -121,3 +121,102 @@ export async function sendLeadNotification(lead: WebLead, ref: string): Promise<
     throw new Error(`Resend API error ${response.status}: ${body}`);
   }
 }
+
+// Pure HTML builder, kept separate from the actual send below so callers
+// (app/api/quote-requests/route.ts) always have the exact email content to
+// record in quote_emails via lib/crm.ts's recordQuoteEmail — regardless of
+// whether the send itself succeeds, since admin needs to see what was
+// attempted either way.
+export function customerQuoteEmailHtml(params: {
+  customerName: string;
+  ref: string;
+  documentNumber: string | null;
+  vehicleSummary: string;
+}): { subject: string; html: string } {
+  const NAVY = "#082F63";
+  const CORAL = "#FF6B00";
+  const docRef = params.documentNumber ?? params.ref;
+  const subject = `Your HainaAuto quotation ${docRef}`;
+  const html = `<!doctype html>
+<html>
+<body style="margin:0;padding:24px;background:#f4f5f9;font-family:Arial,sans-serif">
+  <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e3e4e8">
+    <tr><td style="background:${CORAL};height:6px;font-size:0;line-height:0">&nbsp;</td></tr>
+    <tr>
+      <td style="background:${NAVY};padding:24px 28px">
+        <div style="color:#fff;font-size:20px;font-weight:700;letter-spacing:-.02em">HAINA AUTO EXPORT</div>
+        <div style="color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:4px">Your Quotation — ${escapeHtml(docRef)}</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:28px">
+        <p style="margin:0 0 16px;font:16px/1.6 Arial,sans-serif;color:#0d0e12">Hi ${escapeHtml(params.customerName)},</p>
+        <p style="margin:0 0 16px;font:14px/1.7 Arial,sans-serif;color:#0d0e12">
+          Thank you for requesting a quotation for <b>${escapeHtml(params.vehicleSummary)}</b>. We've prepared your
+          personalized quotation and attached it to this email as a PDF.
+        </p>
+        <p style="margin:0 0 16px;font:14px/1.7 Arial,sans-serif;color:#0d0e12">
+          It covers vehicle pricing, shipping and insurance, an estimate of destination-side costs, and our payment
+          and export terms.
+        </p>
+        <p style="margin:0;font:14px/1.7 Arial,sans-serif;color:#0d0e12">
+          Have questions or ready to proceed? Just reply to this email, or reach our sales team directly —
+          we're glad to help.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#f4f5f9;padding:18px 28px;text-align:center;font-size:11px;color:#858ea9;line-height:1.6">
+        HAINA AUTO EXPORT · 11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br/>
+        Tel 5623368661 · sales@hainaautochina.com · hainaautochina.com
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  return { subject, html };
+}
+
+export type SendResult = { ok: true; providerMessageId: string | null } | { ok: false; error: string };
+
+// Generic Resend send with an optional PDF attachment — separate from
+// sendLeadNotification above (internal-only, no attachment support needed
+// there) since this one is customer-facing and must report success/failure
+// back to the caller rather than swallowing it, so it can be logged either
+// way via lib/crm.ts's recordQuoteEmail.
+export async function sendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  attachment?: { filename: string; content: Buffer };
+}): Promise<SendResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.LEADS_FROM_EMAIL;
+  if (!apiKey || !from) {
+    return { ok: false, error: "RESEND_API_KEY / LEADS_FROM_EMAIL not configured." };
+  }
+
+  try {
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+        attachments: params.attachment
+          ? [{ filename: params.attachment.filename, content: params.attachment.content.toString("base64") }]
+          : undefined,
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      return { ok: false, error: `Resend API error ${response.status}: ${body}` };
+    }
+    const data = (await response.json().catch(() => null)) as { id?: string } | null;
+    return { ok: true, providerMessageId: data?.id ?? null };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}

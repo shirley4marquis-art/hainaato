@@ -309,6 +309,11 @@ export type AdminQuoteInput = {
   status?: string;
   notes?: string | null;
   publicConsent?: boolean;
+  // 'cart-checkout' for quotes the automated website flow creates
+  // (app/api/quote-requests/route.ts); omitted for quotes staff draft
+  // directly in the admin panel. Only set on create — left untouched on
+  // update so a staff edit afterward doesn't erase its provenance.
+  source?: string | null;
   items: AdminQuoteItemInput[];
 };
 
@@ -364,8 +369,8 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           (ref, document_number, customer_id, quote_date, valid_until, destination_port, destination_country,
            incoterm, delivery_estimate, inland_transport_cost, export_documentation_cost, freight_cost,
            insurance_cost, deposit_pct, duty_pct, duty_estimate_override, currency, language, status, notes,
-           public_consent)
-         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
+           public_consent, source)
+         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
         [
           ref,
           documentNumber,
@@ -388,6 +393,7 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           input.status ?? "quoted",
           input.notes ?? null,
           input.publicConsent === true,
+          input.source ?? null,
         ]
       );
     } else {
@@ -500,13 +506,14 @@ export type AdminQuoteSummary = {
   currency: string;
   cifTotal: number;
   status: string;
+  source: string | null;
   createdAt: string;
 };
 
 export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
   const { rows } = await getPool().query(`
     SELECT q.ref, q.document_number, c.name AS customer_name, q.destination_country, q.currency, q.cif_total,
-           q.status, q.created_at,
+           q.status, q.source, q.created_at,
            (SELECT string_agg(make || ' ' || model, ', ' ORDER BY sort_order) FROM quote_items WHERE quote_id = q.id) AS vehicle_summary
     FROM quotes q JOIN customers c ON c.id = q.customer_id
     ORDER BY q.created_at DESC
@@ -517,6 +524,7 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
     customerName: r.customer_name as string,
     destinationCountry: r.destination_country as string,
     vehicleSummary: (r.vehicle_summary as string) ?? "—",
+    source: (r.source as string) ?? null,
     currency: r.currency as string,
     cifTotal: r.cif_total as number,
     status: r.status as string,
@@ -603,6 +611,7 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
     status: q.status as string,
     notes: (q.notes as string) ?? null,
     publicConsent: q.public_consent as boolean,
+    source: (q.source as string) ?? null,
     cifTotal: q.cif_total as number,
     depositAmount: q.deposit_amount as number,
     balanceAmount: q.balance_amount as number,
@@ -633,4 +642,49 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
       photos: photosByItem.get(r.id as number) ?? [],
     })),
   };
+}
+
+export type QuoteEmailRecord = {
+  id: number;
+  toEmail: string;
+  subject: string;
+  html: string;
+  status: "sent" | "failed";
+  error: string | null;
+  createdAt: string;
+};
+
+// Logs one outbound quotation email attempt against its quote — the
+// automated send on request, and any staff resend afterward. Always
+// succeeds even when status is "failed": the send failing shouldn't also
+// lose the record that it was attempted (that's what admin needs to see).
+export async function recordQuoteEmail(
+  ref: string,
+  email: { toEmail: string; subject: string; html: string; status: "sent" | "failed"; error?: string | null; providerMessageId?: string | null }
+): Promise<void> {
+  const { rows } = await getPool().query("SELECT id FROM quotes WHERE ref = $1", [ref]);
+  const quote = rows[0] as Row | undefined;
+  if (!quote) throw new Error(`no quote with ref ${ref}`);
+  await getPool().query(
+    `INSERT INTO quote_emails (quote_id, to_email, subject, html, status, error, provider_message_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    [quote.id, email.toEmail, email.subject, email.html, email.status, email.error ?? null, email.providerMessageId ?? null]
+  );
+}
+
+export async function listQuoteEmails(ref: string): Promise<QuoteEmailRecord[]> {
+  const { rows } = await getPool().query(
+    `SELECT qe.* FROM quote_emails qe JOIN quotes q ON q.id = qe.quote_id
+     WHERE q.ref = $1 ORDER BY qe.created_at DESC`,
+    [ref]
+  );
+  return (rows as Row[]).map((r) => ({
+    id: r.id as number,
+    toEmail: r.to_email as string,
+    subject: r.subject as string,
+    html: r.html as string,
+    status: r.status as "sent" | "failed",
+    error: (r.error as string) ?? null,
+    createdAt: (r.created_at as Date).toISOString(),
+  }));
 }
