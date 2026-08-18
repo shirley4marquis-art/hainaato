@@ -10,7 +10,11 @@ const COMPANY = {
   phone: "5623368661",
   email: "sales@hainaautochina.com",
   website: "hainaautochina.com",
-  logo: "https://img.hainaauto.com/vehicle/site_187121eacd6e44cc.webp",
+  // Local asset, not hotlinked — img.hainaauto.com changed its content mid-
+  // session once already, which would silently change past PDFs' letterhead.
+  // Relative path resolves correctly regardless of deploy domain, since
+  // Playwright always navigates here same-origin (see the pdf route).
+  logo: "/hainaauto-logo.webp",
 };
 
 function Letterhead() {
