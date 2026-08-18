@@ -1,36 +1,9 @@
 import type {SVGProps} from "react";
-import {formatCNY} from "../lib/format";
 
 export const WHATSAPP_URL="https://wa.me/message/RYZOAHE44OJQM1";
 export const TELEGRAM_URL="https://t.me/chengcekai";
 export const WECHAT_USERNAME="laowaidrivechina";
 export const WECHAT_CONTACT_URL="/contact#wechat";
-
-// Digits only, no "+" — the format wa.me/<number> deep links expect.
-const WHATSAPP_PHONE = "15623368661";
-
-// hainaauto.com currently resolves to a different, older site — this app is
-// only live at hainaauto.vercel.app for now (see scripts/build-meta-catalog-feed.mjs,
-// which has the same caveat). Update once the domain is cut over.
-const SITE_URL = "https://hainaauto.vercel.app";
-
-// Unlike WHATSAPP_URL (a WhatsApp-hosted short link with a fixed preset
-// message), this builds a wa.me link with a custom prefilled message so the
-// chat opens already carrying the specific vehicle the client was looking at.
-export function buildVehicleWhatsAppUrl(
-  vehicle: { title: string; stockCode: string; priceCNY: number | null; slug: string }
-): string {
-  const message = [
-    "Hi, I'm interested in this vehicle:",
-    vehicle.title,
-    `Stock code: ${vehicle.stockCode}`,
-    `Price: ${formatCNY(vehicle.priceCNY)}`,
-    `${SITE_URL}/vehicles/${vehicle.slug}`,
-    "",
-    "Could you share more details?",
-  ].join("\n");
-  return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
-}
 
 type IconProps=SVGProps<SVGSVGElement>;
 

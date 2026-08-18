@@ -12,6 +12,71 @@ import type { WebLead } from "./crm";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Table-based, inline-styled layout (required for Outlook/Gmail rendering)
+// matching the brand colors already used across the site's own header and
+// the staff-issued PDF quotes (--mkt-navy #082F63, --mkt-coral #FF6B00 in
+// app/globals.css) rather than inventing a separate email look.
+function leadNotificationHtml(lead: WebLead, ref: string): string {
+  const NAVY = "#082F63";
+  const CORAL = "#FF6B00";
+  const row = (label: string, value: string | number | null | undefined) => {
+    if (value == null || value === "") return "";
+    return `<tr><td style="padding:10px 0;border-top:1px solid #e3e4e8;color:#858ea9;font:600 12px/1.4 Arial,sans-serif;width:150px;vertical-align:top">${escapeHtml(label)}</td><td style="padding:10px 0;border-top:1px solid #e3e4e8;color:#0d0e12;font:14px/1.5 Arial,sans-serif;vertical-align:top">${escapeHtml(String(value)).replace(/\n/g, "<br/>")}</td></tr>`;
+  };
+
+  const rows = [
+    row("Reference", ref),
+    row("Source", lead.source),
+    row("Name", lead.name),
+    row("Email", lead.email),
+    row("Phone / WhatsApp", lead.phone),
+    row("Company", lead.company),
+    row("Vehicle", lead.vehicle),
+    row("Budget", lead.budget),
+    row("Destination", lead.destination),
+    row("Quantity", lead.quantity),
+    row("Message", lead.message),
+  ].join("");
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:24px;background:#f4f5f9;font-family:Arial,sans-serif">
+  <table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e3e4e8">
+    <tr><td style="background:${CORAL};height:6px;font-size:0;line-height:0">&nbsp;</td></tr>
+    <tr>
+      <td style="background:${NAVY};padding:24px 28px">
+        <div style="color:#fff;font-size:20px;font-weight:700;letter-spacing:-.02em">HAINA AUTO EXPORT</div>
+        <div style="color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:4px">New Website Lead — ${escapeHtml(ref)}</div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:28px">
+        <table role="presentation" width="100%" style="border-collapse:collapse">${rows}</table>
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e3e4e8;font-size:12px;color:#858ea9;line-height:1.6">
+          This lead was saved to the CRM automatically. Reply directly to this email, or contact the customer using the details above.
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#f4f5f9;padding:18px 28px;text-align:center;font-size:11px;color:#858ea9;line-height:1.6">
+        HAINA AUTO EXPORT · 11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br/>
+        Tel 5623368661 · sales@hainaautochina.com · hainaautochina.com
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 export async function sendLeadNotification(lead: WebLead, ref: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.LEADS_FROM_EMAIL;
@@ -47,6 +112,7 @@ export async function sendLeadNotification(lead: WebLead, ref: string): Promise<
       to,
       subject: `New HainaAuto lead ${ref} — ${lead.name}`,
       text: lines.join("\n"),
+      html: leadNotificationHtml(lead, ref),
     }),
   });
 

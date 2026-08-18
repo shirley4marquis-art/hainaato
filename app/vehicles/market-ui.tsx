@@ -100,7 +100,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <Link className="vlist-inquire" href={requestHref}><FileText aria-hidden="true"/>Inquire Now</Link>
+        <Link className="vlist-inquire" href={href}><FileText aria-hidden="true"/>Inquire Now</Link>
       </div>
     </article>
   );

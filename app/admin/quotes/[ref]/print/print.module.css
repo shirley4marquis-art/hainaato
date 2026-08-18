@@ -1,0 +1,404 @@
+/* Isolated print-document styling — deliberately not reusing the public
+   site's globals.css (marketing typography/colors would leak into the
+   printed document). Every rule here is self-contained. */
+
+.root {
+  background: #e8eaed;
+  min-height: 100vh;
+  padding: 24px 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1a1a1a;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 24px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  padding: 0 0 60px;
+  box-sizing: border-box;
+}
+
+.topBar {
+  height: 8px;
+  background: #f5820a;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 34px 18px;
+  border-bottom: 3px solid #0b1f3a;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.logo {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  flex: none;
+}
+
+.companyName {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0b1f3a;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.companyTag {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: #f5820a;
+  letter-spacing: 0.06em;
+  margin: 1px 0 6px;
+}
+
+.companyAddress {
+  font-size: 10.5px;
+  color: #5a6472;
+  line-height: 1.5;
+  margin: 0 0 3px;
+}
+
+.companyContact {
+  font-size: 10.5px;
+  color: #5a6472;
+  margin: 0;
+}
+
+.companyContact a {
+  color: #1262c5;
+  text-decoration: none;
+}
+
+.headerRight {
+  text-align: right;
+  flex: none;
+}
+
+.docTitle {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #0b1f3a;
+  margin: 0;
+}
+
+.docNumber {
+  font-size: 11px;
+  color: #5a6472;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 30px;
+  padding: 14px 34px 0;
+}
+
+.summaryItem {
+  text-align: right;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #8b95a3;
+  letter-spacing: 0.08em;
+}
+
+.summaryValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b1f3a;
+}
+
+.summaryTotal .summaryValue {
+  color: #f5820a;
+  font-size: 20px;
+}
+
+.clientBar {
+  margin: 20px 34px 0;
+  background: #0b1f3a;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+}
+
+.clientBlock {
+  margin: 0 34px;
+  padding: 12px 12px 14px;
+  border: 1px solid #dde2e8;
+  border-top: none;
+}
+
+.clientName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b1f3a;
+  margin: 0 0 4px;
+}
+
+.clientLine {
+  font-size: 11px;
+  color: #5a6472;
+  margin: 0 0 2px;
+}
+
+.termsLine {
+  margin: 12px 34px 0;
+  font-size: 10.5px;
+  color: #5a6472;
+}
+
+.table {
+  width: calc(100% - 68px);
+  margin: 16px 34px 0;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.table thead th {
+  text-align: left;
+  background: #f3f5f8;
+  color: #5a6472;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  border-bottom: 2px solid #dde2e8;
+}
+
+.table thead th:not(:first-child) {
+  text-align: right;
+}
+
+.table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid #eceff2;
+  vertical-align: top;
+}
+
+.table tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.itemLabel {
+  font-weight: 700;
+  color: #0b1f3a;
+}
+
+.itemSub {
+  font-size: 10px;
+  color: #5a6472;
+  line-height: 1.5;
+  margin: 3px 0 0;
+}
+
+.numCell {
+  text-align: right;
+  white-space: nowrap;
+  color: #1a1a1a;
+}
+
+.totalsBlock {
+  margin: 0 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.subtotalRow {
+  display: flex;
+  gap: 40px;
+  font-size: 11px;
+  color: #5a6472;
+  padding: 8px 10px 0;
+}
+
+.grandTotalRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f3f5f8;
+  border-left: 4px solid #f5820a;
+  padding: 10px 16px;
+  margin-top: 4px;
+}
+
+.grandTotalLabel {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0b1f3a;
+}
+
+.grandTotalValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f5820a;
+  margin-left: auto;
+}
+
+.grandTotalCurrency {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b95a3;
+  margin-right: 4px;
+}
+
+.termsBlock {
+  margin: 22px 34px 0;
+}
+
+.blockHeading {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #0b1f3a;
+  letter-spacing: 0.05em;
+  margin: 0 0 6px;
+}
+
+.termsList {
+  margin: 0;
+  padding: 0;
+  font-size: 9.5px;
+  color: #5a6472;
+  line-height: 1.6;
+  list-style: none;
+  /* CSS columns, not grid/flex — grid/flex items are blockified per spec,
+     which strips native list-item markers from <li> children. We render
+     numbers as text anyway (below), but columns also wrap more like the
+     sample's flowing two-column layout than a strict grid does. */
+  columns: 2;
+  column-gap: 20px;
+}
+
+.termsList li {
+  margin-bottom: 4px;
+  break-inside: avoid;
+}
+
+.signatures {
+  display: flex;
+  gap: 40px;
+  margin: 30px 34px 0;
+}
+
+.signature {
+  flex: 1;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0b1f3a;
+}
+
+.signatureSub {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 400;
+  color: #8b95a3;
+  margin-top: 3px;
+}
+
+.footerBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.footerBarTop {
+  height: 8px;
+  background: #0b1f3a;
+}
+
+.footerBarText {
+  background: #0b1f3a;
+  color: #cfd6e0;
+  font-size: 9px;
+  text-align: center;
+  padding: 8px 10px;
+}
+
+/* Photo pages */
+.photoMiniHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 34px 14px;
+  border-bottom: 3px solid #f5820a;
+}
+
+.photoMiniLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex: none;
+}
+
+.photoVehicleTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0b1f3a;
+  margin: 0;
+}
+
+.photoVehicleSub {
+  font-size: 10.5px;
+  color: #f5820a;
+  font-weight: 700;
+  margin: 0;
+}
+
+.photoBlock {
+  margin: 18px 34px 0;
+}
+
+.photoImg {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid #dde2e8;
+}
+
+.photoCaption {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #5a6472;
+  margin: 6px 0 0;
+}
+
+@media print {
+  .root {
+    background: #fff;
+    padding: 0;
+  }
+  .page {
+    box-shadow: none;
+    margin: 0;
+    width: auto;
+    min-height: auto;
+  }
+  .page + .page {
+    page-break-before: always;
+  }
+}
