@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChangeEvent, ReactNode, useEffect, useState } from "react";
-import {Bot,CarFront,House,Menu,Newspaper,Search,Sparkles,UserRound,X} from "lucide-react";
+import {Bot,CarFront,House,Menu,Newspaper,Search,ShoppingCart,Sparkles,UserRound,X} from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,WECHAT_USERNAME,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "./contact-links";
 import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
 import { formatKm, imagePath } from "../lib/format";
@@ -16,6 +16,7 @@ import { RevealObserver } from "./reveal";
 import { Price } from "./price";
 import { setCurrency, useCurrency } from "./currency-store";
 import { CURRENCIES, isCurrencyCode } from "../lib/currency";
+import { useCartSlugs } from "./cart-store";
 
 export function Gallery({site,id,images,title}:{site:VehicleSite,id:string,images:string[],title:string}) {
   const [active,setActive]=useState(0);
@@ -111,15 +112,16 @@ function CurrencySelect(){
 export function SiteShell({children}:{children:ReactNode}) {
   const path=usePathname();
   const [open,setOpen]=useState(false);
+  const cartCount=useCartSlugs().length;
   return <>
     <RevealObserver/>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="ah-header"><div className="container">
-      <div className="mobile-header-minimal"><button type="button" className="mobile-menu-trigger" onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu-panel" aria-label={open?"Close menu":"Open menu"}>{open?<X/>:<Menu/>}</button><form className="mobile-header-search" action="/vehicles"><Search/><input name="q" type="search" placeholder="Search vehicle" aria-label="Search vehicle"/></form><Link className="mobile-header-quote" href="/quote">Get Quote</Link></div>
+      <div className="mobile-header-minimal"><button type="button" className="mobile-menu-trigger" onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu-panel" aria-label={open?"Close menu":"Open menu"}>{open?<X/>:<Menu/>}</button><form className="mobile-header-search" action="/vehicles"><Search/><input name="q" type="search" placeholder="Search vehicle" aria-label="Search vehicle"/></form><Link className="ah-cart-link" href="/cart" aria-label={`Cart, ${cartCount} vehicle${cartCount===1?"":"s"}`}><ShoppingCart/>{cartCount>0&&<span className="ah-cart-badge">{cartCount}</span>}</Link><Link className="mobile-header-quote" href="/quote">Get Quote</Link></div>
       <div id="mobile-menu-panel" className={`mobile-menu-panel${open?" open":""}`}>{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div>
       <div className="ah-header-brand-row">
         <Link className="ah-brand-lockup" href="/"><img src="https://img.hainaauto.com/vehicle/site_187121eacd6e44cc.webp" alt="HainaAuto" className="ah-header-brand-logo"/><div className="ah-brand-copy"><div className="ah-brand-headline"><span className="ah-brand-title">HAINA AUTO</span><span className="ah-brand-ribbon">China auto export</span></div><span className="ah-brand-lead">Used &amp; new vehicles from China — transparent condition, export-ready docs, worldwide delivery.</span><span className="ah-brand-tagline">◎ <span>From China, to the world</span></span></div></Link>
-        <div className="ah-header-aside"><div className="ah-header-actions"><Link className="ah-btn-gold" href="/quote">Request Quote</Link><Link className="ah-btn-outline" href="/contact">Contact</Link></div><div className="ah-header-meta"><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp at +8615060610146"><WhatsAppIcon/> +8615060610146</a><a href="mailto:sales@hainaautochina.com">✉ sales@hainaautochina.com</a><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>WhatsApp</a><a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"><TelegramIcon/>Telegram</a><a href={WECHAT_CONTACT_URL}><WeChatIcon/>WeChat</a></div></div>
+        <div className="ah-header-aside"><div className="ah-header-actions"><Link className="ah-cart-link" href="/cart" aria-label={`Cart, ${cartCount} vehicle${cartCount===1?"":"s"}`}><ShoppingCart/>Cart{cartCount>0&&<span className="ah-cart-badge">{cartCount}</span>}</Link><Link className="ah-btn-gold" href="/quote">Request Quote</Link><Link className="ah-btn-outline" href="/contact">Contact</Link></div><div className="ah-header-meta"><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp at +8615060610146"><WhatsAppIcon/> +8615060610146</a><a href="mailto:sales@hainaautochina.com">✉ sales@hainaautochina.com</a><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>WhatsApp</a><a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer"><TelegramIcon/>Telegram</a><a href={WECHAT_CONTACT_URL}><WeChatIcon/>WeChat</a></div></div>
       </div>
       <div className="ah-header-nav-wrap"><button className="menu" onClick={()=>setOpen(!open)} aria-expanded={open} aria-label="Toggle navigation">{open?"×":"☰"}</button><nav className={open?"open":""}><div className="ah-nav-links">{nav.map(([test,href,label])=>{const active=test.test(path);return <Link className={active?"active":""} aria-current={active?"page":undefined} href={href} key={href} onClick={()=>setOpen(false)}>{label}</Link>})}</div><div className="ah-nav-end"><form className="ah-header-search" action="/vehicles"><input type="search" name="q" placeholder="Quick search..." aria-label="Search vehicles"/><button type="submit">Search</button></form><CurrencySelect/></div></nav></div>
     </div>

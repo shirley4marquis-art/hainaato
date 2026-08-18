@@ -1,0 +1,84 @@
+.list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.thumb {
+  position: relative;
+  flex: none;
+  width: 72px;
+  height: 54px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f0f2ef;
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.itemTitle {
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemStock {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.itemPrice {
+  flex: none;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.remove {
+  flex: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.remove:hover {
+  background: #f6f6f6;
+}
+
+.actions {
+  margin-bottom: 28px;
+}
+
+@media (max-width: 600px) {
+  .item {
+    flex-wrap: wrap;
+  }
+  .itemPrice {
+    order: 3;
+  }
+  .remove {
+    order: 4;
+  }
+}

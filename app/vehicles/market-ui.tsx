@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Car, Copy, MapPin } from "lucide-react";
-import {TELEGRAM_URL,WECHAT_CONTACT_URL,TelegramIcon,WeChatIcon,WhatsAppIcon,buildVehicleWhatsAppUrl} from "../contact-links";
+import { Car, Copy, FileText, MapPin, ShoppingCart } from "lucide-react";
+import {TELEGRAM_URL,WECHAT_CONTACT_URL,TelegramIcon,WeChatIcon} from "../contact-links";
 import {
   buildListUrl,
   buildVehiclesUrl,
@@ -17,6 +17,7 @@ import {
 import { swatchFor } from "../../lib/colors";
 import { ResilientVehicleImage } from "../vehicle-image";
 import { Price } from "../price";
+import { addToCart, removeFromCart, useCartSlugs } from "../cart-store";
 
 export type FilterOptions = {
   fuels: string[];
@@ -31,7 +32,10 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
   const href = `/vehicles/${v.slug}`;
   const [main, ...rest] = v.thumbs.length ? v.thumbs : v.thumb ? [v.thumb] : [];
   const displayDate=v.listedAt?.slice(0,10)??"Available now";
-  const whatsappUrl = buildVehicleWhatsAppUrl(v);
+  const requestHref = `${href}#request`;
+  const cartSlugs = useCartSlugs();
+  const inCart = cartSlugs.includes(v.slug);
+
   return (
     <article className="vlist-item">
       <Link href={href} className="vlist-media">
@@ -83,11 +87,20 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-price"><Price cny={v.priceCNY}/></div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
-          <a className="is-wa" href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp inquiry"><WhatsAppIcon/></a>
+          <Link className="is-quote" href={requestHref} aria-label="Request a quote for this vehicle"><FileText/></Link>
+          <button
+            type="button"
+            className="is-cart"
+            aria-pressed={inCart}
+            aria-label={inCart ? "Remove from cart" : "Add to cart"}
+            onClick={() => (inCart ? removeFromCart(v.slug) : addToCart(v.slug))}
+          >
+            <ShoppingCart/>
+          </button>
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <a className="vlist-inquire" href={whatsappUrl} target="_blank" rel="noopener noreferrer"><WhatsAppIcon aria-hidden="true"/>Inquire Now</a>
+        <Link className="vlist-inquire" href={requestHref}><FileText aria-hidden="true"/>Inquire Now</Link>
       </div>
     </article>
   );

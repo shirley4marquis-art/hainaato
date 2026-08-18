@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { DetailTabs, Gallery, ShareButton, SiteShell, VehicleCard } from "../../ui";
 import { AddToCompareButton } from "../../compare-button";
+import { AddToCartButton } from "../../cart-button";
 import { VehicleRequestForm } from "../../request-form";
 import { Price } from "../../price";
 import { ResilientVehicleImage } from "../../vehicle-image";
@@ -177,6 +178,7 @@ export default async function VehicleDetail({
             </a>
           </div>
           <div className="detail-secondary">
+            <AddToCartButton slug={vehicle.slug} />
             <AddToCompareButton slug={vehicle.slug} />
             <ShareButton title={vehicle.title} />
           </div>
@@ -265,7 +267,7 @@ export default async function VehicleDetail({
           />
         </div>
 
-        <div>
+        <div id="request">
           <VehicleRequestForm vehicleTitle={vehicle.title} />
           <div className="side-card specialist-card">
             <span className="avatar">HA</span>

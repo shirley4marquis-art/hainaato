@@ -1,14 +1,12 @@
-// Client-only localStorage list of vehicle slugs selected for comparison.
-// No backend needed — the shortlist is per-browser, same as a cart.
-// Exposed as a useSyncExternalStore hook so components stay in sync with
-// localStorage (including same-tab writes from compare-button.tsx) without
-// reaching for setState-in-an-effect.
+// Client-only localStorage cart of vehicle slugs, mirroring compare-store.ts.
+// No backend needed until checkout — the cart is per-browser, then submitted
+// as one combined quote request (see app/cart/page.tsx).
 import { useSyncExternalStore } from "react";
-import { COMPARE_MAX } from "../lib/compare-constants";
+import { CART_MAX } from "../lib/cart-constants";
 
-export { COMPARE_MAX } from "../lib/compare-constants";
+export { CART_MAX } from "../lib/cart-constants";
 
-const KEY = "haina-compare-slugs";
+const KEY = "haina-cart-slugs";
 
 const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined;
@@ -40,8 +38,10 @@ function getSnapshot(): string[] {
 const EMPTY_SLUGS: string[] = [];
 
 function getServerSnapshot(): string[] {
-  // Must return a referentially-stable value — a fresh [] literal here trips
-  // React's "getServerSnapshot should be cached" warning.
+  // Must return a referentially-stable value — a fresh [] literal here
+  // trips React's "getServerSnapshot should be cached" warning (and worse,
+  // this store is read on every page via SiteShell's cart count, not just
+  // one page like compare-store.ts's equivalent).
   return EMPTY_SLUGS;
 }
 
@@ -64,20 +64,24 @@ function write(slugs: string[]): string[] {
   return slugs;
 }
 
-export function useCompareSlugs(): string[] {
+export function useCartSlugs(): string[] {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export function getCompareSlugs(): string[] {
+export function getCartSlugs(): string[] {
   return getSnapshot();
 }
 
-export function addToCompare(slug: string): string[] {
+export function addToCart(slug: string): string[] {
   const current = getSnapshot();
   if (current.includes(slug)) return current;
-  return write([...current, slug].slice(-COMPARE_MAX));
+  return write([...current, slug].slice(-CART_MAX));
 }
 
-export function removeFromCompare(slug: string): string[] {
+export function removeFromCart(slug: string): string[] {
   return write(getSnapshot().filter((s) => s !== slug));
+}
+
+export function clearCart(): string[] {
+  return write([]);
 }
