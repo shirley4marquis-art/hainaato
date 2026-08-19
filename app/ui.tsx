@@ -5,7 +5,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChangeEvent, ReactNode, useEffect, useState } from "react";
+import { ChangeEvent, ReactNode, TouchEvent, useEffect, useRef, useState } from "react";
 import {BadgeCheck,Building2,CarFront,ChevronDown,House,Menu,Newspaper,Search,Ship,ShoppingCart,Sparkles,X,type LucideIcon} from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,WECHAT_USERNAME,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "./contact-links";
 import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
@@ -20,9 +20,17 @@ import { useCartSlugs } from "./cart-store";
 
 export function Gallery({site,id,images,title}:{site:VehicleSite,id:string,images:string[],title:string}) {
   const [active,setActive]=useState(0);
+  const touchStartX=useRef<number|null>(null);
   const gallery=rankVehicleImages(images).map(img=>imagePath(site,id,img));
   const main=gallery[active];
-  return <div><div className="gallery-main"><ResilientVehicleImage candidates={[main,...gallery.filter(img=>img!==main)]} alt={title} sizes="(max-width: 900px) 100vw, 760px" priority/></div>{gallery.length>1&&<div className="gallery-thumbs">{gallery.slice(0,7).map((img,i)=><button key={img} type="button" className={i===active?"active":""} onClick={()=>setActive(i)} aria-label={`Show photo ${i+1}`}><ResilientVehicleImage candidates={[img]} alt="" sizes="120px"/></button>)}</div>}</div>;
+  const go=(delta:number)=>setActive(current=>(current+delta+gallery.length)%gallery.length);
+  function finishSwipe(event:TouchEvent<HTMLDivElement>){
+    if(touchStartX.current===null) return;
+    const distance=event.changedTouches[0].clientX-touchStartX.current;
+    touchStartX.current=null;
+    if(Math.abs(distance)>=40) go(distance<0?1:-1);
+  }
+  return <div className="vehicle-gallery"><div className="gallery-main" onTouchStart={(event)=>{touchStartX.current=event.touches[0].clientX}} onTouchEnd={finishSwipe} onTouchCancel={()=>{touchStartX.current=null}}><ResilientVehicleImage candidates={[main,...gallery.filter(img=>img!==main)]} alt={`${title}, photo ${active+1} of ${gallery.length}`} sizes="(max-width: 900px) 100vw, 760px" priority/>{gallery.length>1&&<><button className="gallery-arrow previous" type="button" onClick={()=>go(-1)} aria-label="Previous photo">&#8249;</button><button className="gallery-arrow next" type="button" onClick={()=>go(1)} aria-label="Next photo">&#8250;</button><span className="gallery-count" aria-live="polite">{active+1} / {gallery.length}</span></>}</div>{gallery.length>1&&<div className="gallery-thumbs">{gallery.slice(0,7).map((img,i)=><button key={img} type="button" className={i===active?"active":""} onClick={()=>setActive(i)} aria-label={`Show photo ${i+1}`}><ResilientVehicleImage candidates={[img]} alt="" sizes="120px"/></button>)}</div>}</div>;
 }
 
 type NavItem={test:RegExp;href:string;label:string;zh:string;Icon:LucideIcon;children?:readonly NavItem[]};
