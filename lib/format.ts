@@ -100,6 +100,9 @@ export function normalizeColor(color: string): string {
 // vehicle's photo. The route also verifies file actually belongs to that
 // vehicle's own image list before redirecting to the upstream CDN.
 export function imagePath(site: VehicleSite, id: string, file: string): string {
+  if (site === "hendrick") {
+    return `/vehicle-images/hendrick/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
+  }
   return `/api/vehicle-image/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
 }
 

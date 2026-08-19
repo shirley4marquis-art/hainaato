@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 const API_URL = "https://websites-search.api.carscommerce.inc/api/v1/listings/9749/search";
 // Public search-only key published by Hendrick's inventory page.
@@ -32,8 +33,43 @@ function fuelType(model, trim) {
   return "Gasoline";
 }
 
-const encodeImage = (url) => Buffer.from(url, "utf8").toString("base64url");
 const advertisedPrice = (listing) => listing.pricing?.our_price || listing.pricing?.internet_price || listing.pricing?.msrp || null;
+
+function cleanImageUrls(listing) {
+  return (listing.media?.images || []).filter((url) =>
+    /^https:\/\/(portphotos\.setoyota\.com|delivery\.via\.assetscs\.toyota\.com|delivery\.vcr\.assetscs\.toyota\.com|media\.rti\.toyota\.com)\//.test(url)
+  );
+}
+
+async function downloadVehicleImages(listing, id) {
+  const outputDir = path.join(root, "public", "vehicle-images", "hendrick", id);
+  fs.mkdirSync(outputDir, { recursive: true });
+  const cached = ["01.webp", "02.webp", "03.webp"].filter((file) => fs.existsSync(path.join(outputDir, file)));
+  if (cached.length === 3) return cached;
+  const files = [];
+  for (const url of cleanImageUrls(listing)) {
+    if (files.length >= 3) break;
+    try {
+      const response = await fetch(url, {
+        headers: { "user-agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(12_000),
+      });
+      if (!response.ok) continue;
+      const source = Buffer.from(await response.arrayBuffer());
+      const file = `${String(files.length + 1).padStart(2, "0")}.webp`;
+      await sharp(source)
+        .rotate()
+        .resize({ width: 1280, height: 960, fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toFile(path.join(outputDir, file));
+      files.push(file);
+    } catch {
+      // Continue through the clean Toyota image candidates until three valid
+      // files have been stored for this VIN.
+    }
+  }
+  return files;
+}
 
 const listings = [];
 let page = 1;
@@ -65,6 +101,16 @@ const remainder = deduped.filter((v) => !/4runner|tundra/i.test(v.model));
 const selected = [...priority, ...remainder].slice(0, TARGET_COUNT);
 const importedAt = new Date().toISOString();
 
+const prepared = [];
+for (let offset = 0; offset < selected.length; offset += 8) {
+  const batch = selected.slice(offset, offset + 8);
+  prepared.push(...await Promise.all(batch.map(async (listing) => {
+    const id = numericId(listing.vin);
+    return { listing, id, images: await downloadVehicleImages(listing, id) };
+  })));
+  console.log(`Downloaded clean photos for ${Math.min(offset + batch.length, selected.length)}/${selected.length} vehicles.`);
+}
+
 const indexPath = path.join(root, "data", "vehicles-index.json");
 const detailsPath = path.join(root, "data", "vehicle-details.json");
 const currentIndex = JSON.parse(fs.readFileSync(indexPath, "utf8")).filter((v) => v.site !== "hendrick");
@@ -73,8 +119,8 @@ for (const slug of Object.keys(currentDetails)) if (slug.startsWith("hendrick-")
 
 const ids = new Set();
 const importedIndex = [];
-for (const listing of selected) {
-  const id = numericId(listing.vin);
+const usable = prepared.filter(({ images }) => images.length > 0);
+for (const { listing, id, images } of usable) {
   if (ids.has(id)) throw new Error(`Numeric ID collision for VIN ${listing.vin}.`);
   ids.add(id);
   const slug = `hendrick-${id}`;
@@ -85,13 +131,6 @@ for (const listing of selected) {
   const priceCNY = usd == null ? null : usd / USD_PER_CNY;
   const msrpCNY = msrpUsd == null ? null : msrpUsd / USD_PER_CNY;
   const title = `${listing.year} ${listing.make} ${listing.model} ${listing.trim}`.replace(/\s+/g, " ").trim();
-  const images = (listing.media?.images || [])
-    // HomeNet carries the dealer's promotional title cards and watermark/
-    // lower-third photography. Keep only Toyota-controlled clean imagery so
-    // no Hendrick branding is republished in the HainaAuto catalogue.
-    .filter((url) => /^https:\/\/(portphotos\.setoyota\.com|delivery\.via\.assetscs\.toyota\.com|delivery\.vcr\.assetscs\.toyota\.com|media\.rti\.toyota\.com)\//.test(url))
-    .slice(0, 12)
-    .map(encodeImage);
   const mileageKm = Number.isFinite(listing.mileage) ? Math.round(listing.mileage * 1.609344) : null;
   const body = bodyType(listing.model);
   const fuel = fuelType(listing.model, listing.trim);
@@ -131,5 +170,5 @@ for (const listing of selected) {
 
 fs.writeFileSync(indexPath, JSON.stringify([...importedIndex, ...currentIndex]));
 fs.writeFileSync(detailsPath, JSON.stringify(currentDetails));
-const selectedPriorityCount = selected.filter((v) => /4runner|tundra/i.test(v.model)).length;
-console.log(`Imported ${importedIndex.length} current Toyotas: ${selectedPriorityCount} prioritized 4Runner/Tundra listings and ${importedIndex.length - selectedPriorityCount} other models.`);
+const importedPriorityCount = usable.filter(({ listing }) => /4runner|tundra/i.test(listing.model)).length;
+console.log(`Imported ${importedIndex.length} current Toyotas with local photos: ${importedPriorityCount} prioritized 4Runner/Tundra listings and ${importedIndex.length - importedPriorityCount} other models. Excluded ${prepared.length - usable.length} listings without clean images.`);
