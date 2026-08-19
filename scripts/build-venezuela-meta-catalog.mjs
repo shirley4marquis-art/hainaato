@@ -185,6 +185,10 @@ function descriptionFor(v, brand) {
   return `${brand} ${details.join(" · ")}. Vehículo disponible para compradores en Venezuela, con inspección, documentos de exportación y apoyo logístico de HainaAuto. Stock ${v.stockCode}.`;
 }
 
+function productTypeFor(v, brand, category) {
+  return `${category} > ${brand} > ${cleanTrimLabel(v, brand)}`;
+}
+
 function validateSelection(vehicles) {
   const seen = new Set();
   for (const vehicle of vehicles) {
@@ -256,7 +260,7 @@ for (const v of selected) {
     imagePath(v, v.thumb),
     brand,
     additionalImages,
-    category,
+    productTypeFor(v, brand, category),
     "market_venezuela",
     `category_${type}`,
     `condition_${v.condition}`,

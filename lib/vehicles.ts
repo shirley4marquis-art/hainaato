@@ -197,8 +197,8 @@ const FEATURED_LATEST_MODELS = ["2025 ford ranger", "tesla 2026 model y", "highl
 // Keep the final homepage positions varied across the brands customers ask
 // about most. Exact slugs make the selection stable when inventory is rebuilt.
 const HOMEPAGE_BRAND_BACKFILL_SLUGS = [
-  "hainaauto-38227479", // BYD Qin PLUS
-  "hainaauto-708918656", // BMW X5
+  "hainaauto-68109381", // BYD Qin PLUS — wide, consistent exterior preview
+  "hainaauto-554119966", // BMW 5 Series — wide, consistent exterior preview
   "hainaauto-618413790", // Mercedes-Benz GLC
 ];
 

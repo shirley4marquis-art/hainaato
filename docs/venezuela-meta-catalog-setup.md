@@ -37,8 +37,8 @@ The order matters. For example, a Ford Ranger whose source body type says “SUV
 
 | Product set | `custom_label_1` | Total | New | Used |
 |---|---|---:|---:|---:|
-| SUVs and off-road | `category_suv` | 519 | 81 | 438 |
-| Sedans and hatchbacks | `category_passenger` | 274 | 57 | 217 |
+| SUVs and off-road | `category_suv` | 513 | 96 | 417 |
+| Sedans and hatchbacks | `category_passenger` | 280 | 67 | 213 |
 | Supercars and sports cars | `category_supercar` | 107 | 6 | 101 |
 | Machinery and trucks | `category_machinery` | 72 | 5 | 67 |
 | Pickups | `category_pickup` | 14 | 3 | 11 |
@@ -51,9 +51,9 @@ There are currently no approved motorcycle records in the selected 1,000-item fe
 `product_type` is the customer-readable hierarchy:
 
 ```text
-SUV y todoterrenos > Toyota RAV4 Hybrid
-Camionetas y pickups > Ford Ranger 2.3T
-Sedanes y hatchbacks > BYD Seal 06
+SUV y todoterrenos > Toyota > RAV4 Hybrid
+Camionetas y pickups > Ford > Ranger 2.3T
+Sedanes y hatchbacks > BYD > Seal 06
 ```
 
 Use `product_type` for browsing and collection presentation. Use custom labels for advertising filters because their values are stable and language-independent.
@@ -70,16 +70,16 @@ Use `product_type` for browsing and collection presentation. Use custom labels f
 
 Current year distribution:
 
-- `year_2025_plus`: 387
-- `year_2023_2024`: 605
+- `year_2025_plus`: 408
+- `year_2023_2024`: 584
 - `year_pre_2023`: 8
 
 Current price distribution:
 
-- `price_under_15000`: 665
-- `price_15000_24999`: 211
-- `price_25000_39999`: 52
-- `price_40000_plus`: 72
+- `price_under_15000`: 648
+- `price_15000_24999`: 200
+- `price_25000_39999`: 64
+- `price_40000_plus`: 88
 
 Brand is already a native feed field. Do not waste a custom label by repeating it. Trim/model is the second level of `product_type`; it should not occupy a custom label either.
 
