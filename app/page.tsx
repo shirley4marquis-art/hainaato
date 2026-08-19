@@ -71,6 +71,7 @@ const brandLogoSlug=(brand:string)=>homeBrandLogo[brand]??brand.toLowerCase().re
 
 export default function Home(){
   const latest=getLatestNewVehicles(10);
+  const mobileLatest=[...latest.slice(0,2),...latest.slice(-3)];
   const brands=getBrandAggregates(12);
   const options=getFilterOptions();
   const totalVehicles=getTotalVehicleCount();
@@ -95,7 +96,7 @@ export default function Home(){
       <form className="mobile-home-search" action="/vehicles"><input name="q" type="search" placeholder="Search by brand, model or keyword" aria-label="Search vehicles"/><button type="submit">Search</button></form>
       <div className="mobile-news"><NewsSpotlight articles={newsSpotlightArticles}/></div>
       <section className="mobile-brand-picker" aria-labelledby="mobile-brand-picker-title"><header><div><span>FIND YOUR BRAND</span><h2 id="mobile-brand-picker-title">Shop by brand</h2></div><Link href="/brands">All brands</Link></header><div>{brands.slice(0,8).map(brand=><Link href={`/vehicles?brand=${encodeURIComponent(brand.brand)}`} key={brand.brand}><span className="mobile-brand-picker-logo"><img src={logoPathFor(brand.brand)} alt="" width="80" height="48"/></span><b>{brand.brand}</b><small>{brand.count.toLocaleString()} cars</small></Link>)}</div></section>
-      <div className="mobile-arrivals"><header><h2>Latest arrivals</h2><p>Thousands of vehicle listings updated every day</p><Link href="/vehicles">Browse all vehicles →</Link></header><div>{latest.slice(0,5).map(v=><Link className="mobile-arrival-row" href={`/vehicles/${v.slug}`} key={v.slug}><span className="mobile-arrival-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={`${v.title} exterior`} sizes="140px"/></span><span><b>{v.title}</b><small>{[v.year,v.mileageKm,v.fuel].filter(Boolean).join(" · ")}</small></span><strong><Price cny={v.priceCNY}/></strong></Link>)}</div></div>
+      <div className="mobile-arrivals"><header><h2>Latest arrivals</h2><p>Thousands of vehicle listings updated every day</p><Link href="/vehicles">Browse all vehicles →</Link></header><div>{mobileLatest.map(v=><Link className="mobile-arrival-row" href={`/vehicles/${v.slug}`} key={v.slug}><span className="mobile-arrival-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={`${v.title} exterior`} sizes="140px"/></span><span><b>{v.title}</b><small>{[v.year,v.mileageKm,v.fuel].filter(Boolean).join(" · ")}</small></span><strong><Price cny={v.priceCNY}/></strong></Link>)}</div></div>
     </section>
 
     <section className="trust-bar trust-bar-before"><div className="container"><h2>Trusted by global buyers</h2><ul className="trust-flags">{trustCountries.map(([code,name])=><li key={code}><img src={`/flags/${code}.svg`} alt=""/>{name}</li>)}<li><Link href="/services">More →</Link></li></ul></div></section>
