@@ -206,6 +206,9 @@ const FEATURED_LATEST_MODELS = ["2025 ford ranger", "tesla 2026 model y", "highl
 const HOMEPAGE_PREVIEW_EXCLUDE = new Set([
   "hainaauto-33511934",
   "hainaauto-66605435",
+  "hendrick-1394491573",
+  "hendrick-192411905",
+  "hainaauto-207819861",
 ]);
 
 export function isHomepagePreviewEligible(vehicle: VehicleIndexEntry): boolean {
