@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {SiteShell} from "../ui";
 
-export const metadata:Metadata={title:"Export Services | One-stop Auto Export — HainaAuto",description:"One-stop China auto export: export permits, PDI and reconditioning, ocean and rail freight, customs coordination, and destination delivery."};
+export const metadata:Metadata={title:"Export Services | One-stop Auto Export — HainaAuto",description:"HainaAuto 提供中国汽车一站式出口服务，包括出口手续、交付前检查与整备、海运及铁路运输、清关协调和目的地交付。"};
 
 const services=[
   {icon:"DOC",title:"Licenses & Compliance",lead:"Export permits and clearance papers for the full workflow.",copy:"We handle vehicle cancellation and export permit applications through compliant end-to-end export workflows."},

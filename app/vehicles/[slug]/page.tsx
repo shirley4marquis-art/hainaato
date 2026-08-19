@@ -75,8 +75,8 @@ export async function generateMetadata({
   return {
     title: vehicle.title,
     description: vehicle.site === "hendrick"
-      ? `${vehicle.title} — available through HainaAuto with inspection, export documentation, and international logistics support.`
-      : `${vehicle.title} — ${formatCNY(vehicle.priceCNY)}. Sourced from China with full export support from HainaAuto.`,
+      ? `${vehicle.title}——由 HainaAuto 提供专业验车、出口文件及国际物流服务。`
+      : `${vehicle.title}——参考价格 ${formatCNY(vehicle.priceCNY)}。HainaAuto 提供中国车源及全程出口支持。`,
   };
 }
 

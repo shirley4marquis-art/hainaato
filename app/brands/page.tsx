@@ -7,7 +7,7 @@ import { AvailabilityToggle, FloatingPager, MarketHero, QuickFilterBar, VehicleL
 
 export const metadata: Metadata = {
   title: "Used Cars for Export",
-  description: "Browse every used vehicle in our China export catalogue — real photos, real prices, filterable by brand, mileage, fuel and more.",
+  description: "浏览 HainaAuto 中国二手车出口目录，查看真实车辆图片和价格，并可按品牌、里程、能源类型等条件筛选。",
 };
 
 type SearchParams = {
