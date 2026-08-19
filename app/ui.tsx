@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ChangeEvent, ReactNode, useEffect, useState } from "react";
-import {BadgeCheck,Bot,Building2,CarFront,ChevronDown,House,Menu,Newspaper,Search,Ship,ShoppingCart,Sparkles,X,type LucideIcon} from "lucide-react";
+import {BadgeCheck,Building2,CarFront,ChevronDown,House,Menu,Newspaper,Search,Ship,ShoppingCart,Sparkles,X,type LucideIcon} from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,WECHAT_USERNAME,WHATSAPP_URL,TelegramIcon,WeChatIcon,WhatsAppIcon} from "./contact-links";
 import type { VehicleIndexEntry, VehicleSite } from "../lib/format";
 import { formatKm, imagePath } from "../lib/format";
@@ -141,7 +141,7 @@ export function SiteShell({children}:{children:ReactNode}) {
     <ShipmentTicker/>
     </header>
     <main id="main-content">{children}</main><Footer/>
-    <aside className="mobile-social-rail" aria-label="Quick contact"><a className="wechat" href={WECHAT_CONTACT_URL} aria-label={`Contact by WeChat: ${WECHAT_USERNAME}`}><WeChatIcon/><small>WeChat</small></a><a className="telegram" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on Telegram"><TelegramIcon/></a><a className="mobile-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp"><WhatsAppIcon/></a><Link className="assistant" href="/contact" aria-label="Open assistant"><Bot/></Link></aside>
+    <aside className="mobile-social-rail" aria-label="Quick contact"><a className="wechat" href={WECHAT_CONTACT_URL} aria-label={`Contact by WeChat: ${WECHAT_USERNAME}`}><WeChatIcon/><small>WeChat</small></a><a className="telegram" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on Telegram"><TelegramIcon/></a><a className="mobile-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp"><WhatsAppIcon/></a></aside>
     <nav className="mobile-bottom-nav" aria-label="Mobile navigation"><Link className={path==="/"?"active":""} href="/"><House/><span>Home</span></Link><Link className={path.startsWith("/vehicles")?"active":""} href="/vehicles"><CarFront/><span>Vehicles</span></Link><Link className={path.startsWith("/new-cars")?"active":""} href="/new-cars"><Sparkles/><span>New cars</span></Link><button type="button" className={open?"active":""} onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu-panel" aria-label={open?"Close menu":"Open menu"}>{open?<X/>:<Menu/>}<span>Menu</span></button></nav>
     <a className="whatsapp" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp"><WhatsAppIcon/></a>
   </>;
