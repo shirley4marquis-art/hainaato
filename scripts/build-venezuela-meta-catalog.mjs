@@ -256,7 +256,7 @@ for (const v of selected) {
     imagePath(v, v.thumb),
     brand,
     additionalImages,
-    `${category} > ${trimLabel(v)}`,
+    category,
     "market_venezuela",
     `category_${type}`,
     `condition_${v.condition}`,
