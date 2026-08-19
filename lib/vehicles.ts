@@ -194,6 +194,14 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
 // first few) so they show up regardless of scrape order.
 const FEATURED_LATEST_MODELS = ["2025 ford ranger", "tesla 2026 model y", "highlander", "rav4", "corolla"];
 
+// Keep the final homepage positions varied across the brands customers ask
+// about most. Exact slugs make the selection stable when inventory is rebuilt.
+const HOMEPAGE_BRAND_BACKFILL_SLUGS = [
+  "hainaauto-38227479", // BYD Qin PLUS
+  "hainaauto-708918656", // BMW X5
+  "hainaauto-618413790", // Mercedes-Benz GLC
+];
+
 // Kept out of the homepage spotlight specifically — hainaauto-33511934's photo
 // set had 6 of 12 images belonging to unrelated vehicles (two different
 // sedans and a black Tang, mixed in with the actual white Song Pro). The
@@ -216,15 +224,27 @@ export function isHomepagePreviewEligible(vehicle: VehicleIndexEntry): boolean {
 }
 
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
-  const pool = loadIndex().filter(
+  const index = loadIndex();
+  const backfillSlugs = new Set(HOMEPAGE_BRAND_BACKFILL_SLUGS);
+  const brandBackfills = HOMEPAGE_BRAND_BACKFILL_SLUGS
+    .map((slug) => index.find((vehicle) => vehicle.slug === slug))
+    .filter(
+      (vehicle): vehicle is VehicleIndexEntry =>
+        Boolean(
+          vehicle &&
+            vehicle.imageCount > 0 &&
+            vehicle.availability === "available" &&
+            vehicle.condition === "new" &&
+            isHomepagePreviewEligible(vehicle)
+        )
+    );
+  const pool = index.filter(
     (v) =>
       v.imageCount > 0 &&
       v.availability === "available" &&
       ((v.condition === "new" && v.year === 2026) || titleForHomepage(v).includes("2025 ford ranger")) &&
-      isHomepagePreviewEligible(v)
-  );
-  const jacT8 = loadIndex().find(
-    (v) => v.title.toLowerCase().includes("jac t8") && v.imageCount > 0 && v.availability === "available" && isHomepagePreviewEligible(v)
+      isHomepagePreviewEligible(v) &&
+      !backfillSlugs.has(v.slug)
   );
   const featured: VehicleIndexEntry[] = [];
   const rest: VehicleIndexEntry[] = [];
@@ -247,8 +267,8 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
     const bOrder = FEATURED_LATEST_MODELS.find((model) => bTitle.includes(model));
     return (featuredOrder.get(aOrder ?? "") ?? Number.MAX_SAFE_INTEGER) - (featuredOrder.get(bOrder ?? "") ?? Number.MAX_SAFE_INTEGER);
   });
-  const arrivals = [...featured, ...rest].slice(0, jacT8 ? Math.max(0, count - 1) : count);
-  return jacT8 ? [...arrivals, jacT8] : arrivals;
+  const arrivals = [...featured, ...rest].slice(0, Math.max(0, count - brandBackfills.length));
+  return [...arrivals, ...brandBackfills].slice(0, count);
 }
 
 function titleForHomepage(vehicle: VehicleIndexEntry): string {
