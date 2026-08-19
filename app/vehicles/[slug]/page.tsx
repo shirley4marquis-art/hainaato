@@ -29,6 +29,7 @@ import {
   getTotalVehicleCount,
 } from "../../../lib/vehicles";
 import { imagePath } from "../../../lib/format";
+import { rankVehicleImages } from "../../../lib/image-ranking";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 
 // Was fully dynamic (re-rendered server-side on every single view, of
@@ -72,11 +73,33 @@ export async function generateMetadata({
   const { slug } = await params;
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
+  const description = vehicle.site === "hendrick"
+    ? `${vehicle.title}——由 HainaAuto 提供专业验车、出口文件及国际物流服务。`
+    : `${vehicle.title}——参考价格 ${formatCNY(vehicle.priceCNY)}。HainaAuto 提供中国车源及全程出口支持。`;
+  const primaryImage = rankVehicleImages(vehicle.images)[0];
+  const previewImage = primaryImage
+    ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://www.hainaautochina.com").toString()
+    : "https://www.hainaautochina.com/hainaauto-logo.webp";
+  const canonicalUrl = `https://www.hainaautochina.com/vehicles/${encodeURIComponent(vehicle.slug)}`;
   return {
     title: vehicle.title,
-    description: vehicle.site === "hendrick"
-      ? `${vehicle.title}——由 HainaAuto 提供专业验车、出口文件及国际物流服务。`
-      : `${vehicle.title}——参考价格 ${formatCNY(vehicle.priceCNY)}。HainaAuto 提供中国车源及全程出口支持。`,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      type: "website",
+      siteName: "HainaAuto",
+      locale: "zh_CN",
+      url: canonicalUrl,
+      title: vehicle.title,
+      description,
+      images: [{ url: previewImage, alt: vehicle.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: vehicle.title,
+      description,
+      images: [previewImage],
+    },
   };
 }
 
