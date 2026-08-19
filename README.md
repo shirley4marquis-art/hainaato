@@ -24,10 +24,18 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Meta Catalog Feeds
+
+The global Meta feed is generated with `npm run data:catalog-feed`.
+For Venezuelan buyers, generate the smaller Spanish-language feed with:
+
+```bash
+npm run data:catalog-feed:venezuela
+```
+
+This writes `public/meta-catalog-venezuela.csv`, capped at 1,000 available listings and organized primarily by vehicle trim/model. Brand remains available as supporting metadata, while category labels cover pickups, SUVs, passenger cars, superautos/deportivos, motorcycles, and machinery/trucks. Motorcycle records will appear automatically when motorcycle inventory is available. Point Meta Commerce Manager at `https://www.hainaautochina.com/meta-catalog-venezuela.csv` and regenerate it after inventory data changes.
 
 ## Deploy on Vercel
 

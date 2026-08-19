@@ -3,16 +3,33 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { QUOTE_STATUS_LABELS } from "../lib/format";
 
+const UPDATE_CATEGORY: Record<string, string> = {
+  quoted: "QUOTE", negotiating: "SALES", deposit_paid: "PAYMENT", paid_full: "PAYMENT",
+  usdt_payment_confirmed: "USDT", bitcoin_payment_confirmed: "BITCOIN",
+  inspection_scheduled: "INSPECTION", inspection_passed: "INSPECTION",
+  export_docs_ready: "DOCUMENTS", booked_for_shipping: "LOGISTICS", shipped: "IN TRANSIT",
+  departed_port: "VESSEL", arrived_port: "PORT ARRIVAL", customs_clearance: "CUSTOMS",
+  out_for_delivery: "DELIVERY", delivered: "DELIVERED",
+};
+
 type ShipmentUpdate = {
   ref: string;
   destinationCountry: string;
   status: string;
   updatedAt: string;
+  preview?: boolean;
 };
+
+const WORKFLOW_PREVIEWS: ShipmentUpdate[] = [
+  "negotiating", "deposit_paid", "usdt_payment_confirmed", "bitcoin_payment_confirmed",
+  "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping",
+  "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered",
+].map((status) => ({ ref: "STATUS PREVIEW", destinationCountry: "Order workflow", status, updatedAt: "", preview: true }));
 
 function TickerItem({ u }: { u: ShipmentUpdate }) {
   return (
-    <Link className="ticker-item" href="/quote/status">
+    <Link className={`ticker-item${u.preview ? " ticker-item-preview" : ""}`} href={u.preview ? "/services#export-flow" : "/quote/status"}>
+      <em className={`ticker-category ticker-category-${u.status}`}>{UPDATE_CATEGORY[u.status] || "ORDER"}</em>
       <b>{u.ref}</b>
       <span className="ticker-detail">{u.destinationCountry}</span>
       <code>{QUOTE_STATUS_LABELS[u.status] || u.status}</code>
@@ -52,14 +69,15 @@ export function ShipmentTicker() {
     };
   }, []);
 
-  if (!updates || updates.length === 0) return null;
-  const loop = [...updates, ...updates];
+  if (!updates) return null;
+  const tickerItems = [...updates, ...WORKFLOW_PREVIEWS];
+  const loop = [...tickerItems, ...tickerItems];
   return (
-    <div className="header-ticker" aria-label="Recent shipment status updates, shown with customer consent">
+    <div className="header-ticker" aria-label="Recent consented shipment updates and previews of supported order statuses">
       <div className="container header-ticker-row">
         <span className="header-ticker-badge">
           <i />
-          <span>SHIPMENT UPDATES</span>
+          <span>LIVE ORDER UPDATES</span>
         </span>
         <div className="header-ticker-viewport">
           <div className="header-ticker-track">

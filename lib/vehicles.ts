@@ -192,7 +192,7 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
 // Models pinned to the front of the homepage's "Latest new-car arrivals" list
 // (both the desktop grid and the mobile rail, which just shows this list's
 // first few) so they show up regardless of scrape order.
-const FEATURED_LATEST_MODELS = ["highlander", "rav4", "corolla"];
+const FEATURED_LATEST_MODELS = ["tesla 2026 model y", "highlander", "rav4", "corolla"];
 
 // Kept out of the homepage spotlight specifically — hainaauto-33511934's photo
 // set had 6 of 12 images belonging to unrelated vehicles (two different
@@ -221,6 +221,9 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
       v.year === 2026 &&
       isHomepagePreviewEligible(v)
   );
+  const jacT8 = loadIndex().find(
+    (v) => v.title.toLowerCase().includes("jac t8") && v.imageCount > 0 && v.availability === "available" && isHomepagePreviewEligible(v)
+  );
   const featured: VehicleIndexEntry[] = [];
   const rest: VehicleIndexEntry[] = [];
   const claimedModels = new Set<string>();
@@ -234,7 +237,16 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
       rest.push(v);
     }
   }
-  return [...featured, ...rest].slice(0, count);
+  const featuredOrder = new Map(FEATURED_LATEST_MODELS.map((model, index) => [model, index]));
+  featured.sort((a, b) => {
+    const aTitle = a.title.toLowerCase();
+    const bTitle = b.title.toLowerCase();
+    const aOrder = FEATURED_LATEST_MODELS.find((model) => aTitle.includes(model));
+    const bOrder = FEATURED_LATEST_MODELS.find((model) => bTitle.includes(model));
+    return (featuredOrder.get(aOrder ?? "") ?? Number.MAX_SAFE_INTEGER) - (featuredOrder.get(bOrder ?? "") ?? Number.MAX_SAFE_INTEGER);
+  });
+  const arrivals = [...featured, ...rest].slice(0, jacT8 ? Math.max(0, count - 1) : count);
+  return jacT8 ? [...arrivals, jacT8] : arrivals;
 }
 
 export function getBrandAggregates(limit=24){

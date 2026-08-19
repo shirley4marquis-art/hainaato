@@ -9,6 +9,7 @@ import {getBrandAggregates,getFilterOptions,getLatestNewVehicles,getTotalVehicle
 import {imagePath} from "../lib/format";
 import {ResilientVehicleImage} from "./vehicle-image";
 import {Price} from "./price";
+import {logoPathFor} from "../lib/brand-logos";
 
 const trustCountries=[["ae","UAE"],["sa","Saudi Arabia"],["ru","Russia"],["kz","Kazakhstan"],["ng","Nigeria"],["ke","Kenya"],["cl","Chile"],["pe","Peru"],["mx","Mexico"],["uz","Uzbekistan"]] as const;
 const years=Array.from({length:16},(_,i)=>2026-i);
@@ -91,12 +92,8 @@ export default function Home(){
 
     <section className="mobile-home" aria-label="Mobile vehicle marketplace">
       <form className="mobile-home-search" action="/vehicles"><input name="q" type="search" placeholder="Search by brand, model or keyword" aria-label="Search vehicles"/><button type="submit">Search</button></form>
-      <div className="mobile-trust-card">
-        <article><span><ShieldCheck/></span><div><b>Business Verified</b><p>Documented exporters &amp; partners</p></div></article>
-        <article><span><Camera/></span><div><b>On-site Inspection</b><p>Condition reports before booking</p></div></article>
-        <article><span><Globe2/></span><div><b>Export Ready</b><p>Logistics &amp; customs support</p></div></article>
-      </div>
-      <div className="mobile-gold-card"><h2>China Auto Export Gold Partner</h2><p>New &amp; used tracking · Safe pay workflow · Join the export flow</p><Link href="/vehicles">View listings</Link></div>
+      <div className="mobile-news"><NewsSpotlight articles={newsSpotlightArticles}/></div>
+      <section className="mobile-brand-picker" aria-labelledby="mobile-brand-picker-title"><header><div><span>FIND YOUR BRAND</span><h2 id="mobile-brand-picker-title">Shop by brand</h2></div><Link href="/brands">All brands</Link></header><div>{brands.slice(0,8).map(brand=><Link href={`/vehicles?brand=${encodeURIComponent(brand.brand)}`} key={brand.brand}><span className="mobile-brand-picker-logo"><img src={logoPathFor(brand.brand)} alt="" width="80" height="48"/></span><b>{brand.brand}</b><small>{brand.count.toLocaleString()} cars</small></Link>)}</div></section>
       <div className="mobile-arrivals"><header><h2>Latest arrivals</h2><p>Thousands of vehicle listings updated every day</p><Link href="/vehicles">Browse all vehicles →</Link></header><div>{latest.slice(0,5).map(v=><Link className="mobile-arrival-row" href={`/vehicles/${v.slug}`} key={v.slug}><span className="mobile-arrival-image"><ResilientVehicleImage candidates={(v.thumbs.length?v.thumbs:v.thumb?[v.thumb]:[]).map(img=>imagePath(v.site,v.id,img))} alt={`${v.title} exterior`} sizes="140px"/></span><span><b>{v.title}</b><small>{[v.year,v.mileageKm,v.fuel].filter(Boolean).join(" · ")}</small></span><strong><Price cny={v.priceCNY}/></strong></Link>)}</div></div>
     </section>
 
@@ -194,6 +191,12 @@ export default function Home(){
         </div>
       </div>
     </div></section>
+
+    <div className="mobile-trust-card">
+      <article><span><ShieldCheck/></span><div><b>Business Verified</b><p>Documented exporters &amp; partners</p></div></article>
+      <article><span><Camera/></span><div><b>On-site Inspection</b><p>Condition reports before booking</p></div></article>
+      <article><span><Globe2/></span><div><b>Export Ready</b><p>Logistics &amp; customs support</p></div></article>
+    </div>
 
     <section className="submit-requirements"><div className="container">
       <div className="section-head row"><div><span className="eyebrow">GET IN TOUCH</span><h2>Submit requirements</h2></div></div>

@@ -5,7 +5,7 @@ import { Plus, Trash2, User, FileText, Car, Image as ImageIcon } from "lucide-re
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 
-const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "shipped", "delivered", "lost"] as const;
+const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed", "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered", "lost"] as const;
 
 type ItemDraft = AdminQuoteItemInput & { key: string };
 

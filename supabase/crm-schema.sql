@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS quotes (
   duty_estimate                   DOUBLE PRECISION,
   grand_total_reference           DOUBLE PRECISION,
   status                          TEXT NOT NULL DEFAULT 'quoted'
-                                   CHECK (status IN ('quoted', 'negotiating', 'deposit_paid', 'paid_full', 'shipped', 'delivered', 'lost')),
+                                   CHECK (status IN ('quoted', 'negotiating', 'deposit_paid', 'paid_full', 'usdt_payment_confirmed', 'bitcoin_payment_confirmed', 'inspection_scheduled', 'inspection_passed', 'export_docs_ready', 'booked_for_shipping', 'shipped', 'departed_port', 'arrived_port', 'customs_clearance', 'out_for_delivery', 'delivered', 'lost')),
   notes                           TEXT,
   public_consent                  BOOLEAN NOT NULL DEFAULT FALSE,
   created_at                      TIMESTAMPTZ NOT NULL DEFAULT now(),
