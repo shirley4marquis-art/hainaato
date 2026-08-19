@@ -10,8 +10,9 @@ import {imagePath} from "../lib/format";
 import {ResilientVehicleImage} from "./vehicle-image";
 import {Price} from "./price";
 import {logoPathFor} from "../lib/brand-logos";
+import {CompanyStrengthSlider} from "./company-strength-slider";
 
-const trustCountries=[["ae","UAE"],["sa","Saudi Arabia"],["ru","Russia"],["kz","Kazakhstan"],["ng","Nigeria"],["ke","Kenya"],["cl","Chile"],["pe","Peru"],["mx","Mexico"],["uz","Uzbekistan"]] as const;
+const trustCountries=[["ve","Venezuela"],["pe","Peru"],["ae","UAE"],["sa","Saudi Arabia"],["ru","Russia"],["kz","Kazakhstan"],["ng","Nigeria"],["ke","Kenya"],["cl","Chile"],["mx","Mexico"],["uz","Uzbekistan"]] as const;
 const years=Array.from({length:16},(_,i)=>2026-i);
 const prices=[20000,50000,80000,120000,180000,250000,350000,500000];
 const arrivalTabs=[["Latest new","/vehicles?condition=new&sort=latest"],["New EV","/vehicles?condition=new&fuel=Electric"],["New hybrid","/vehicles?condition=new&fuel=Hybrid"],["All new cars","/new-cars"]] as const;
@@ -59,7 +60,7 @@ const newsSpotlightArticles=[
 
 const whyChoose=[[Search,"Professional Vehicle Inspection","Every vehicle is inspected before shipment."],[Wallet,"Competitive Factory Pricing","Direct sourcing keeps quotes close to factory price."],[Ship,"Worldwide Shipping","FOB, CIF and DDP shipping solutions."],[FileText,"Complete Export Documents","All documents prepared for smooth clearance."],[ShieldCheck,"Secure Payment","T/T, L/C and other secure payment methods."],[Globe2,"Multilingual Support","English, Arabic, Russian & Spanish support."]] as const;
 const processSteps=[["1",MessageSquare,"Inquiry","Share requirements"],["2",FileText,"Quotation","Get clear pricing"],["3",Search,"Inspection","QC & photos"],["4",CreditCard,"Payment","Secure settlement"],["5",Truck,"Shipping","RoRo / container"],["6",Landmark,"Customs Clearance","Export docs"],["7",PackageCheck,"Delivery","Arrival support"]] as const;
-const regions=[["Middle East",["UAE","Saudi Arabia","Oman"]],["Africa",["Nigeria","Kenya","Ghana"]],["CIS & Central Asia",["Russia","Kazakhstan","Uzbekistan"]],["Latin America",["Chile","Peru","Mexico"]],["Southeast Asia",["Philippines","Vietnam","Indonesia"]],["Eastern Europe",["Poland","Georgia","Belarus"]]] as const;
+const regions=[["Middle East",["UAE","Saudi Arabia","Oman"]],["Africa",["Nigeria","Kenya","Ghana"]],["CIS & Central Asia",["Russia","Kazakhstan","Uzbekistan"]],["Latin America",["Venezuela","Peru","Chile","Mexico"]],["Southeast Asia",["Philippines","Vietnam","Indonesia"]],["Eastern Europe",["Poland","Georgia","Belarus"]]] as const;
 const companyPhotos=["https://cntransit.cn/uploads/visit_5c856c9cdfaec3e8.jpg","https://cntransit.cn/uploads/visit_e4c2d879f81cda1d.jpg","https://cntransit.cn/uploads/visit_03e6f0c1a20573b5.jpg","https://cntransit.cn/uploads/visit_f702494f5cd6dcad.jpg","https://cntransit.cn/uploads/visit_28a26165a6c45538.jpg","https://cntransit.cn/uploads/visit_e65ff07f4cdc1547.jpg"] as const;
 const guides=[["https://img.hainaauto.com/vehicle/art_4c1be6c6236b9184.webp","Xpeng GX: The Smart Electric SUV Redefining China Export to Russia","A closer look at the technology, range and export appeal of China's new-generation electric SUV.","/news"],["https://img.hainaauto.com/vehicle/art_e3a5e0b9a31760d7.webp","China's Auto Export Surge to Russia: A Practical Guide for Importers","Market trends, shipping choices, documentation and practical steps for international vehicle buyers.","/news"]] as const;
 const testimonials=[["https://cntransit.cn/images/avatars/client-1.png","Ahmed","Dubai, UAE","I purchased 12 BYD vehicles from HainaAuto. The communication was excellent and the vehicles arrived on time. Highly recommended!"],["https://cntransit.cn/images/avatars/client-2.png","Ivan Petrov","Moscow, Russia","Professional team and very fast response. The inspection report was detailed and the shipping was smooth."],["https://cntransit.cn/images/avatars/client-3.png","Carlos Gomez","Santiago, Chile","Great experience working with HainaAuto. They handled everything perfectly from inspection to delivery."]] as const;
@@ -187,7 +188,7 @@ export default function Home(){
         </div>
         <div>
           <h3>Company Strength</h3>
-          <div className="strength-gallery">{companyPhotos.map(src=><img key={src} src={src} alt="HainaAuto facility"/>)}</div>
+          <CompanyStrengthSlider images={companyPhotos}/>
         </div>
       </div>
     </div></section>

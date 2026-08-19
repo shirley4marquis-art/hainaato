@@ -192,7 +192,7 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
 // Models pinned to the front of the homepage's "Latest new-car arrivals" list
 // (both the desktop grid and the mobile rail, which just shows this list's
 // first few) so they show up regardless of scrape order.
-const FEATURED_LATEST_MODELS = ["tesla 2026 model y", "highlander", "rav4", "corolla"];
+const FEATURED_LATEST_MODELS = ["2025 ford ranger", "tesla 2026 model y", "highlander", "rav4", "corolla"];
 
 // Kept out of the homepage spotlight specifically — hainaauto-33511934's photo
 // set had 6 of 12 images belonging to unrelated vehicles (two different
@@ -217,8 +217,7 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
     (v) =>
       v.imageCount > 0 &&
       v.availability === "available" &&
-      v.condition === "new" &&
-      v.year === 2026 &&
+      ((v.condition === "new" && v.year === 2026) || titleForHomepage(v).includes("2025 ford ranger")) &&
       isHomepagePreviewEligible(v)
   );
   const jacT8 = loadIndex().find(
@@ -247,6 +246,10 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
   });
   const arrivals = [...featured, ...rest].slice(0, jacT8 ? Math.max(0, count - 1) : count);
   return jacT8 ? [...arrivals, jacT8] : arrivals;
+}
+
+function titleForHomepage(vehicle: VehicleIndexEntry): string {
+  return vehicle.title.toLowerCase();
 }
 
 export function getBrandAggregates(limit=24){

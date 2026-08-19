@@ -37,6 +37,8 @@ npm run data:catalog-feed:venezuela
 
 This writes `public/meta-catalog-venezuela.csv`, capped at 1,000 available listings and organized primarily by vehicle trim/model. Brand remains available as supporting metadata, while category labels cover pickups, SUVs, passenger cars, superautos/deportivos, motorcycles, and machinery/trucks. Motorcycle records will appear automatically when motorcycle inventory is available. Point Meta Commerce Manager at `https://www.hainaautochina.com/meta-catalog-venezuela.csv` and regenerate it after inventory data changes.
 
+For the exact taxonomy, custom-label definitions, Commerce Manager product sets, campaign structure, and release checklist, follow [`docs/venezuela-meta-catalog-setup.md`](docs/venezuela-meta-catalog-setup.md).
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

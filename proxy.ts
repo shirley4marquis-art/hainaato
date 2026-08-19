@@ -27,6 +27,15 @@ function hasValidInternalSecret(request: NextRequest): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const requestedLocale = request.nextUrl.searchParams.get("lang")?.toLowerCase();
+  const isVenezuelanVisit = request.headers.get("x-vercel-ip-country") === "VE";
+  const shouldUseSpanish = requestedLocale === "es" || requestedLocale === "es-ve" || isVenezuelanVisit;
+
+  if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) {
+    const response = NextResponse.next();
+    if (shouldUseSpanish) response.cookies.set("haina_locale", "es-VE", { path: "/", maxAge: 31_536_000, sameSite: "lax" });
+    return response;
+  }
   if (PUBLIC_ADMIN_PATHS.has(pathname)) return NextResponse.next();
 
   if (PRINT_PAGE_PATTERN.test(pathname) && hasValidInternalSecret(request)) return NextResponse.next();
@@ -47,5 +56,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
