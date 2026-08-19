@@ -35,6 +35,10 @@ export function getVehicleIndexEntryBySlug(slug: string): VehicleIndexEntry | nu
   return indexBySlugCache.get(slug) ?? null;
 }
 
+export function getSitemapVehicleEntries(): Pick<VehicleIndexEntry, "slug" | "listedAt" | "availability">[] {
+  return loadIndex().map(({ slug, listedAt, availability }) => ({ slug, listedAt, availability }));
+}
+
 export function getFilterOptions(scope?: { condition?: "new" | "used" }) {
   const index = scope?.condition ? loadIndex().filter((v) => v.condition === scope.condition) : loadIndex();
   const fuels = new Map<string, string>();

@@ -73,9 +73,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
-  const description = vehicle.site === "hendrick"
+  const shareDescription = vehicle.site === "hendrick"
     ? `${vehicle.title}——由 HainaAuto 提供专业验车、出口文件及国际物流服务。`
     : `${vehicle.title}——参考价格 ${formatCNY(vehicle.priceCNY)}。HainaAuto 提供中国车源及全程出口支持。`;
+  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. Vehículo disponible para importar desde China a Venezuela con inspección, documentación y logística de HainaAuto.`;
   const primaryImage = rankVehicleImages(vehicle.images)[0];
   const previewImage = primaryImage
     ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://www.hainaautochina.com").toString()
@@ -91,13 +92,13 @@ export async function generateMetadata({
       locale: "zh_CN",
       url: canonicalUrl,
       title: vehicle.title,
-      description,
+      description: shareDescription,
       images: [{ url: previewImage, alt: vehicle.title }],
     },
     twitter: {
       card: "summary_large_image",
       title: vehicle.title,
-      description,
+      description: shareDescription,
       images: [previewImage],
     },
   };

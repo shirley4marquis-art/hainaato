@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteShell, SortSelect } from "../ui";
 import { getFilterOptions, searchVehicles } from "../../lib/vehicles";
 import { buildVehiclesUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
+
+export const metadata:Metadata={title:"Vehículos nuevos y usados de China",description:"Explora miles de carros, SUV, camionetas y vehículos comerciales disponibles para importar desde China a Venezuela. Fotos reales, precios y soporte de exportación.",alternates:{canonical:"/vehicles"}};
 
 type SearchParams = {
   q?: string;

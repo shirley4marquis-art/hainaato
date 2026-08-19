@@ -6,8 +6,9 @@ import { buildListUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "../vehicles/market-ui";
 
 export const metadata: Metadata = {
-  title: "Used Cars for Export",
-  description: "浏览 HainaAuto 中国二手车出口目录，查看真实车辆图片和价格，并可按品牌、里程、能源类型等条件筛选。",
+  title: "Carros usados de China para Venezuela",
+  description: "Compra carros usados de China para Venezuela con fotos reales, precios transparentes e inspección profesional. Filtra por marca, kilometraje, combustible y carrocería.",
+  alternates: { canonical: "/brands" },
 };
 
 type SearchParams = {
