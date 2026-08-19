@@ -14,10 +14,18 @@ const MAX_WIDTH = 3840;
 const UPSTREAM: Record<VehicleSite, (file: string) => string> = {
   hainaauto: (file) => `https://img.hainaauto.com/vehicle/${encodeURIComponent(file)}`,
   cntransit: (file) => `https://cntransit.cn/uploads/${encodeURIComponent(file)}`,
+  hendrick: (file) => Buffer.from(file, "base64url").toString("utf8"),
 };
 
+const HENDRICK_IMAGE_HOSTS = new Set([
+  "portphotos.setoyota.com",
+  "delivery.via.assetscs.toyota.com",
+  "delivery.vcr.assetscs.toyota.com",
+  "media.rti.toyota.com",
+]);
+
 function isVehicleSite(value: string): value is VehicleSite {
-  return value === "hainaauto" || value === "cntransit";
+  return value === "hainaauto" || value === "cntransit" || value === "hendrick";
 }
 
 // Some networks fail to resolve a given upstream host through their default
@@ -164,7 +172,16 @@ export async function GET(
   // "local" (relative) src URLs itself and rejects a redirect response as an
   // invalid internal response, so this has to return the image bytes directly.
   const upstreamUrl = UPSTREAM[site](file);
-  const hostname = new URL(upstreamUrl).hostname;
+  let parsedUpstream: URL;
+  try {
+    parsedUpstream = new URL(upstreamUrl);
+  } catch {
+    return NextResponse.json({ error: "Invalid image source." }, { status: 404 });
+  }
+  if (parsedUpstream.protocol !== "https:" || (site === "hendrick" && !HENDRICK_IMAGE_HOSTS.has(parsedUpstream.hostname))) {
+    return NextResponse.json({ error: "Image source is not allowed." }, { status: 404 });
+  }
+  const hostname = parsedUpstream.hostname;
   let upstream: UpstreamResponse;
   try {
     upstream = await fetchUpstreamWithFallback(upstreamUrl, hostname);

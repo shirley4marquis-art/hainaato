@@ -74,7 +74,9 @@ export async function generateMetadata({
   if (!vehicle) return { robots: { index:false, follow:false } };
   return {
     title: vehicle.title,
-    description: `${vehicle.title} — ${formatCNY(vehicle.priceCNY)}. Sourced from China with full export support from HainaAuto.`,
+    description: vehicle.site === "hendrick"
+      ? `${vehicle.title} — available through HainaAuto with inspection, export documentation, and international logistics support.`
+      : `${vehicle.title} — ${formatCNY(vehicle.priceCNY)}. Sourced from China with full export support from HainaAuto.`,
   };
 }
 
@@ -99,7 +101,7 @@ export default async function VehicleDetail({
     .filter(Boolean)
     .join(" · ");
 
-  const stockCode = `${vehicle.site === "hainaauto" ? "HA" : "CN"}-${vehicle.id}`;
+  const stockCode = vehicle.specs["Código de inventario"] || `${vehicle.site === "hainaauto" ? "HA" : vehicle.site === "cntransit" ? "CN" : "HA-US"}-${vehicle.id}`;
   const chips = [vehicle.driveType, vehicle.fuel, vehicle.gearbox, `Stock ${stockCode}`].filter(
     Boolean
   ) as string[];
@@ -142,7 +144,7 @@ export default async function VehicleDetail({
           )}
 
           <span className="vehicle-title">
-            {vehicle.site === "hainaauto" ? "HAINAAUTO LISTING" : "PARTNER LISTING"}
+            {vehicle.site === "cntransit" ? "PARTNER LISTING" : "HAINAAUTO LISTING"}
           </span>
           <h1>{vehicle.title}</h1>
           <div className="vehicle-meta">{metaLine}</div>

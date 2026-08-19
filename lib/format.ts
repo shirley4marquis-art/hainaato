@@ -1,7 +1,7 @@
 // Pure helpers + shared types — safe to import from Client Components.
 // Filesystem-backed data access lives in lib/vehicles.ts (server-only).
 
-export type VehicleSite = "hainaauto" | "cntransit";
+export type VehicleSite = "hainaauto" | "cntransit" | "hendrick";
 
 export type VehicleIndexEntry = {
   slug: string;
