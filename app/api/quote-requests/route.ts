@@ -174,6 +174,7 @@ export async function POST(request: NextRequest) {
     vehicleSummary,
   });
 
+  let emailSent = false;
   if (pdfBuffer) {
     const sendResult = await sendEmail({
       to: email,
@@ -181,6 +182,7 @@ export async function POST(request: NextRequest) {
       html,
       attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
     });
+    emailSent = sendResult.ok;
     await recordQuoteEmail(ref, {
       toEmail: email,
       subject,
@@ -199,5 +201,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({ ok: true, ref, documentNumber: quote?.documentNumber ?? null });
+  return NextResponse.json({ ok: true, ref, documentNumber: quote?.documentNumber ?? null, emailSent });
 }

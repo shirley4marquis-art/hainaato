@@ -203,7 +203,7 @@ export default async function VehicleDetail({
           </ul>
 
           <div className="detail-actions">
-            <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}`}>
+            <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}#quote-form`}>
               Get Quote
             </Link>
             <a
@@ -304,7 +304,7 @@ export default async function VehicleDetail({
         </div>
 
         <div id="request">
-          <VehicleRequestForm vehicleTitle={vehicle.title} />
+          <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} />
           <div className="side-card specialist-card">
             <span className="avatar">HA</span>
             <h3>Talk to Our Export Team</h3>
