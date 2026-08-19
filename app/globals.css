@@ -92,7 +92,7 @@ body{background:#f4f6f9;color:#1a2332}.ah-header{position:sticky;top:0;z-index:1
 .hub-dest-map{position:relative;height:180px;border:1px solid #d6e4f5;border-radius:12px;overflow:hidden;background:#eff6ff url('/world-map-destinations.svg') center/96% auto no-repeat;margin-bottom:10px}
 .hub-dest-map:before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,#93c5fd 1px,transparent 1px);background-size:16px 16px;opacity:.22}
 .hub-map-marker{position:absolute;z-index:2;width:22px;height:22px;padding:2px;border:2px solid #fff;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(7,27,58,.32);transform:translate(-50%,-50%)}
-.hub-map-marker img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.hub-map-marker>span{display:grid;width:100%;height:100%;place-items:center;font-size:14px;line-height:1}
 .hub-map-origin{position:absolute;z-index:3;display:flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;background:#071b3a;color:#fff;font-size:9px;font-weight:800;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(7,27,58,.28)}
 .hub-map-origin i{width:7px;height:7px;border-radius:50%;background:#f4b942;box-shadow:0 0 0 3px rgba(244,185,66,.25)}
 .hub-map-caption{position:absolute;z-index:2;left:8px;bottom:7px;padding:3px 6px;border-radius:5px;background:rgba(255,255,255,.88);color:#315474;font-size:9px;font-weight:700}
