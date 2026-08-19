@@ -61,6 +61,11 @@ const newsSpotlightArticles=[
 const whyChoose=[[Search,"Professional Vehicle Inspection","Every vehicle is inspected before shipment."],[Wallet,"Competitive Factory Pricing","Direct sourcing keeps quotes close to factory price."],[Ship,"Worldwide Shipping","FOB, CIF and DDP shipping solutions."],[FileText,"Complete Export Documents","All documents prepared for smooth clearance."],[ShieldCheck,"Secure Payment","T/T, L/C and other secure payment methods."],[Globe2,"Multilingual Support","English, Arabic, Russian & Spanish support."]] as const;
 const processSteps=[["1",MessageSquare,"Inquiry","Share requirements"],["2",FileText,"Quotation","Get clear pricing"],["3",Search,"Inspection","QC & photos"],["4",CreditCard,"Payment","Secure settlement"],["5",Truck,"Shipping","RoRo / container"],["6",Landmark,"Customs Clearance","Export docs"],["7",PackageCheck,"Delivery","Arrival support"]] as const;
 const regions=[["Middle East",["UAE","Saudi Arabia","Oman"]],["Africa",["Nigeria","Kenya","Ghana"]],["CIS & Central Asia",["Russia","Kazakhstan","Uzbekistan"]],["Latin America",["Venezuela","Peru","Chile","Mexico"]],["Southeast Asia",["Philippines","Vietnam","Indonesia"]],["Eastern Europe",["Poland","Georgia","Belarus"]]] as const;
+const destinationMarkers=[
+  ["mx","Mexico",15,43],["ve","Venezuela",24,58],["pe","Peru",21,68],["cl","Chile",23,83],
+  ["ng","Nigeria",48,59],["ke","Kenya",55,68],["sa","Saudi Arabia",59,54],["ae","UAE",64,51],
+  ["ru","Russia",70,23],["kz","Kazakhstan",69,36],["uz","Uzbekistan",66,43],
+] as const;
 const companyPhotos=["https://cntransit.cn/uploads/visit_5c856c9cdfaec3e8.jpg","https://cntransit.cn/uploads/visit_e4c2d879f81cda1d.jpg","https://cntransit.cn/uploads/visit_03e6f0c1a20573b5.jpg","https://cntransit.cn/uploads/visit_f702494f5cd6dcad.jpg","https://cntransit.cn/uploads/visit_28a26165a6c45538.jpg","https://cntransit.cn/uploads/visit_e65ff07f4cdc1547.jpg"] as const;
 const guides=[["https://img.hainaauto.com/vehicle/art_4c1be6c6236b9184.webp","Xpeng GX: The Smart Electric SUV Redefining China Export to Russia","A closer look at the technology, range and export appeal of China's new-generation electric SUV.","/news"],["https://img.hainaauto.com/vehicle/art_e3a5e0b9a31760d7.webp","China's Auto Export Surge to Russia: A Practical Guide for Importers","Market trends, shipping choices, documentation and practical steps for international vehicle buyers.","/news"]] as const;
 const testimonials=[["https://cntransit.cn/images/avatars/client-1.png","Ahmed","Dubai, UAE","I purchased 12 BYD vehicles from HainaAuto. The communication was excellent and the vehicles arrived on time. Highly recommended!"],["https://cntransit.cn/images/avatars/client-2.png","Ivan Petrov","Moscow, Russia","Professional team and very fast response. The inspection report was detailed and the shipping was smooth."],["https://cntransit.cn/images/avatars/client-3.png","Carlos Gomez","Santiago, Chile","Great experience working with HainaAuto. They handled everything perfectly from inspection to delivery."]] as const;
@@ -172,7 +177,11 @@ export default function Home(){
         <div className="hub-card reveal">
           <h3>Export Destinations</h3>
           <div><div className="hub-dest">
-            <div className="hub-dest-map"/>
+            <div className="hub-dest-map" role="img" aria-label="Map of HainaAuto export destinations from China">
+              <span className="hub-map-origin" style={{left:"78%",top:"43%"}}><i/>China</span>
+              {destinationMarkers.map(([code,country,left,top])=><span className="hub-map-marker" style={{left:`${left}%`,top:`${top}%`}} title={country} aria-label={country} key={code}><img src={`/flags/${code}.svg`} alt=""/></span>)}
+              <span className="hub-map-caption">Export routes from China</span>
+            </div>
             <ul className="hub-dest-list">{regions.map(([region,countries])=><li key={region}><b><span className="hub-dest-dot"/>{region}</b><span>{countries.join(" · ")}</span></li>)}</ul>
           </div></div>
         </div>
