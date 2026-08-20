@@ -566,6 +566,48 @@ export async function adminListCustomers(): Promise<AdminCustomerSummary[]> {
   }));
 }
 
+export type AdminMailRecord = {
+  id: number;
+  customerName: string | null;
+  toEmail: string;
+  subject: string;
+  html: string;
+  status: "sent" | "failed";
+  error: string | null;
+  createdAt: string;
+};
+
+export async function recordClientEmail(email: {
+  customerId?: number | null;
+  toEmail: string;
+  subject: string;
+  html: string;
+  status: "sent" | "failed";
+  error?: string | null;
+  providerMessageId?: string | null;
+}): Promise<void> {
+  await getPool().query(
+    `INSERT INTO client_emails (customer_id, to_email, subject, html, status, error, provider_message_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    [email.customerId ?? null, email.toEmail, email.subject, email.html, email.status, email.error ?? null, email.providerMessageId ?? null]
+  );
+}
+
+export async function listClientEmails(limit = 100): Promise<AdminMailRecord[]> {
+  const { rows } = await getPool().query(
+    `SELECT ce.*, c.name AS customer_name FROM client_emails ce
+     LEFT JOIN customers c ON c.id = ce.customer_id
+     ORDER BY ce.created_at DESC LIMIT $1`,
+    [Math.min(Math.max(limit, 1), 250)]
+  );
+  return (rows as Row[]).map((r) => ({
+    id: Number(r.id), customerName: (r.customer_name as string) ?? null,
+    toEmail: r.to_email as string, subject: r.subject as string, html: r.html as string,
+    status: r.status as "sent" | "failed", error: (r.error as string) ?? null,
+    createdAt: (r.created_at as Date).toISOString(),
+  }));
+}
+
 export type AdminQuoteDetail = Omit<AdminQuoteInput, "currency" | "language" | "depositPct"> & {
   ref: string;
   documentNumber: string | null;

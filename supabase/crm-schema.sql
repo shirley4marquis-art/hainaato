@@ -144,9 +144,22 @@ CREATE TABLE IF NOT EXISTS quote_emails (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS client_emails (
+  id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  customer_id         BIGINT REFERENCES customers(id),
+  to_email            TEXT NOT NULL,
+  subject             TEXT NOT NULL,
+  html                TEXT NOT NULL,
+  status              TEXT NOT NULL CHECK (status IN ('sent', 'failed')),
+  error               TEXT,
+  provider_message_id TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_quotes_customer ON quotes(customer_id);
 CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status);
 CREATE INDEX IF NOT EXISTS idx_items_quote ON quote_items(quote_id);
 CREATE INDEX IF NOT EXISTS idx_item_photos_item ON quote_item_photos(quote_item_id);
 CREATE INDEX IF NOT EXISTS idx_followups_quote ON follow_ups(quote_id);
 CREATE INDEX IF NOT EXISTS idx_quote_emails_quote ON quote_emails(quote_id);
+CREATE INDEX IF NOT EXISTS idx_client_emails_customer ON client_emails(customer_id);

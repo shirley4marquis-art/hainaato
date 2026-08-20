@@ -21,6 +21,24 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+export function customSalesEmailHtml(params: {
+  customerName: string;
+  heading: string;
+  message: string;
+  callToActionLabel?: string;
+  callToActionUrl?: string;
+}): string {
+  const name = escapeHtml(params.customerName || "there");
+  const heading = escapeHtml(params.heading);
+  const paragraphs = params.message.split(/\n{2,}/).map((part) =>
+    `<p style="margin:0 0 16px;font-size:15px;line-height:1.75;color:#44536A">${escapeHtml(part).replace(/\n/g, "<br>")}</p>`
+  ).join("");
+  const cta = params.callToActionLabel && params.callToActionUrl
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td bgcolor="#FF6B00" style="border-radius:8px"><a href="${escapeHtml(params.callToActionUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(params.callToActionLabel)}</a></td></tr></table>`
+    : "";
+  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74"><img src="cid:hainaauto-logo" width="62" height="62" alt="Haina Auto" style="display:block;border-radius:10px;background:#fff"></td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:sales@hainaautochina.com" style="color:#082F63">sales@hainaautochina.com</a> · <a href="https://www.hainaautochina.com" style="color:#082F63">hainaautochina.com</a></td></tr></table></td></tr></table></body></html>`;
+}
+
 // Table-based, inline-styled layout (required for Outlook/Gmail rendering)
 // matching the brand colors already used across the site's own header and
 // the staff-issued PDF quotes (--mkt-navy #082F63, --mkt-coral #FF6B00 in
@@ -209,9 +227,9 @@ export async function sendEmail(params: {
   attachment?: { filename: string; content: Buffer };
 }): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.LEADS_FROM_EMAIL;
-  if (!apiKey || !from) {
-    return { ok: false, error: "RESEND_API_KEY / LEADS_FROM_EMAIL not configured." };
+  const from = process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
+  if (!apiKey) {
+    return { ok: false, error: "RESEND_API_KEY is not configured." };
   }
 
   try {
