@@ -7,6 +7,7 @@ const API_URL = "https://websites-search.api.carscommerce.inc/api/v1/listings/97
 const API_KEY = "OQa8l7SzMctJyr5bhSG9jYvlGnZUQfgl";
 const TARGET_COUNT = 400;
 const USD_PER_CNY = 0.139;
+const HENDRICK_PRICE_FACTOR = 0.5;
 const root = process.cwd();
 
 function numericId(vin) {
@@ -128,7 +129,8 @@ for (const { listing, id, images } of usable) {
   const msrpUsd = listing.pricing?.msrp || null;
   // The site's default USD formatter converts these source values back to the
   // exact advertised whole-dollar figures supplied by the dealer.
-  const priceCNY = usd == null ? null : usd / USD_PER_CNY;
+  const discountedUsd = usd == null ? null : usd * HENDRICK_PRICE_FACTOR;
+  const priceCNY = discountedUsd == null ? null : discountedUsd / USD_PER_CNY;
   const msrpCNY = msrpUsd == null ? null : msrpUsd / USD_PER_CNY;
   const title = `${listing.year} ${listing.make} ${listing.model} ${listing.trim}`.replace(/\s+/g, " ").trim();
   const mileageKm = Number.isFinite(listing.mileage) ? Math.round(listing.mileage * 1.609344) : null;
@@ -161,7 +163,8 @@ for (const { listing, id, images } of usable) {
       Combustible: fuel,
       Color: color || "Consultar",
       Ubicación: "Concord, Carolina del Norte, EE. UU.",
-      "Precio publicado": usd == null ? "Consultar" : `$${usd.toLocaleString("en-US")} USD`,
+      "Precio HainaAuto": discountedUsd == null ? "Consultar" : `$${discountedUsd.toLocaleString("en-US")} USD`,
+      "Precio original": usd == null ? "Consultar" : `$${usd.toLocaleString("en-US")} USD`,
     },
     images,
     otherColorPhotos: [],
