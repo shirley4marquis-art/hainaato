@@ -427,7 +427,6 @@
 .bottomNavInner>a:nth-child(1){grid-column:1}.bottomNavInner>a:nth-child(2){grid-column:2}.bottomNavInner>a:nth-child(3){grid-column:4}.bottomNavInner>a:nth-child(4){grid-column:5}
 .bottomNavInner>a:not(.createAction):hover,.bottomNavActive { color:#17202d!important;background:#f2f4f7 }
 .createAction { grid-column:3;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:58px;height:58px;margin:-24px auto 0;border:5px solid #f6f7f9;border-radius:50%;background:#17202d;color:#fff;text-decoration:none;box-shadow:0 8px 20px #17202d38 }
-.createAction span { font-size:8px;font-weight:800 }
 
 .eyebrow { display:block;margin-bottom:5px;color:#687485;font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase }
 .pageHeading>div>p { margin:7px 0 0;color:#7a8492;font-size:12px }
@@ -600,8 +599,8 @@
   .statGrid {
     grid-template-columns: 1fr;
   }
-  .bottomNav { display:block;padding-inline:7px }
-  .bottomNavInner { grid-template-columns:repeat(5,minmax(54px,68px));gap:1px;padding-inline:5px;border-radius:17px }
+  .bottomNav { display:block;padding:0;bottom:0 }
+  .bottomNavInner { grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;width:100%;max-width:none;padding:8px 5px calc(8px + env(safe-area-inset-bottom));border-right:0;border-bottom:0;border-left:0;border-radius:17px 17px 0 0 }
   .bottomNavInner>a:not(.createAction) { min-height:45px }
   .createAction { width:55px;height:55px }
   .orderCard { grid-template-columns:1fr auto;gap:12px;padding:14px }

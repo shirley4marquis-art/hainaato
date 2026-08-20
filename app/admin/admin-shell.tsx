@@ -62,8 +62,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             );
           })}
           <Link className={styles.createAction} href="/admin/quotes/new" aria-label="Create a new quote or order">
-            <Plus size={25} />
-            <span>New</span>
+            <Plus size={28} />
           </Link>
         </div>
       </nav>
