@@ -464,6 +464,16 @@ body{background:#f4f6f9;color:#1a2332}.ah-header{position:sticky;top:0;z-index:1
 @media(max-width:1023px){.vlist-item{min-height:0}.vlist-media{border-right:0}.vlist-head-image,.vlist-head-image img{height:230px}.vlist-right{display:grid;grid-template-columns:1fr auto;align-items:center}.vlist-side-spacer{display:none}.vlist-price,.vlist-date{text-align:left}.vlist-contact{grid-row:1/3;grid-column:2;align-self:center}.vlist-inquire{grid-column:1/-1}}
 @media(max-width:600px){.vlist-head-image,.vlist-head-image img{height:210px}.vlist-middle{padding:14px 12px}.vlist-baseinfo{grid-template-columns:repeat(2,1fr)}.vlist-baseinfo-item:last-child{grid-column:1/-1}.vlist-details{display:none}.vlist-right{padding:13px 64px 13px 13px}.vlist-price{font-size:21px}}
 
+/* Give the primary listing photo the full card width on phones. A square
+   canvas accommodates both portrait and landscape source photos, while
+   contain guarantees that no part of the vehicle is cropped. */
+@media(max-width:600px){
+  .vlist-media{padding:0}
+  .vlist-head-image{width:100%;height:auto;aspect-ratio:1/1;border-radius:0}
+  .vlist-head-image img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important}
+  .vlist-thumbs{padding:6px 10px 0}
+}
+
 /* Official contact-brand treatments */
 .whatsapp{background:#25d366}.whatsapp svg{width:27px;height:27px}
 .vlist-contact svg{width:17px;height:17px}

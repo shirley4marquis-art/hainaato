@@ -4,6 +4,7 @@ import type { Vehicle } from "./format";
 
 const detailShardCache = new Map<number, Record<string, Vehicle>>();
 const DETAIL_SHARD_COUNT = 64;
+const VEHICLE_SLUG_PATTERN = /^[a-z]+-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function detailShardForSlug(slug: string): number {
   let hash = 2166136261;
@@ -15,7 +16,9 @@ function detailShardForSlug(slug: string): number {
 }
 
 export function getVehicleBySlug(slug: string): Vehicle | null {
-  if (!/^[a-z]+-[0-9]+$/.test(slug)) return null;
+  // Imported stock IDs are usually numeric, but some trusted sources use
+  // descriptive, hyphenated IDs (for example hongyu-jac-t9-hunter).
+  if (slug.length > 160 || !VEHICLE_SLUG_PATTERN.test(slug)) return null;
   const shardNumber = detailShardForSlug(slug);
   let shard = detailShardCache.get(shardNumber);
   if (!shard) {
