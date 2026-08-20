@@ -1,7 +1,7 @@
 // Pure helpers + shared types — safe to import from Client Components.
 // Filesystem-backed data access lives in lib/vehicles.ts (server-only).
 
-export type VehicleSite = "hainaauto" | "cntransit" | "hendrick";
+export type VehicleSite = "hainaauto" | "cntransit" | "hendrick" | "hongyu" | "carfromjapan";
 
 export type VehicleIndexEntry = {
   slug: string;
@@ -100,8 +100,8 @@ export function normalizeColor(color: string): string {
 // vehicle's photo. The route also verifies file actually belongs to that
 // vehicle's own image list before redirecting to the upstream CDN.
 export function imagePath(site: VehicleSite, id: string, file: string): string {
-  if (site === "hendrick") {
-    return `/vehicle-images/hendrick/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
+  if (site === "hendrick" || site === "hongyu" || site === "carfromjapan") {
+    return `/vehicle-images/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
   }
   return `/api/vehicle-image/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
 }

@@ -125,7 +125,7 @@ export default async function VehicleDetail({
     .filter(Boolean)
     .join(" · ");
 
-  const stockCode = vehicle.specs["Código de inventario"] || `${vehicle.site === "hainaauto" ? "HA" : vehicle.site === "cntransit" ? "CN" : "HA-US"}-${vehicle.id}`;
+  const stockCode = vehicle.specs["Código de inventario"] || `${vehicle.site === "hainaauto" ? "HA" : vehicle.site === "cntransit" ? "CN" : vehicle.site === "hongyu" ? "HA-CN" : "HA-US"}-${vehicle.id}`;
   const chips = [vehicle.driveType, vehicle.fuel, vehicle.gearbox, `Stock ${stockCode}`].filter(
     Boolean
   ) as string[];

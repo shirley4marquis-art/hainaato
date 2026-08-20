@@ -7,7 +7,9 @@ const API_URL = "https://websites-search.api.carscommerce.inc/api/v1/listings/97
 const API_KEY = "OQa8l7SzMctJyr5bhSG9jYvlGnZUQfgl";
 const TARGET_COUNT = 400;
 const USD_PER_CNY = 0.139;
-const HENDRICK_PRICE_FACTOR = 0.5;
+// Recently listed Hendrick vehicles are offered at 30% below the previously
+// displayed HainaAuto price (50% of source price * 70% = 35% of source price).
+const HENDRICK_PRICE_FACTOR = 0.35;
 const root = process.cwd();
 
 function numericId(vin) {
@@ -165,6 +167,7 @@ for (const { listing, id, images } of usable) {
       Ubicación: "Concord, Carolina del Norte, EE. UU.",
       "Precio HainaAuto": discountedUsd == null ? "Consultar" : `$${discountedUsd.toLocaleString("en-US")} USD`,
       "Precio original": usd == null ? "Consultar" : `$${usd.toLocaleString("en-US")} USD`,
+      "Ajuste de precio HainaAuto": "30% menos que el precio HainaAuto anterior",
     },
     images,
     otherColorPhotos: [],

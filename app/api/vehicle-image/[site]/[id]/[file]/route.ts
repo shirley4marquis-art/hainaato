@@ -11,7 +11,9 @@ import type { VehicleSite } from "../../../../../../lib/format";
 const MIN_WIDTH = 16;
 const MAX_WIDTH = 3840;
 
-const UPSTREAM: Record<VehicleSite, (file: string) => string> = {
+type ProxiedVehicleSite = Exclude<VehicleSite, "hongyu" | "carfromjapan">;
+
+const UPSTREAM: Record<ProxiedVehicleSite, (file: string) => string> = {
   hainaauto: (file) => `https://img.hainaauto.com/vehicle/${encodeURIComponent(file)}`,
   cntransit: (file) => `https://cntransit.cn/uploads/${encodeURIComponent(file)}`,
   hendrick: (file) => Buffer.from(file, "base64url").toString("utf8"),
@@ -24,7 +26,7 @@ const HENDRICK_IMAGE_HOSTS = new Set([
   "media.rti.toyota.com",
 ]);
 
-function isVehicleSite(value: string): value is VehicleSite {
+function isVehicleSite(value: string): value is ProxiedVehicleSite {
   return value === "hainaauto" || value === "cntransit" || value === "hendrick";
 }
 

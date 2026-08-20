@@ -32,7 +32,6 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
   const href = `/vehicles/${v.slug}`;
   const [main, ...rest] = v.thumbs.length ? v.thumbs : v.thumb ? [v.thumb] : [];
   const displayDate=v.listedAt?.slice(0,10)??"Available now";
-  const requestHref = `${href}#request`;
   const cartSlugs = useCartSlugs();
   const inCart = cartSlugs.includes(v.slug);
 
@@ -87,7 +86,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-price"><Price cny={v.priceCNY}/></div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
-          <Link className="is-quote" href={requestHref} aria-label="Request a quote for this vehicle"><FileText/></Link>
+          <Link className="is-quote" href={href} aria-label="Preview this vehicle"><FileText/></Link>
           <button
             type="button"
             className="is-cart"

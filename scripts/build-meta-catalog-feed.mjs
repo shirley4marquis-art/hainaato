@@ -173,6 +173,7 @@ function curateSelection(eligible) {
 }
 
 function imagePath(site, id, file) {
+  if (site === "hendrick" || site === "hongyu") return `${SITE_URL}/vehicle-images/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
   return `${SITE_URL}/api/vehicle-image/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;
 }
 

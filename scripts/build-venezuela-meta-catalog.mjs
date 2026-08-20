@@ -165,6 +165,7 @@ function csvField(value) {
 }
 
 function imagePath(v, file) {
+  if (v.site === "hendrick" || v.site === "hongyu") return `${SITE_URL}/vehicle-images/${v.site}/${encodeURIComponent(v.id)}/${encodeURIComponent(file)}`;
   return `${SITE_URL}/api/vehicle-image/${v.site}/${encodeURIComponent(v.id)}/${encodeURIComponent(file)}`;
 }
 
