@@ -28,14 +28,6 @@ function Letterhead() {
   );
 }
 
-// Two photos per page, matching the sample's layout — the last page can be a
-// single photo if the count is odd.
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
-}
-
 export default async function QuotePrintPage({ params }: { params: Promise<{ ref: string }> }) {
   const { ref } = await params;
   const quote = await adminGetQuote(ref);
@@ -54,12 +46,9 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
     t.dutyTerm,
   ];
 
-  const photoPages = quote.items.flatMap((item) =>
-    chunk(
-      (item.photos ?? []).map((p) => ({ ...p, vehicleTitle: itemTitle(item) })),
-      2
-    )
-  );
+  const detailLabels = quote.language === "es"
+    ? { details: "DETALLES DEL VEHÍCULO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", engine: "Motor", quantity: "Cantidad", unitPrice: "Precio unitario", lineTotal: "Total del vehículo", unavailable: "Imagen no disponible" }
+    : { details: "VEHICLE DETAILS", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", engine: "Engine", quantity: "Quantity", unitPrice: "Unit price", lineTotal: "Vehicle total", unavailable: "Image unavailable" };
 
   return (
     <div className={styles.root}>
@@ -193,28 +182,55 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
         <Letterhead />
       </div>
 
-      {/* Photo pages */}
-      {photoPages.map((pagePhotos, pageIndex) => (
-        <div className={styles.page} key={pageIndex}>
+      {/* One self-contained sheet per selected vehicle. Keeping the photos,
+          specs and price together prevents details from one listing being
+          mistaken for another in a multi-vehicle quotation. */}
+      {quote.items.map((item, itemIndex) => {
+        const photos = (item.photos ?? []).slice(0, 2);
+        const details = [
+          [detailLabels.condition, item.condition],
+          [detailLabels.mileage, item.mileageKm != null ? `${item.mileageKm.toLocaleString("en-US")} km` : null],
+          [detailLabels.fuel, item.fuelType],
+          [detailLabels.transmission, item.transmission],
+          [detailLabels.drivetrain, item.drivetrain],
+          [detailLabels.exterior, item.exteriorColor],
+          [detailLabels.engine, item.engine],
+        ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+        return <div className={styles.page} key={`${item.make}-${item.model}-${itemIndex}`}>
           <div className={styles.topBar} />
           <div className={styles.photoMiniHeader}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className={styles.photoMiniLogo} src={COMPANY.logo} alt="" />
             <div>
-              <p className={styles.photoVehicleTitle}>{pagePhotos[0]?.vehicleTitle}</p>
-              <p className={styles.photoVehicleSub}>{COMPANY.name} · {COMPANY.tag}</p>
+              <p className={styles.photoVehicleTitle}>{itemTitle(item)}</p>
+              <p className={styles.photoVehicleSub}>{detailLabels.details} · {itemIndex + 1}/{quote.items.length}</p>
             </div>
           </div>
-          {pagePhotos.map((photo, i) => (
-            <div className={styles.photoBlock} key={i}>
+
+          <div className={styles.vehicleSheetBody}>
+            <div className={styles.vehiclePhotos}>
+              {photos.length > 0 ? photos.map((photo, photoIndex) => (
+                <figure className={styles.vehiclePhoto} key={`${photo.url}-${photoIndex}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className={styles.photoImg} src={photo.url} alt={photo.caption ?? ""} />
               {photo.caption && <p className={styles.photoCaption}>{photo.caption}</p>}
+                </figure>
+              )) : <div className={styles.photoUnavailable}>{detailLabels.unavailable}</div>}
             </div>
-          ))}
+
+            <div className={styles.vehicleDetailsGrid}>
+              {details.map(([label, value]) => <div className={styles.vehicleDetail} key={label}><span>{label}</span><b>{value}</b></div>)}
+            </div>
+            {item.specSummary && <p className={styles.vehicleSpecSummary}>{item.specSummary}</p>}
+            <div className={styles.vehiclePriceGrid}>
+              <div><span>{detailLabels.quantity}</span><b>{item.qty}</b></div>
+              <div><span>{detailLabels.unitPrice}</span><b>{formatMoney(item.fobFinal, quote.currency)}</b></div>
+              <div><span>{detailLabels.lineTotal}</span><b>{formatMoney(item.fobFinal * item.qty, quote.currency)}</b></div>
+            </div>
+          </div>
           <Letterhead />
         </div>
-      ))}
+      })}
     </div>
   );
 }

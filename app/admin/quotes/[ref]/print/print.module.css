@@ -417,14 +417,25 @@
   margin: 0;
 }
 
-.photoBlock {
-  margin: 18px 34px 0;
+.vehicleSheetBody {
+  padding: 18px 34px 28px;
+}
+
+.vehiclePhotos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vehiclePhoto {
+  margin: 0;
 }
 
 .photoImg {
   width: 100%;
-  max-height: 320px;
-  object-fit: cover;
+  height: 255px;
+  object-fit: contain;
+  background: #f5f6f8;
   display: block;
   border: 1px solid #dde2e8;
 }
@@ -434,6 +445,86 @@
   font-weight: 700;
   color: #5a6472;
   margin: 6px 0 0;
+}
+
+.photoUnavailable {
+  grid-column: 1 / -1;
+  height: 255px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #c7ccd4;
+  background: #f5f6f8;
+  color: #8b95a3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vehicleDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid #dde2e8;
+  border-right: 0;
+  border-bottom: 0;
+  margin-top: 18px;
+}
+
+.vehicleDetail {
+  min-height: 48px;
+  padding: 9px 10px;
+  border-right: 1px solid #dde2e8;
+  border-bottom: 1px solid #dde2e8;
+  box-sizing: border-box;
+}
+
+.vehicleDetail span,
+.vehiclePriceGrid span {
+  display: block;
+  color: #8b95a3;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.vehicleDetail b {
+  color: #0b1f3a;
+  font-size: 11px;
+}
+
+.vehicleSpecSummary {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: #f5f6f8;
+  color: #5a6472;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.vehiclePriceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 14px;
+  background: #0b1f3a;
+  color: #fff;
+}
+
+.vehiclePriceGrid > div {
+  padding: 11px 14px;
+  border-right: 1px solid rgba(255,255,255,.18);
+}
+
+.vehiclePriceGrid > div:last-child {
+  border-right: 0;
+}
+
+.vehiclePriceGrid span {
+  color: #aebbd0;
+}
+
+.vehiclePriceGrid b {
+  font-size: 15px;
 }
 
 @media print {
