@@ -4,7 +4,7 @@ import {Heart,ShieldCheck,Target} from "lucide-react";
 import {GetInTouchSection} from "../contact-section";
 import {PageHero,SiteShell} from "../ui";
 
-const visits=["visit_5c856c9cdfaec3e8.jpg","visit_e4c2d879f81cda1d.jpg","visit_03e6f0c1a20573b5.jpg","visit_f702494f5cd6dcad.jpg","visit_28a26165a6c45538.jpg","visit_e65ff07f4cdc1547.jpg","visit_2039275af0d4543d.jpg","visit_06d43138b60215dd.jpg","visit_2855e6e2ccb4a3aa.jpg","visit_81dea455c97a8fe0.jpg","visit_d329cf135f009b39.jpg","visit_2b5f883a4dbacd36.jpg","visit_0f45e2d89ceb5d4b.jpg","visit_b1c7fe04391856c7.jpg","visit_5384b8317f1c5f06.jpg","visit_03c823f280e39f2c.jpg","visit_ee68577cc29fa6a8.jpg","visit_ffe7df39fdf4034d.jpg","visit_a2c343a85e75391e.jpg","visit_24287f7917143740.jpg"];
+const visits=["visit_5c856c9cdfaec3e8.jpg","visit_e4c2d879f81cda1d.jpg","visit_03e6f0c1a20573b5.jpg","visit_f702494f5cd6dcad.jpg","visit_28a26165a6c45538.jpg","visit_e65ff07f4cdc1547.jpg","visit_06d43138b60215dd.jpg","visit_2855e6e2ccb4a3aa.jpg","visit_81dea455c97a8fe0.jpg","visit_d329cf135f009b39.jpg","visit_2b5f883a4dbacd36.jpg","visit_0f45e2d89ceb5d4b.jpg","visit_b1c7fe04391856c7.jpg","visit_5384b8317f1c5f06.jpg","visit_03c823f280e39f2c.jpg","visit_ee68577cc29fa6a8.jpg","visit_ffe7df39fdf4034d.jpg","visit_a2c343a85e75391e.jpg","visit_24287f7917143740.jpg"];
 const steps=[
   ["Source & quote","Match inventory to your budget, model, and destination constraints; confirm specs and Incoterms."],
   ["Inspect & verify","Optional third-party or in-house checks; photos, OBD, and export documentation prepared."],
