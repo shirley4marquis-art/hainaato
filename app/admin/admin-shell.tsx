@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className={styles.body}>{children}</div>
-      <nav className={styles.bottomNav} aria-label="Admin navigation">
+      <div className={styles.bottomNav} role="navigation" aria-label="Admin navigation">
         <div className={styles.bottomNavInner}>
           {LINKS.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href);
@@ -65,7 +65,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <Plus size={28} />
           </Link>
         </div>
-      </nav>
+      </div>
     </div>
   );
 }
