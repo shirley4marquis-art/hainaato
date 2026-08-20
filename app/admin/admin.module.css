@@ -106,7 +106,7 @@
 .body {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 30px 24px 120px;
+  padding: 30px 24px 60px;
 }
 
 .pageHeading {
@@ -413,11 +413,15 @@
   font-size: 12px;
 }
 
-.navUtility { display:flex;align-items:center;gap:14px;color:#7a8492;font-size:11px;font-weight:650 }
-.navUtility .navLogout { color:#485363;border-color:#dde1e7;margin:0;padding:7px 10px }
-.navUtility .navLogout:hover { background:#f4f5f7 }
+.desktopNav { display:flex;align-items:center;gap:3px }
+.desktopNav>a { display:inline-flex;align-items:center;gap:5px;padding:7px 8px;border-radius:8px;color:#697586;font-size:10px;font-weight:700;text-decoration:none }
+.desktopNav>a:hover,.desktopNavActive { background:#f1f3f6;color:#17202d!important }
+.desktopNav .desktopCreate { margin-left:5px;background:#17202d;color:#fff }
+.desktopNav .desktopCreate:hover { background:#2b3645;color:#fff!important }
+.desktopNav .navLogout { color:#485363;border-color:#dde1e7;margin-left:5px;padding:7px 9px }
+.desktopNav .navLogout:hover { background:#f4f5f7 }
 
-.bottomNav { position:fixed;left:0;right:0;bottom:0;z-index:80;padding:0 18px max(14px,env(safe-area-inset-bottom));pointer-events:none }
+.bottomNav { display:none;position:fixed;left:0;right:0;bottom:0;z-index:80;padding:0 18px max(14px,env(safe-area-inset-bottom));pointer-events:none }
 .bottomNavInner { position:relative;display:grid;grid-template-columns:repeat(5,minmax(58px,92px));align-items:end;justify-content:center;gap:5px;width:max-content;max-width:100%;margin:auto;padding:8px 10px;background:#fff;border:1px solid #e0e4e9;border-radius:20px;box-shadow:0 16px 45px #11182726;pointer-events:auto }
 .bottomNavInner>a:not(.createAction) { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;border-radius:12px;color:#7a8492;font-size:9px;font-weight:750;text-decoration:none }
 .bottomNavInner>a:nth-child(1){grid-column:1}.bottomNavInner>a:nth-child(2){grid-column:2}.bottomNavInner>a:nth-child(3){grid-column:4}.bottomNavInner>a:nth-child(4){grid-column:5}
@@ -585,8 +589,7 @@
   .nav {
     padding: 9px 14px;
   }
-  .navUtility > span,.navLogout span { display:none }
-  .navLogout { border:0!important;padding:7px!important }
+  .desktopNav { display:none }
   .navBrandRibbon {
     display: none;
   }
@@ -597,7 +600,7 @@
   .statGrid {
     grid-template-columns: 1fr;
   }
-  .bottomNav { padding-inline:7px }
+  .bottomNav { display:block;padding-inline:7px }
   .bottomNavInner { grid-template-columns:repeat(5,minmax(54px,68px));gap:1px;padding-inline:5px;border-radius:17px }
   .bottomNavInner>a:not(.createAction) { min-height:45px }
   .createAction { width:55px;height:55px }

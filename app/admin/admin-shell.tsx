@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { BriefcaseBusiness, FileSignature, LogOut, Plus, TrendingUp, Users } from "lucide-react";
+import { BriefcaseBusiness, FileSignature, LayoutDashboard, LogOut, Plus, TrendingUp, Users } from "lucide-react";
 import styles from "./admin.module.css";
 
 const LINKS = [
@@ -11,6 +11,11 @@ const LINKS = [
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/sales", label: "Sales", icon: TrendingUp },
   { href: "/admin/contracts", label: "Contracts", icon: FileSignature },
+] as const;
+
+const DESKTOP_LINKS = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  ...LINKS,
 ] as const;
 
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -33,8 +38,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <span className={styles.navBrandRibbon}>Admin</span>
           </span>
         </Link>
-        <div className={styles.navUtility}>
-          <span>Operations workspace</span>
+        <div className={styles.desktopNav}>
+          {DESKTOP_LINKS.map(({ href, label, icon: Icon }) => {
+            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+            return <Link key={href} href={href} className={active ? styles.desktopNavActive : undefined}><Icon size={14}/>{label}</Link>;
+          })}
+          <Link className={styles.desktopCreate} href="/admin/quotes/new"><Plus size={14}/> New quote</Link>
           <button className={styles.navLogout} onClick={logout} type="button" aria-label="Log out">
             <LogOut size={15} /> <span>Log out</span>
           </button>
