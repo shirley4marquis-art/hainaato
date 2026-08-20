@@ -1,70 +1,73 @@
 import Link from "next/link";
-import { Plus, Inbox } from "lucide-react";
+import { ArrowRight, Inbox, Plus } from "lucide-react";
 import { AdminShell } from "../admin-shell";
 import { adminListQuotes } from "../../../lib/crm";
-import { STATUS_META, type QuoteStatus } from "../status";
+import { STATUS_META, STATUS_ORDER, type QuoteStatus } from "../status";
 import styles from "../admin.module.css";
 
-// Without this, Next.js sees no cookies()/headers() call inside the page
-// itself (the auth check happens one layer up, in proxy.ts) and treats it as
-// a plain static page — cached from whichever request first rendered it
-// (build time or first hit after a deploy) and never re-queried again. A
-// staff dashboard showing every quote/lead must always read the DB fresh;
-// caching it silently hid every quote created after that first render.
 export const dynamic = "force-dynamic";
 
-export default async function AdminQuotesList() {
+const GROUPS = {
+  all: { label: "All", statuses: STATUS_ORDER },
+  quotes: { label: "Quotes", statuses: ["quoted", "negotiating"] },
+  payment: { label: "Payment", statuses: ["deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed"] },
+  fulfilment: { label: "Fulfilment", statuses: ["inspection_scheduled", "inspection_passed", "export_docs_ready"] },
+  shipping: { label: "Shipping", statuses: ["booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery"] },
+  complete: { label: "Complete", statuses: ["delivered", "lost"] },
+} as const;
+
+type GroupKey = keyof typeof GROUPS;
+
+export default async function AdminQuotesList({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
   const quotes = await adminListQuotes();
+  const requested = (await searchParams).group;
+  const activeGroup: GroupKey = requested && requested in GROUPS ? requested as GroupKey : "all";
+  const allowed = new Set<string>(GROUPS[activeGroup].statuses);
+  const filtered = quotes.filter((quote) => allowed.has(quote.status));
 
   return (
     <AdminShell>
       <div className={styles.pageHeading}>
-        <h1>Quotes &amp; orders</h1>
-        <Link className={styles.btn} href="/admin/quotes/new">
-          <Plus size={14} /> New quote
-        </Link>
+        <div><span className={styles.eyebrow}>Order operations</span><h1>Track every order</h1><p>Move from quote to delivery with one live status record.</p></div>
+        <Link className={styles.btn} href="/admin/quotes/new"><Plus size={15} /> New quote</Link>
       </div>
 
-      {quotes.length === 0 ? (
-        <div className={styles.emptyState}>
-          <Inbox size={28} />
-          <p style={{ margin: 0 }}>No quotes yet. Website leads land here automatically, or start one manually.</p>
-        </div>
+      <div className={styles.filterRow} aria-label="Order progress categories">
+        {(Object.entries(GROUPS) as [GroupKey, typeof GROUPS[GroupKey]][]).map(([key, group]) => {
+          const groupStatuses = new Set<string>(group.statuses);
+          const count = quotes.filter((quote) => groupStatuses.has(quote.status)).length;
+          return <Link key={key} href={key === "all" ? "/admin/quotes" : `/admin/quotes?group=${key}`} className={key === activeGroup ? styles.filterActive : undefined}>{group.label}<b>{count}</b></Link>;
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className={styles.emptyState}><Inbox size={28} /><p>No records in this stage.</p></div>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Ref</th>
-              <th>Customer</th>
-              <th>Vehicle(s)</th>
-              <th>Destination</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotes.map((q) => {
-              const meta = STATUS_META[q.status as QuoteStatus];
-              const Icon = meta.icon;
-              return (
-                <tr key={q.ref}>
-                  <td><Link href={`/admin/quotes/${q.ref}`}>{q.documentNumber ?? q.ref}</Link></td>
-                  <td>{q.customerName}</td>
-                  <td>{q.vehicleSummary}</td>
-                  <td>{q.destinationCountry}</td>
-                  <td>{q.currency} {q.cifTotal.toLocaleString()}</td>
-                  <td>
-                    <span className={styles.statusPill} data-tone={meta.tone}>
-                      <Icon size={11} /> {meta.label}
-                    </span>
-                  </td>
-                  <td>{new Date(q.createdAt).toLocaleDateString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className={styles.recordList}>
+          {filtered.map((quote) => {
+            const status = quote.status as QuoteStatus;
+            const meta = STATUS_META[status];
+            const Icon = meta.icon;
+            const progressIndex = Math.max(0, STATUS_ORDER.indexOf(status));
+            const progress = status === "lost" ? 0 : Math.round((progressIndex / (STATUS_ORDER.length - 2)) * 100);
+            return (
+              <Link className={styles.orderCard} href={`/admin/quotes/${quote.ref}`} key={quote.ref}>
+                <div className={styles.orderMain}>
+                  <span className={styles.orderRef}>{quote.documentNumber ?? quote.ref}</span>
+                  <h2>{quote.customerName}</h2>
+                  <p>{quote.vehicleSummary} · {quote.destinationCountry}</p>
+                </div>
+                <div className={styles.orderProgress}>
+                  <span className={styles.statusPill} data-tone={meta.tone}><Icon size={11} /> {meta.label}</span>
+                  <div><i style={{ width: `${progress}%` }} /></div>
+                  <small>{status === "lost" ? "Closed" : `${progress}% progress`}</small>
+                </div>
+                <div className={styles.orderValue}><b>{quote.currency} {quote.cifTotal.toLocaleString()}</b><small>{new Date(quote.createdAt).toLocaleDateString()}</small></div>
+                <ArrowRight className={styles.orderArrow} size={17} />
+              </Link>
+            );
+          })}
+        </div>
       )}
     </AdminShell>
   );

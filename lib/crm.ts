@@ -532,6 +532,40 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
   }));
 }
 
+export type AdminCustomerSummary = {
+  id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
+  quoteCount: number;
+  totalValue: number;
+  lastActivityAt: string;
+};
+
+export async function adminListCustomers(): Promise<AdminCustomerSummary[]> {
+  const { rows } = await getPool().query(`
+    SELECT c.id, c.name, c.phone, c.email, c.country,
+           COUNT(q.id)::int AS quote_count,
+           COALESCE(SUM(q.cif_total) FILTER (WHERE q.status <> 'lost'), 0) AS total_value,
+           GREATEST(c.created_at, COALESCE(MAX(q.updated_at), c.created_at)) AS last_activity_at
+    FROM customers c
+    LEFT JOIN quotes q ON q.customer_id = c.id
+    GROUP BY c.id
+    ORDER BY last_activity_at DESC
+  `);
+  return (rows as Row[]).map((r) => ({
+    id: Number(r.id),
+    name: r.name as string,
+    phone: (r.phone as string) ?? null,
+    email: (r.email as string) ?? null,
+    country: (r.country as string) ?? null,
+    quoteCount: Number(r.quote_count),
+    totalValue: Number(r.total_value),
+    lastActivityAt: (r.last_activity_at as Date).toISOString(),
+  }));
+}
+
 export type AdminQuoteDetail = Omit<AdminQuoteInput, "currency" | "language" | "depositPct"> & {
   ref: string;
   documentNumber: string | null;
