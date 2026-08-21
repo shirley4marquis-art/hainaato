@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Plus, Trash2, User, FileText, Car, Image as ImageIcon } from "lucide-react";
+import { ClipboardPaste, Plus, Trash2, User, FileText, Car, Image as ImageIcon, WandSparkles } from "lucide-react";
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 
@@ -37,6 +37,9 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pasteText, setPasteText] = useState("");
+  const [detecting, setDetecting] = useState(false);
+  const [detectionNotice, setDetectionNotice] = useState<string | null>(null);
 
   const [customer, setCustomer] = useState({
     id: initial?.customer.id ?? null,
@@ -96,6 +99,39 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     updateItem(key, { photos: (item.photos ?? []).filter((_, i) => i !== index) });
   }
 
+  async function detectPastedInquiry() {
+    const text = pasteText.trim();
+    if (!text || detecting) return;
+    setDetecting(true); setError(null); setDetectionNotice(null);
+    const labelled = (labels: string[]) => {
+      const pattern = new RegExp(`(?:^|\\n)\\s*(?:${labels.join("|")})\\s*[:=-]\\s*([^\\n]+)`, "i");
+      return text.match(pattern)?.[1]?.trim() ?? "";
+    };
+    const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] ?? "";
+    const name = labelled(["client(?: name)?", "customer(?: name)?", "full name", "name", "cliente", "nombre"]);
+    const port = labelled(["destination port", "delivery port", "port", "puerto(?: de destino)?"]);
+    const country = labelled(["destination country", "country", "pa[ií]s(?: de destino)?"]);
+    const phone = labelled(["phone", "whatsapp", "tel(?:ephone)?", "tel[eé]fono"]);
+    const urlMatches = text.match(/(?:https?:\/\/[^\s<>"']+)?\/vehicles\/[a-z0-9-]+/gi) ?? [];
+    const urls = [...new Set(urlMatches.map((url) => url.replace(/[),.;]+$/, "")))];
+    setCustomer((current) => ({ ...current, name: name || current.name, email: email || current.email, phone: phone || current.phone }));
+    setQuote((current) => ({ ...current, destinationPort: port || current.destinationPort, destinationCountry: country || current.destinationCountry }));
+    let resolved = 0; let failed = 0;
+    if (urls.length) {
+      try {
+        const response = await fetch("/api/admin/quote-intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls }) });
+        const data = await response.json().catch(() => null) as { ok?: boolean; vehicles?: { item?: AdminQuoteItemInput; error?: string }[]; error?: string } | null;
+        if (!response.ok || !data?.ok) throw new Error(data?.error || "Vehicle lookup failed.");
+        const detectedItems = (data.vehicles ?? []).flatMap((entry) => entry.item ? [{ ...entry.item, key: newKey() } as ItemDraft] : []);
+        resolved = detectedItems.length; failed = urls.length - resolved;
+        if (detectedItems.length) { setItems(detectedItems); setQuote((current) => ({ ...current, currency: "CNY" })); }
+      } catch (lookupError) { setError(lookupError instanceof Error ? lookupError.message : "Vehicle lookup failed."); }
+    }
+    const fields = [name && "name", email && "email", phone && "phone", port && "port", country && "country"].filter(Boolean);
+    setDetectionNotice(`Detected ${fields.length ? fields.join(", ") : "no labelled client fields"}${resolved ? ` and ${resolved} catalogue vehicle${resolved === 1 ? "" : "s"}` : ""}${failed ? `. ${failed} vehicle link${failed === 1 ? " was" : "s were"} not found` : ""}. Review before creating the quote.`);
+    setDetecting(false);
+  }
+
   async function submit() {
     if (busy) return;
     if (!customer.name || !quote.destinationPort || !quote.destinationCountry) {
@@ -133,10 +169,11 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       status: quote.status,
       notes: quote.notes || null,
       publicConsent: quote.publicConsent,
-      items: items.map(({ key: _key, ...rest }) => ({
-        ...rest,
-        photos: (rest.photos ?? []).filter((p) => p.url.trim()),
-      })),
+      items: items.map((item) => {
+        const rest = { ...item };
+        delete (rest as Partial<ItemDraft>).key;
+        return { ...rest, photos: (rest.photos ?? []).filter((p) => p.url.trim()) };
+      }),
     };
 
     try {
@@ -161,6 +198,12 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
 
   return (
     <div className={styles.form}>
+      {!initial && <div className={styles.intakePanel}>
+        <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste client inquiry</h2><p>Paste an email, WhatsApp message, or enquiry containing client details and HainaAuto vehicle links.</p></div></div>
+        <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://www.hainaautochina.com/vehicles/vehicle-slug"}/>
+        <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={detectPastedInquiry} disabled={detecting || !pasteText.trim()}><WandSparkles size={14}/>{detecting ? "Detecting details…" : "Detect and fill quotation"}</button><small>Nothing is saved until you review and click Create quote.</small></div>
+        {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
+      </div>}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}><User size={14} /> Customer</h2>
         <div className={styles.grid}>
@@ -248,6 +291,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>FOB original *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>
               <label>Discount<input type="number" step="0.01" value={item.discount ?? 0} onChange={(e) => updateItem(item.key, { discount: num(e.target.value) })} /></label>
               <label>FOB final (price used) *<input type="number" step="0.01" value={item.fobFinal} onChange={(e) => updateItem(item.key, { fobFinal: num(e.target.value) })} /></label>
+              <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://www.hainaautochina.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
               <label className={styles.wide}>Spec summary (shown on the printed quote)
                 <textarea rows={2} placeholder="e.g. SUV grande de chasis independiente · V6 híbrido biturbo 3.4L…" value={item.specSummary ?? ""} onChange={(e) => updateItem(item.key, { specSummary: e.target.value })} />
               </label>
