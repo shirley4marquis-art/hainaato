@@ -4,3 +4,4 @@
 
 .listCard .media{aspect-ratio:4/3;min-height:0}
 @media(max-width:650px){.listCard .media{min-height:0}}
+.cifBadge{display:inline-flex;margin:9px 0 0;padding:4px 7px;border:1px solid #cfe7dc;border-radius:5px;background:#f1fbf6;color:#0d5c44;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}

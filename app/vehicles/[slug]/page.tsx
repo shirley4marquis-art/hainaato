@@ -23,11 +23,11 @@ import { Price } from "../../price";
 import { ResilientVehicleImage } from "../../vehicle-image";
 import {WHATSAPP_URL} from "../../contact-links";
 import {
-  formatCNY,
   formatKm,
   getFeaturedVehicles,
   getTotalVehicleCount,
 } from "../../../lib/vehicles";
+import { convertFromCNY } from "../../../lib/currency";
 import { imagePath } from "../../../lib/format";
 import { rankVehicleImages } from "../../../lib/image-ranking";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
@@ -46,7 +46,19 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-const SKIP_SPEC_KEYS = new Set(["selling price", "seller-tags"]);
+const SKIP_SPEC_KEYS = new Set([
+  "selling price",
+  "seller-tags",
+  "precio hainaauto",
+  "precio original",
+  "ajuste de precio hainaauto",
+  "hainaauto price adjustment",
+  "nota de precio",
+]);
+
+function shouldShowSpec([key, value]: [string, string]) {
+  return Boolean(value) && !SKIP_SPEC_KEYS.has(key.trim().toLowerCase());
+}
 
 const SPEC_ICONS: [RegExp, typeof Zap][] = [
   [/energy/i, Zap],
@@ -65,6 +77,12 @@ function iconFor(key: string) {
   return SPEC_ICONS.find(([re]) => re.test(key))?.[1] ?? Tag;
 }
 
+function formatUsdCifPreview(cny: number | null | undefined): string {
+  if (cny == null) return "CIF price on request";
+  const usd = Math.round(convertFromCNY(cny, "USD"));
+  return `USD ${usd.toLocaleString("en-US")} CIF`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -73,10 +91,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
-  const shareDescription = vehicle.site === "hendrick"
-    ? `${vehicle.title}——由 HainaAuto 提供专业验车、出口文件及国际物流服务。`
-    : `${vehicle.title}——参考价格 ${formatCNY(vehicle.priceCNY)}。HainaAuto 提供中国车源及全程出口支持。`;
-  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. Vehículo disponible para importar desde China a Venezuela con inspección, documentación y logística de HainaAuto.`;
+  const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
+  const shareDescription = `${vehicle.title} - ${usdCifPrice}. CIF includes vehicle, international ocean freight and marine insurance to the agreed destination port. Local destination charges not included.`;
+  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Vehículo disponible para importar desde China a Venezuela con inspección, documentación y logística de HainaAuto.`;
   const primaryImage = rankVehicleImages(vehicle.images)[0];
   const previewImage = primaryImage
     ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://www.hainaautochina.com").toString()
@@ -101,6 +118,10 @@ export async function generateMetadata({
       description: shareDescription,
       images: [previewImage],
     },
+    other: vehicle.priceCNY == null ? undefined : {
+      "product:price:amount": String(Math.round(convertFromCNY(vehicle.priceCNY, "USD"))),
+      "product:price:currency": "USD",
+    },
   };
 }
 
@@ -113,9 +134,7 @@ export default async function VehicleDetail({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) notFound();
 
-  const specEntries = Object.entries(vehicle.specs).filter(
-    ([key]) => !SKIP_SPEC_KEYS.has(key)
-  );
+  const specEntries = Object.entries(vehicle.specs).filter(shouldShowSpec);
   const metaLine = [
     vehicle.year,
     vehicle.mileageKm != null ? formatKm(vehicle.mileageKm) : null,
@@ -188,6 +207,7 @@ export default async function VehicleDetail({
             <div className="sale">
               <Price cny={vehicle.priceCNY}/>
             </div>
+            <p className="cif-price-note"><b>CIF included</b> Vehicle, international ocean freight and marine insurance are included in HAINA AUTO quotations unless marked FOB.</p>
           </div>
 
           <ul className="buy-checklist">
@@ -306,7 +326,9 @@ export default async function VehicleDetail({
         <div id="request">
           <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} />
           <div className="side-card specialist-card">
-            <span className="avatar">HA</span>
+            <span className="avatar" aria-label="HainaAuto export team">
+              <img src="/hainaauto-logo.webp" alt="HainaAuto logo" />
+            </span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
             <a href="mailto:sales@hainaautochina.com">sales@hainaautochina.com</a>

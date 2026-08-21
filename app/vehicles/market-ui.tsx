@@ -23,10 +23,33 @@ export type FilterOptions = {
   fuels: string[];
   bodyTypes: string[];
   brands: string[];
+  models: string[];
   colors: string[];
   minPrice: number;
   maxPrice: number;
 };
+
+const YEAR_OPTIONS = Array.from({ length: 12 }, (_, index) => String(2027 - index));
+
+const MILEAGE_OPTIONS = [
+  ["", "Any mileage"],
+  ["10000", "Up to 10,000 km"],
+  ["20000", "Up to 20,000 km"],
+  ["50000", "Up to 50,000 km"],
+  ["100000", "Up to 100,000 km"],
+  ["150000", "Up to 150,000 km"],
+] as const;
+
+const PRICE_OPTIONS = [
+  ["", "Any price"],
+  ["50000", "Up to ¥50,000"],
+  ["75000", "Up to ¥75,000"],
+  ["100000", "Up to ¥100,000"],
+  ["150000", "Up to ¥150,000"],
+  ["200000", "Up to ¥200,000"],
+  ["300000", "Up to ¥300,000"],
+  ["500000", "Up to ¥500,000"],
+] as const;
 
 export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
   const href = `/vehicles/${v.slug}`;
@@ -84,6 +107,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-location"><MapPin aria-hidden="true"/>{v.location ?? "China"}</div>
         <div className="vlist-side-spacer"/>
         <div className="vlist-price"><Price cny={v.priceCNY}/></div>
+        <div className="vlist-cif-note"><span>CIF</span> Freight + marine insurance included</div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
           <Link className="is-quote" href={href} aria-label="Preview this vehicle"><FileText/></Link>
@@ -173,7 +197,14 @@ export function FilterFields({
       </label>
       <label>
         Model
-        <input name="model" placeholder="Model contains…" defaultValue={sp.model ?? ""} />
+        <select name="model" defaultValue={sp.model ?? ""}>
+          <option value="">All models</option>
+          {options.models.map((x) => (
+            <option key={x} value={x}>
+              {x}
+            </option>
+          ))}
+        </select>
       </label>
       <label>
         Category
@@ -248,21 +279,31 @@ export function FilterFields({
       <div className="filter-pair">
         <label>
           Year from
-          <input name="minYear" type="number" min="1990" max="2030" defaultValue={sp.minYear ?? ""} />
+          <select name="minYear" defaultValue={sp.minYear ?? ""}>
+            <option value="">Any year</option>
+            {YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}
+          </select>
         </label>
         <label>
           Year to
-          <input name="maxYear" type="number" min="1990" max="2030" defaultValue={sp.maxYear ?? ""} />
+          <select name="maxYear" defaultValue={sp.maxYear ?? ""}>
+            <option value="">Any year</option>
+            {YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}
+          </select>
         </label>
       </div>
       <div className="filter-pair">
         <label>
           Max mileage
-          <input name="maxMileage" type="number" min="0" placeholder="km" defaultValue={sp.maxMileage ?? ""} />
+          <select name="maxMileage" defaultValue={sp.maxMileage ?? ""}>
+            {MILEAGE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
         </label>
         <label>
           Max price
-          <input name="maxPrice" type="number" min="0" placeholder="CNY" defaultValue={sp.maxPrice ?? ""} />
+          <select name="maxPrice" defaultValue={sp.maxPrice ?? ""}>
+            {PRICE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
         </label>
       </div>
     </>
@@ -396,6 +437,14 @@ export function QuickFilterBar({
               </option>
             ))}
           </select>
+          <select name="model" defaultValue={sp.model ?? ""}>
+            <option value="">Model: All</option>
+            {options.models.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
           <select name="type" defaultValue={sp.type ?? ""}>
             <option value="">Category: All</option>
             {options.bodyTypes.map((x) => (
@@ -409,6 +458,13 @@ export function QuickFilterBar({
             {options.fuels.map((x) => (
               <option key={x} value={x}>
                 {x}
+              </option>
+            ))}
+          </select>
+          <select name="maxPrice" defaultValue={sp.maxPrice ?? ""}>
+            {PRICE_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {value ? label.replace("Up to ", "Price: ") : "Price: All"}
               </option>
             ))}
           </select>

@@ -1,11 +1,6 @@
-// Placeholder commercial defaults for auto-generated (cart-checkout) quotes —
-// there's no real freight/insurance rate table anywhere in this codebase, so
-// these are flat per-vehicle figures (matching the real sample quote's own
-// numbers, e.g. the Toyota Sequoia Trailhunter Cotización: $120 inland /
-// $180 export docs / $950 freight / $210 insurance for one unit) scaled by
-// quantity, meant to get the customer an instant PDF. Staff correct the real
-// numbers afterward in the admin quote editor — see the "Simple flat
-// defaults, staff adjusts after" decision this was built against.
+// Optional fallback figures for explicitly FOB quotes only. HAINA AUTO's
+// normal website/admin quotations default to CIF, where the entered unit price
+// already includes vehicle, international ocean freight and marine insurance.
 export const DEFAULT_RATES_PER_UNIT = {
   inlandTransportCost: 120,
   exportDocumentationCost: 180,

@@ -1,6 +1,16 @@
 import { notFound } from "next/navigation";
 import { adminGetQuote } from "../../../../../lib/crm";
-import { buildLineItems, formatDate, formatMoney, itemTitle, labelsFor } from "../../../../../lib/quote-document";
+import {
+  buildLineItems,
+  estimateVenezuelaNationalization,
+  formatDate,
+  formatMoney,
+  isCifQuote,
+  itemTitle,
+  labelsFor,
+  quoteCifTotal,
+  quoteNationalizationCifValue,
+} from "../../../../../lib/quote-document";
 import styles from "./print.module.css";
 
 const COMPANY = {
@@ -28,6 +38,10 @@ function Letterhead() {
   );
 }
 
+function formatPdfAmount(amount: number, currency: string): string {
+  return `${currency} ${formatMoney(amount, currency).replace(/^\$/, "")}`;
+}
+
 export default async function QuotePrintPage({ params }: { params: Promise<{ ref: string }> }) {
   const { ref } = await params;
   const quote = await adminGetQuote(ref);
@@ -35,8 +49,26 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
 
   const t = labelsFor(quote.language);
   const lineItems = buildLineItems(quote);
-  const grandTotal = quote.grandTotalReference ?? quote.cifTotal;
+  const isCif = isCifQuote(quote);
+  const effectiveCifTotal = quoteCifTotal(quote);
+  const grandTotal = effectiveCifTotal + (quote.dutyEstimate ?? 0);
   const depositPct = quote.depositPct ?? 40;
+  const depositAmount = effectiveCifTotal * (depositPct / 100);
+  const balanceAmount = effectiveCifTotal - depositAmount;
+  const nationalizationCifValue = quoteNationalizationCifValue(quote);
+  const destinationPortLabel = quote.destinationPort.toUpperCase();
+  const engineDisplacement = quote.items
+    .map((item) => {
+      const match = item.engine?.match(/(\d+(?:\.\d+)?)\s*(?:l|lt|litros|litres)/i);
+      return match ? Number(match[1]) : null;
+    })
+    .find((value): value is number => value != null) ?? 2.0;
+  const venezuelaNationalization = quote.destinationCountry.toLowerCase().includes("venezuela")
+    ? estimateVenezuelaNationalization({
+        cifValue: nationalizationCifValue,
+        engineDisplacementLiters: engineDisplacement,
+      })
+    : null;
 
   const terms = [
     t.depositTerm(depositPct),
@@ -47,8 +79,8 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   ];
 
   const detailLabels = quote.language === "es"
-    ? { details: "DETALLES DEL VEHÍCULO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", engine: "Motor", quantity: "Cantidad", unitPrice: "Precio unitario", lineTotal: "Total del vehículo", unavailable: "Imagen no disponible" }
-    : { details: "VEHICLE DETAILS", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", engine: "Engine", quantity: "Quantity", unitPrice: "Unit price", lineTotal: "Vehicle total", unavailable: "Image unavailable" };
+    ? { details: "DETALLES DEL VEHÍCULO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", engine: "Motor", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
+    : { details: "VEHICLE DETAILS", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", engine: "Engine", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
 
   return (
     <div className={styles.root}>
@@ -88,27 +120,70 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
           <div className={`${styles.summaryItem} ${styles.summaryTotal}`}>
             <span className={styles.summaryLabel}>{t.total}</span>
             <span className={styles.summaryValue}>
-              {quote.currency} {formatMoney(quote.cifTotal, quote.currency)}
+              {quote.currency} {formatMoney(effectiveCifTotal, quote.currency)}
             </span>
           </div>
         </div>
 
-        <div className={styles.clientBar}>{t.client}</div>
-        <div className={styles.clientBlock}>
-          <p className={styles.clientName}>{quote.customer.name}</p>
-          {quote.customer.address && <p className={styles.clientLine}>{quote.customer.address}</p>}
-          <p className={styles.clientLine}>
-            {[quote.customer.city, quote.customer.country].filter(Boolean).join(", ")}
-          </p>
-          <p className={styles.clientLine}>
-            {[quote.customer.email, quote.customer.phone].filter(Boolean).join(" | ")}
-          </p>
+        <div className={styles.partyGrid}>
+          <section className={styles.partyCard}>
+            <p className={styles.partyKicker}>{t.preparedFor}</p>
+            <p className={styles.clientName}>{quote.customer.name}</p>
+            {quote.customer.address && <p className={styles.clientLine}>{quote.customer.address}</p>}
+            <p className={styles.clientLine}>
+              {[quote.customer.city, quote.customer.country].filter(Boolean).join(", ")}
+            </p>
+            <p className={styles.clientLine}>
+              {[quote.customer.email, quote.customer.phone].filter(Boolean).join(" | ")}
+            </p>
+          </section>
+          <section className={styles.partyCard}>
+            <p className={styles.partyKicker}>{t.preparedBy}</p>
+            <p className={styles.clientName}>{COMPANY.name}</p>
+            <p className={styles.clientLine}>{COMPANY.address}</p>
+            <p className={styles.clientLine}>Tel {COMPANY.phone} | {COMPANY.email}</p>
+            <p className={styles.clientLine}>{COMPANY.website}</p>
+          </section>
         </div>
 
-        <p className={styles.termsLine}>
-          {t.incoterms}: {quote.incoterm ?? "—"} · {t.destinationPort}: {quote.destinationPort} ·{" "}
-          {t.estimatedDelivery}: {quote.deliveryEstimate ?? "—"}
-        </p>
+        <section className={styles.commercialSummary}>
+          <div>
+            <span>{t.commercialSummary}</span>
+            <b>{t.quoteScope}</b>
+          </div>
+          <dl>
+            <div>
+              <dt>{t.incoterms}</dt>
+              <dd>{quote.incoterm ?? "CIF"}</dd>
+            </div>
+            <div>
+              <dt>{t.destinationPort}</dt>
+              <dd>{quote.destinationPort}</dd>
+            </div>
+            <div>
+              <dt>{t.estimatedDelivery}</dt>
+              <dd>{quote.deliveryEstimate ?? "—"}</dd>
+            </div>
+          </dl>
+        </section>
+
+        {isCif && (
+          <section className={styles.cifNotice}>
+            <div>
+              <p className={styles.cifNoticeTitle}>{t.cifPriceHeading} — {destinationPortLabel}</p>
+              <p className={styles.cifNoticeAmount}>{formatPdfAmount(effectiveCifTotal, quote.currency)}</p>
+            </div>
+            <div className={styles.cifIncludedBox}>
+              <p>{t.cifIncludesHeading}</p>
+              <ul>
+                <li>{t.cifVehicleIncluded}</li>
+                <li>{t.freight}</li>
+                <li>{t.insurance}</li>
+              </ul>
+            </div>
+            <p className={styles.destinationExclusionNote}>{t.destinationChargesExcluded}</p>
+          </section>
+        )}
 
         <table className={styles.table}>
           <thead>
@@ -126,9 +201,9 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
                   <div className={styles.itemLabel}>{row.label}</div>
                   {row.sub && <p className={styles.itemSub}>{row.sub}</p>}
                 </td>
-                <td className={styles.numCell}>{formatMoney(row.rate, quote.currency)}</td>
-                <td className={styles.numCell}>{row.qty}</td>
-                <td className={styles.numCell}>{formatMoney(row.total, quote.currency)}</td>
+                <td className={styles.numCell}>{row.rateText ?? formatMoney(row.rate ?? 0, quote.currency)}</td>
+                <td className={styles.numCell}>{row.qty ?? "—"}</td>
+                <td className={styles.numCell}>{row.totalText ?? formatMoney(row.total ?? 0, quote.currency)}</td>
               </tr>
             ))}
           </tbody>
@@ -136,10 +211,10 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
 
         <div className={styles.totalsBlock}>
           <div className={styles.grandTotalRow}>
-            <span className={styles.grandTotalLabel}>{t.payable}</span>
+            <span className={styles.grandTotalLabel}>{isCif ? `${t.totalCif} – ${destinationPortLabel}` : t.payable}</span>
             <span className={styles.grandTotalValue}>
               <span className={styles.grandTotalCurrency}>{quote.currency}</span>
-              {formatMoney(quote.cifTotal, quote.currency)}
+              {formatMoney(effectiveCifTotal, quote.currency)}
             </span>
           </div>
           {quote.dutyEstimate != null && (
@@ -149,13 +224,40 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
                 <span className={styles.estimateValue}>{formatMoney(quote.dutyEstimate, quote.currency)}</span>
               </div>
               <p className={styles.estimateNote}>{t.destinationEstimateNote}</p>
-              <div className={styles.costToOwnRow}>
-                <span className={styles.costToOwnLabel}>{t.costToOwn}</span>
-                <span className={styles.costToOwnValue}>{formatMoney(grandTotal, quote.currency)}</span>
-              </div>
             </>
           )}
+          {venezuelaNationalization && (
+            <>
+              <div className={styles.estimateRow}>
+                <span className={styles.estimateLabel}>{t.customsPreview}</span>
+                <span className={styles.estimateValue}>{formatMoney(venezuelaNationalization.total, quote.currency)}</span>
+              </div>
+              <p className={styles.estimateNote}>
+                {t.customsPreviewNote} CIF = {formatMoney(venezuelaNationalization.cifValue, quote.currency)} · Duty = {formatMoney(venezuelaNationalization.importDuty, quote.currency)} · Service fee = {formatMoney(venezuelaNationalization.customsServiceFee, quote.currency)} · VAT = {formatMoney(venezuelaNationalization.vat, quote.currency)}{venezuelaNationalization.luxuryFee > 0 ? ` · Luxury surcharge = ${formatMoney(venezuelaNationalization.luxuryFee, quote.currency)}` : ""}.
+              </p>
+            </>
+          )}
+          <div className={styles.costToOwnRow}>
+            <span className={styles.costToOwnLabel}>{t.costToOwn}</span>
+            <span className={styles.costToOwnValue}>{formatMoney(grandTotal + (venezuelaNationalization?.total ?? 0), quote.currency)}</span>
+          </div>
         </div>
+
+        <section className={styles.paymentSchedule}>
+          <p className={styles.blockHeading}>{t.paymentSchedule}</p>
+          <div className={styles.paymentGrid}>
+            <div>
+              <span>{t.depositDue(depositPct)}</span>
+              <b>{formatMoney(depositAmount, quote.currency)}</b>
+              <small>{t.depositTiming}</small>
+            </div>
+            <div>
+              <span>{t.balanceDue(depositPct)}</span>
+              <b>{formatMoney(balanceAmount, quote.currency)}</b>
+              <small>{t.balanceTiming}</small>
+            </div>
+          </div>
+        </section>
 
         <div className={styles.termsBlock}>
           <p className={styles.blockHeading}>{t.termsHeading}</p>

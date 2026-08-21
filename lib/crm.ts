@@ -5,6 +5,7 @@
 // Vercel's serverless functions, and mixed two different businesses' data in
 // one database. See supabase/crm-schema.sql for the schema this talks to.
 import { Pool, type PoolClient, types } from "pg";
+import { quoteNationalizationCifValue, quotePriceType } from "./quote-document";
 
 // pg's default DATE parser builds a JS Date at local-timezone midnight, then
 // call sites convert back to a "YYYY-MM-DD" string via toISOString() — for
@@ -59,16 +60,24 @@ async function recalc(client: PoolClient, ref: string): Promise<void> {
   if (!quote) throw new Error(`no quote with ref ${ref}`);
   const items = (await client.query("SELECT * FROM quote_items WHERE quote_id = $1", [quote.id])).rows as Row[];
   const itemsSubtotal = items.reduce((sum, it) => sum + (it.fob_final as number) * (it.qty as number), 0);
-  const cifTotal =
-    itemsSubtotal +
-    (quote.inland_transport_cost as number) +
-    (quote.export_documentation_cost as number) +
-    (quote.freight_cost as number) +
-    (quote.insurance_cost as number);
+  const priceType = quotePriceType((quote.incoterm as string | null) ?? null);
+  const cifTotal = priceType === "CIF"
+    ? itemsSubtotal
+    : itemsSubtotal +
+      (quote.inland_transport_cost as number) +
+      (quote.export_documentation_cost as number) +
+      (quote.freight_cost as number) +
+      (quote.insurance_cost as number);
   const depositAmount = cifTotal * ((quote.deposit_pct as number) / 100);
   const balanceAmount = cifTotal - depositAmount;
   const dutyPct = quote.duty_pct as number | null;
-  const dutyEstimate = (quote.duty_estimate_override as number | null) ?? (dutyPct != null ? itemsSubtotal * (dutyPct / 100) : null);
+  const dutyBase = quoteNationalizationCifValue({
+    incoterm: (quote.incoterm as string | null) ?? null,
+    freightCost: quote.freight_cost as number,
+    insuranceCost: quote.insurance_cost as number,
+    items: items.map((it) => ({ fobFinal: it.fob_final as number, qty: it.qty as number })),
+  });
+  const dutyEstimate = (quote.duty_estimate_override as number | null) ?? (dutyPct != null ? dutyBase * (dutyPct / 100) : null);
   const grandTotal = cifTotal + (dutyEstimate ?? 0);
   await client.query(
     `UPDATE quotes SET cif_total = $1, deposit_amount = $2, balance_amount = $3, duty_estimate = $4,
@@ -363,6 +372,13 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
     const documentNumber =
       input.documentNumber ?? (isNew ? await nextDocumentNumber(client, new Date().getFullYear()) : null);
 
+    const incoterm = quotePriceType(input.incoterm) === "FOB" ? "FOB" : "CIF";
+    const isFob = incoterm === "FOB";
+    const inlandTransportCost = isFob ? input.inlandTransportCost ?? 0 : 0;
+    const exportDocumentationCost = isFob ? input.exportDocumentationCost ?? 0 : 0;
+    const freightCost = isFob ? input.freightCost ?? 0 : 0;
+    const insuranceCost = isFob ? input.insuranceCost ?? 0 : 0;
+
     if (isNew) {
       await client.query(
         `INSERT INTO quotes
@@ -379,12 +395,12 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           input.validUntil ?? null,
           input.destinationPort,
           input.destinationCountry,
-          input.incoterm ?? null,
+          incoterm,
           input.deliveryEstimate ?? null,
-          input.inlandTransportCost ?? 0,
-          input.exportDocumentationCost ?? 0,
-          input.freightCost ?? 0,
-          input.insuranceCost ?? 0,
+          inlandTransportCost,
+          exportDocumentationCost,
+          freightCost,
+          insuranceCost,
           input.depositPct ?? 40,
           input.dutyPct ?? null,
           input.dutyEstimateOverride ?? null,
@@ -412,12 +428,12 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           input.validUntil ?? null,
           input.destinationPort,
           input.destinationCountry,
-          input.incoterm ?? null,
+          incoterm,
           input.deliveryEstimate ?? null,
-          input.inlandTransportCost ?? 0,
-          input.exportDocumentationCost ?? 0,
-          input.freightCost ?? 0,
-          input.insuranceCost ?? 0,
+          inlandTransportCost,
+          exportDocumentationCost,
+          freightCost,
+          insuranceCost,
           input.depositPct ?? 40,
           input.dutyPct ?? null,
           input.dutyEstimateOverride ?? null,

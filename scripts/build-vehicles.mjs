@@ -44,8 +44,41 @@ const appliedPriceOverrides = new Set();
 // under the <=100km "new" threshold, misclassifying them.
 const MILEAGE_DIVISOR = 2.4;
 
+const INTERNAL_SPEC_KEYS = new Set([
+  "selling price",
+  "seller-tags",
+  "precio hainaauto",
+  "precio original",
+  "ajuste de precio hainaauto",
+  "hainaauto price adjustment",
+  "nota de precio",
+]);
+
+function cleanSpecs(specs) {
+  return Object.fromEntries(
+    Object.entries(specs).filter(([key, value]) => value && !INTERNAL_SPEC_KEYS.has(key.trim().toLowerCase()))
+  );
+}
+
+function inferFuel(raw, specs) {
+  const explicit = raw.fuel ?? specs["Energy type"] ?? specs["Fuel Type"] ?? specs.Combustible;
+  if (explicit) return explicit;
+
+  const text = [raw.title, raw.overview, specs.Displacement, specs.Engine, specs.Motor, specs["Engine model"]]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (/\b(ev|electric|all-electric|pure electric|battery|kwh)\b/.test(text)) return "Electric";
+  if (/\b(hybrid|phev|dm-i|dmi|range extender|range-extended)\b/.test(text)) return "Hybrid";
+  if (/\b(diesel|diésel|turbodiesel|turbodiésel)\b/.test(text)) return "Diesel";
+  if (/\b\d(?:\.\d)?\s*(?:t|l)\b|turbo|gasoline|petrol/.test(text)) return "Gasoline";
+
+  return null;
+}
+
 function normalize(raw, site) {
-  const specs = raw.specs ?? {};
+  const specs = cleanSpecs(raw.specs ?? {});
   const slug = `${site}-${raw.id}`;
   const scrapedPriceCNY = toNumber(raw.price?.salePriceCNY);
   const formulaPriceCNY = scrapedPriceCNY == null ? null : Math.round(scrapedPriceCNY * SALE_PRICE_MULTIPLIER);
@@ -64,7 +97,7 @@ function normalize(raw, site) {
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
     mileageKm: rawMileageKm == null ? null : Math.round(rawMileageKm / MILEAGE_DIVISOR),
     condition,
-    fuel: raw.fuel ?? specs["Energy type"] ?? null,
+    fuel: inferFuel(raw, specs),
     bodyType: specs["Body Type"] ?? null,
     gearbox: specs["Gearbox"] ?? null,
     color: specs["Body Color"] ?? null,

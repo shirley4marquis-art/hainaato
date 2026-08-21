@@ -9,14 +9,15 @@ const RECENT_LISTING_PRICE_FACTOR = 0.7;
 const products = [
   {
     id: "jac-t9-hunter",
-    title: "2025 JAC Hunter T9 2.0T Diesel 4×4 Automatic",
+    title: "2025 JAC Hunter T9 2.0T Gasoline 4×4 Automatic",
     year: 2025,
     priceUsd: 11_000,
+    finalPriceUsd: 9_500,
     stockCode: "HA-CN-JACT9-2025",
     color: "Red",
     transmission: "8-speed automatic",
     driveType: "4×4",
-    overview: "Pickup JAC Hunter T9 nueva, con motor turbodiésel de 2.0 litros, tracción 4×4 y transmisión automática de ocho velocidades. Disponible para inspección, documentación de exportación y envío internacional mediante HainaAuto. El precio mostrado es desde y depende de la configuración final.",
+    overview: "Pickup JAC Hunter T9 nueva, con motor de gasolina turbo de 2.0 litros, tracción 4×4 y transmisión automática de ocho velocidades. Disponible para inspección, documentación de exportación y envío internacional mediante HainaAuto. El precio mostrado es desde y depende de la configuración final.",
     priceLabel: "Desde US$11,000",
     priceNote: "Rango publicado: US$11,000–25,000. El precio final depende de la versión, transmisión, tracción y configuración confirmadas en la cotización.",
     model: "Hunter T9",
@@ -36,14 +37,14 @@ const products = [
   },
   {
     id: "jac-hunter-safety-4x4",
-    title: "JAC Hunter Safety 2.0T Diesel 4×4",
+    title: "JAC Hunter Safety 2.0T Gasoline 4×4",
     year: null,
     priceUsd: 17_800,
     stockCode: "HA-CN-JACHUNTER-SAFETY",
     color: "White",
     transmission: "Manual/automatic option",
     driveType: "4×4",
-    overview: "Pickup JAC Hunter Safety nueva para uso todoterreno, con motor diésel de 2.0 litros, tracción 4×4 y cabina doble. Disponible con transmisión manual o automática, inspección previa y soporte completo de exportación mediante HainaAuto.",
+    overview: "Pickup JAC Hunter Safety nueva para uso todoterreno, con motor de gasolina turbo de 2.0 litros, tracción 4×4 y cabina doble. Disponible con transmisión manual o automática, inspección previa y soporte completo de exportación mediante HainaAuto.",
     priceLabel: "US$17,800 por unidad",
     priceNote: "Precios publicados por volumen: US$17,500 para 2–4 unidades, US$16,800 para 5–19 y US$15,800 para 20 o más. Configuración final sujeta a cotización.",
     model: "Hunter Safety",
@@ -63,14 +64,14 @@ const products = [
   },
   {
     id: "jac-t8-pro-hunter-at",
-    title: "JAC T8 Pro Hunter 2.0T Diesel 4×4 with A/T Tires",
+    title: "JAC T8 Pro Hunter 2.0T Gasoline 4×4 with A/T Tires",
     year: null,
     priceUsd: 17_000,
     stockCode: "HA-CN-JACT8PRO-AT",
     color: "White",
     transmission: "Manual/automatic option",
     driveType: "4×4",
-    overview: "Pickup JAC T8 Pro Hunter nueva con motor diésel de 2.0 litros, tracción 4×4 y neumáticos todoterreno. Se ofrece con opciones de transmisión manual o automática, inspección previa y gestión integral de exportación mediante HainaAuto.",
+    overview: "Pickup JAC T8 Pro Hunter nueva con motor de gasolina turbo de 2.0 litros, tracción 4×4 y neumáticos todoterreno. Se ofrece con opciones de transmisión manual o automática, inspección previa y gestión integral de exportación mediante HainaAuto.",
     priceLabel: "US$17,000 por unidad",
     priceNote: "Precio publicado para una unidad. La transmisión, tracción, cabina y demás opciones deben confirmarse en la cotización final.",
     model: "T8 Pro Hunter",
@@ -118,32 +119,28 @@ for (const product of products) {
     images.push(file);
   }
 
-  const discountedPriceUsd = product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
+  const discountedPriceUsd = product.finalPriceUsd ?? product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
   const priceCNY = discountedPriceUsd / USD_PER_CNY;
   imported.push({
     slug, site, id: product.id, title: product.title, year: product.year, priceCNY,
-    mileageKm: 0, fuel: "Diesel", bodyType: "Pickup", location: "Hubei, China",
+    mileageKm: 0, fuel: "Gasoline", bodyType: "Pickup", location: "Hubei, China",
     thumb: images[0], thumbs: images.slice(0, 4), imageCount: images.length, color: product.color,
     brand: "JAC", model: product.model, condition: "new", availability: "available",
     transmission: product.transmission, stockCode: product.stockCode, listedAt: new Date().toISOString(),
   });
   details[slug] = {
     slug, site, id: product.id, url: null, title: product.title, year: product.year, priceCNY,
-    msrpCNY: null, mileageKm: 0, fuel: "Diesel", bodyType: "Pickup",
+    msrpCNY: null, mileageKm: 0, fuel: "Gasoline", bodyType: "Pickup",
     gearbox: product.transmission, color: product.color, location: "Hubei, China",
     driveType: product.driveType, overview: product.overview,
     specs: {
       "Código de inventario": product.stockCode, Marca: "JAC", Modelo: product.model,
       "Modelo de fábrica": product.modelNumber, Año: product.year ? String(product.year) : "Consultar",
-      Condición: "Nuevo", Motor: "2.0 L turbodiésel, 4 cilindros", Potencia: "170 hp / 125 kW",
+      Condición: "Nuevo", Motor: "2.0 L turbo gasoline, 4 cylinders", Potencia: "170 hp / 125 kW",
       Torque: product.torque, Transmisión: product.transmission, Tracción: product.driveType,
       Dirección: "Volante a la izquierda", Asientos: "5", Emisiones: "Euro 6",
       Dimensiones: product.dimensions, Distancia_entre_ejes: product.wheelbase,
       Caja_de_carga: product.cargoBox, Velocidad_máxima: "150 km/h", Garantía: "12 meses",
-      "Precio HainaAuto": `US$${discountedPriceUsd.toLocaleString("en-US")}`,
-      "Precio original": product.priceLabel,
-      "Ajuste de precio HainaAuto": "30% menos que el precio publicado originalmente",
-      "Nota de precio": product.priceNote,
     },
     images, otherColorPhotos: [],
   };

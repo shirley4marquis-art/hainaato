@@ -57,7 +57,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     validUntil: initial?.validUntil ?? "",
     destinationPort: initial?.destinationPort ?? "",
     destinationCountry: initial?.destinationCountry ?? "",
-    incoterm: initial?.incoterm ?? "",
+    incoterm: initial?.incoterm ?? "CIF",
     deliveryEstimate: initial?.deliveryEstimate ?? "",
     inlandTransportCost: initial?.inlandTransportCost ?? 0,
     exportDocumentationCost: initial?.exportDocumentationCost ?? 0,
@@ -78,6 +78,15 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
 
   function updateItem(key: string, patch: Partial<ItemDraft>) {
     setItems((current) => current.map((it) => (it.key === key ? { ...it, ...patch } : it)));
+  }
+  function updateIncoterm(incoterm: "CIF" | "FOB") {
+    setQuote((current) => ({
+      ...current,
+      incoterm,
+      ...(incoterm === "CIF"
+        ? { inlandTransportCost: 0, exportDocumentationCost: 0, freightCost: 0, insuranceCost: 0 }
+        : {}),
+    }));
   }
   function removeItem(key: string) {
     setItems((current) => (current.length > 1 ? current.filter((it) => it.key !== key) : current));
@@ -156,7 +165,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       validUntil: quote.validUntil || null,
       destinationPort: quote.destinationPort,
       destinationCountry: quote.destinationCountry,
-      incoterm: quote.incoterm || null,
+      incoterm: quote.incoterm || "CIF",
       deliveryEstimate: quote.deliveryEstimate || null,
       inlandTransportCost: quote.inlandTransportCost,
       exportDocumentationCost: quote.exportDocumentationCost,
@@ -196,6 +205,8 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     }
   }
 
+  const isCif = quote.incoterm !== "FOB";
+
   return (
     <div className={styles.form}>
       {!initial && <div className={styles.intakePanel}>
@@ -229,7 +240,12 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
           <label>Valid until<input type="date" value={quote.validUntil ?? ""} onChange={(e) => setQuote({ ...quote, validUntil: e.target.value })} /></label>
           <label>Destination port *<input value={quote.destinationPort} onChange={(e) => setQuote({ ...quote, destinationPort: e.target.value })} /></label>
           <label>Destination country *<input value={quote.destinationCountry} onChange={(e) => setQuote({ ...quote, destinationCountry: e.target.value })} /></label>
-          <label>Incoterm<input placeholder="e.g. CIF" value={quote.incoterm ?? ""} onChange={(e) => setQuote({ ...quote, incoterm: e.target.value })} /></label>
+          <label>Price type / Incoterm
+            <select value={quote.incoterm ?? "CIF"} onChange={(e) => updateIncoterm(e.target.value as "CIF" | "FOB")}>
+              <option value="CIF">CIF — vehicle + ocean freight + marine insurance</option>
+              <option value="FOB">FOB — vehicle/export price only</option>
+            </select>
+          </label>
           <label>Estimated delivery<input placeholder="e.g. 30–45 días" value={quote.deliveryEstimate ?? ""} onChange={(e) => setQuote({ ...quote, deliveryEstimate: e.target.value })} /></label>
           <label>Currency
             <select value={quote.currency} onChange={(e) => setQuote({ ...quote, currency: e.target.value })}>
@@ -241,10 +257,10 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <option value="en">English</option><option value="es">Español</option>
             </select>
           </label>
-          <label>Inland transport<input type="number" step="0.01" value={quote.inlandTransportCost} onChange={(e) => setQuote({ ...quote, inlandTransportCost: num(e.target.value) })} /></label>
-          <label>Export documentation<input type="number" step="0.01" value={quote.exportDocumentationCost} onChange={(e) => setQuote({ ...quote, exportDocumentationCost: num(e.target.value) })} /></label>
-          <label>Freight<input type="number" step="0.01" value={quote.freightCost} onChange={(e) => setQuote({ ...quote, freightCost: num(e.target.value) })} /></label>
-          <label>Insurance<input type="number" step="0.01" value={quote.insuranceCost} onChange={(e) => setQuote({ ...quote, insuranceCost: num(e.target.value) })} /></label>
+          <label>Inland transport<input type="number" step="0.01" value={quote.inlandTransportCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, inlandTransportCost: num(e.target.value) })} /></label>
+          <label>Export documentation<input type="number" step="0.01" value={quote.exportDocumentationCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, exportDocumentationCost: num(e.target.value) })} /></label>
+          <label>Freight<input type="number" step="0.01" value={quote.freightCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, freightCost: num(e.target.value) })} /></label>
+          <label>Insurance<input type="number" step="0.01" value={quote.insuranceCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, insuranceCost: num(e.target.value) })} /></label>
           <label>Deposit %<input type="number" step="1" value={quote.depositPct} onChange={(e) => setQuote({ ...quote, depositPct: num(e.target.value) })} /></label>
           <label>Duty % (optional)<input type="number" step="0.1" value={quote.dutyPct} onChange={(e) => setQuote({ ...quote, dutyPct: e.target.value === "" ? "" : num(e.target.value) })} /></label>
           <label className={styles.wide}>Internal notes<textarea rows={2} value={quote.notes ?? ""} onChange={(e) => setQuote({ ...quote, notes: e.target.value })} /></label>
@@ -253,6 +269,11 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
             Customer consented to a public anonymized status update
           </label>
         </div>
+        {isCif && (
+          <p style={{ fontSize: 12, color: "#6b7684", marginTop: 10 }}>
+            CIF quotes treat the entered vehicle unit price as already including vehicle cost, international ocean freight and marine insurance. Local destination charges remain separate.
+          </p>
+        )}
         {initial && (
           <p style={{ fontSize: 12, color: "#6b7684", marginTop: 10 }}>
             CIF total ≈ {initial.cifTotal.toLocaleString()} {initial.currency} · Grand total ≈ {(initial.grandTotalReference ?? initial.cifTotal).toLocaleString()} {initial.currency} (recalculated on save)
@@ -288,9 +309,9 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>Exterior color<input value={item.exteriorColor ?? ""} onChange={(e) => updateItem(item.key, { exteriorColor: e.target.value })} /></label>
               <label>Interior color<input value={item.interiorColor ?? ""} onChange={(e) => updateItem(item.key, { interiorColor: e.target.value })} /></label>
               <label>Qty<input type="number" min={1} value={item.qty} onChange={(e) => updateItem(item.key, { qty: Math.max(1, num(e.target.value)) })} /></label>
-              <label>FOB original *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>
+              <label>Original unit price *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>
               <label>Discount<input type="number" step="0.01" value={item.discount ?? 0} onChange={(e) => updateItem(item.key, { discount: num(e.target.value) })} /></label>
-              <label>FOB final (price used) *<input type="number" step="0.01" value={item.fobFinal} onChange={(e) => updateItem(item.key, { fobFinal: num(e.target.value) })} /></label>
+              <label>Final unit price ({isCif ? "CIF" : "FOB"} used) *<input type="number" step="0.01" value={item.fobFinal} onChange={(e) => updateItem(item.key, { fobFinal: num(e.target.value) })} /></label>
               <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://www.hainaautochina.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
               <label className={styles.wide}>Spec summary (shown on the printed quote)
                 <textarea rows={2} placeholder="e.g. SUV grande de chasis independiente · V6 híbrido biturbo 3.4L…" value={item.specSummary ?? ""} onChange={(e) => updateItem(item.key, { specSummary: e.target.value })} />

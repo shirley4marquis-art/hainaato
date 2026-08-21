@@ -44,12 +44,16 @@ export function getFilterOptions(scope?: { condition?: "new" | "used" }) {
   const fuels = new Map<string, string>();
   const bodyTypes = new Map<string, string>();
   const brands = new Set<string>();
+  const modelCounts = new Map<string, number>();
   const colorCounts = new Map<string, number>();
   let minPrice = Infinity;
   let maxPrice = 0;
 
   for (const v of index) {
     if (v.brand && !/^\d+$/.test(v.brand.trim())) brands.add(v.brand);
+    if (v.model && !/^\d+$/.test(v.model.trim())) {
+      modelCounts.set(v.model, (modelCounts.get(v.model) ?? 0) + 1);
+    }
     if (v.fuel) {
       const label = normalizeFuel(v.fuel);
       fuels.set(label.toLowerCase(), label);
@@ -72,6 +76,10 @@ export function getFilterOptions(scope?: { condition?: "new" | "used" }) {
     fuels: [...fuels.values()].sort(),
     bodyTypes: [...bodyTypes.values()].sort(),
     brands: [...brands].sort((a,b)=>a.localeCompare(b)),
+    models: [...modelCounts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 250)
+      .map(([model]) => model),
     colors: [...colorCounts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,12).map(([color])=>color),
     minPrice: Number.isFinite(minPrice) ? minPrice : 0,
     maxPrice,

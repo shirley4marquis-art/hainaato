@@ -37,12 +37,11 @@ export function convertFromCNY(cny: number, currency: CurrencyCode): number {
   return cny * RATE_PER_CNY[currency];
 }
 
-// Non-CNY amounts are approximate conversions, so they're prefixed with "≈"
-// rather than presented as an exact figure.
+// Display prices cleanly for buyers; the fixed-rate caveat is covered in the
+// pricing disclaimer rather than repeated in every catalogue card.
 export function formatPrice(cny: number | null | undefined, currency: CurrencyCode): string {
   if (cny == null) return "Price on request";
   const symbol = CURRENCIES.find((c) => c.code === currency)!.symbol;
   const amount = Math.round(convertFromCNY(cny, currency));
-  const prefix = currency === "CNY" ? "" : "≈";
-  return `${prefix}${symbol}${amount.toLocaleString("en-US")}`;
+  return `${symbol}${amount.toLocaleString("en-US")}`;
 }

@@ -4,8 +4,9 @@
 // the same adminSaveQuote() the staff editor uses (so it's immediately
 // visible in /admin), renders the PDF, and emails it to the customer —
 // synchronously, so the response only returns once all of that either
-// succeeded or definitively failed. See lib/quote-pricing.ts for the
-// placeholder freight/insurance figures and README note on why they're flat.
+// succeeded or definitively failed. HAINA AUTO website quotes default to CIF:
+// the entered unit price already includes vehicle, ocean freight and marine
+// insurance to the agreed destination port.
 import { NextRequest, NextResponse } from "next/server";
 import { getVehicleIndexEntryBySlug } from "../../../lib/vehicles";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
@@ -17,7 +18,7 @@ import { adminSaveQuote, adminGetQuote, recordQuoteEmail, type AdminQuoteItemInp
 import { renderQuotePdf } from "../../../lib/render-quote-pdf";
 import { customerQuoteEmailHtml, sendEmail } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
-import { DEFAULT_RATES_PER_UNIT, DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
+import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 60;
@@ -126,7 +127,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const totalUnits = items.reduce((sum, item) => sum + item.qty, 0);
   const language = languageForCountry(country);
 
   let ref: string;
@@ -136,10 +136,10 @@ export async function POST(request: NextRequest) {
       destinationPort: destinationPort || "To be confirmed",
       destinationCountry: country,
       incoterm: "CIF",
-      inlandTransportCost: DEFAULT_RATES_PER_UNIT.inlandTransportCost * totalUnits,
-      exportDocumentationCost: DEFAULT_RATES_PER_UNIT.exportDocumentationCost * totalUnits,
-      freightCost: DEFAULT_RATES_PER_UNIT.freightCost * totalUnits,
-      insuranceCost: DEFAULT_RATES_PER_UNIT.insuranceCost * totalUnits,
+      inlandTransportCost: 0,
+      exportDocumentationCost: 0,
+      freightCost: 0,
+      insuranceCost: 0,
       depositPct: DEFAULT_DEPOSIT_PCT,
       currency: "USD",
       language,

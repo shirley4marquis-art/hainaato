@@ -20,7 +20,7 @@ type Vehicle = {
 
 const PAGE_SIZE = 12;
 
-const commonNote = "This price only includes the vehicle purchase cost. Service fees, domestic logistics, port charges, handling fees and international freight shall be calculated separately for the final export order.";
+const commonNote = "Displayed HAINA AUTO prices are treated as CIF by default: vehicle, international ocean freight and marine insurance are included unless the written quotation is explicitly marked FOB. Destination-country duties, nationalization, registration, plates and local charges are separate.";
 
 const authorized: Vehicle[] = [
   {image:"https://img.hainaauto.com/vehicle/newcar_da7a7c6c313bedaa.webp",title:"Xiaomi YU7 2025 Long Range Rear Drive Edition",stock:"new car",msrpCNY:253500,priceCNY:155400,note:"The export documents have been completed and you can leave China at any time. new car",pinned:true},
@@ -76,6 +76,7 @@ function VehicleCard({vehicle,view}:{vehicle:Vehicle;view:"grid"|"list"}) {
         <div><dt>MSRP (reference)</dt><dd><Price cny={vehicle.msrpCNY}/></dd></div>
         <div><dt>Selling price</dt><dd className={styles.price}><Price cny={vehicle.priceCNY}/></dd></div>
       </dl>
+      <p className={styles.cifBadge}>CIF included</p>
       <p className={styles.disclaimer}>{vehicle.note?.includes("export documents") ? vehicle.note : commonNote}</p>
       <Link className={styles.cardLink} href="/contact#contact" aria-label={`View details: ${vehicle.title}`}>View details</Link>
     </div>
