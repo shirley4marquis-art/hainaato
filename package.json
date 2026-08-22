@@ -13,6 +13,7 @@
     "data:catalog-feed:venezuela": "node scripts/build-venezuela-meta-catalog.mjs",
     "data:hendrick-toyota": "node scripts/import-hendrick-toyota.mjs && node scripts/shard-vehicle-data.mjs",
     "data:carfromjapan-hiluxes": "node scripts/import-carfromjapan-hiluxes.mjs",
+    "data:made-in-china:publish": "node scripts/publish-made-in-china-listings.mjs",
     "audit:routes": "node scripts/debug-static-routes.mjs",
     "supabase": "supabase"
   },

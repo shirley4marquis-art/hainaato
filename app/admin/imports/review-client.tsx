@@ -130,7 +130,7 @@ export function ImportReviewClient({ initialListings, initialLogs, initialConfig
         <div>
           <span className={styles.eyebrow}>Supplier discovery</span>
           <h1>Made-in-China Imports</h1>
-          <p>Staged supplier listings stay under review until staff verifies and approves them.</p>
+          <p>Approve qualified supplier listings, then publish them into the public Haina Auto vehicle catalog.</p>
         </div>
         <button className={styles.btn} type="button" onClick={runImport} disabled={busy === "import"}>
           <RefreshCw size={14} /> {busy === "import" ? "Running..." : "Run discovery"}
@@ -192,7 +192,7 @@ export function ImportReviewClient({ initialListings, initialLogs, initialConfig
                 <div><dt>MOQ</dt><dd>{selected.moq || "Not listed"}</dd></div>
               </dl>
               <div className={styles.importActions}>
-                <button type="button" onClick={() => updateListing(selected.id, { listing_status: "verified", source_verified: true })} disabled={busy === selected.id}><CheckCircle2 size={13} /> Approve</button>
+                <button type="button" onClick={() => updateListing(selected.id, { listing_status: "verified", source_verified: true })} disabled={busy === selected.id}><CheckCircle2 size={13} /> Approve for catalog</button>
                 <button type="button" onClick={() => updateListing(selected.id, { listing_status: "needs_update" })} disabled={busy === selected.id}><SlidersHorizontal size={13} /> Needs update</button>
                 <button type="button" onClick={() => updateListing(selected.id, { listing_status: "rejected" })} disabled={busy === selected.id}><XCircle size={13} /> Reject</button>
                 <a href={selected.source_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={13} /> Original listing</a>

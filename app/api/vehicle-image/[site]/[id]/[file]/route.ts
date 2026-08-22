@@ -11,7 +11,7 @@ import type { VehicleSite } from "../../../../../../lib/format";
 const MIN_WIDTH = 16;
 const MAX_WIDTH = 3840;
 
-type ProxiedVehicleSite = Exclude<VehicleSite, "hongyu" | "carfromjapan">;
+type ProxiedVehicleSite = Exclude<VehicleSite, "hongyu" | "madeinchina" | "carfromjapan">;
 
 const UPSTREAM: Record<ProxiedVehicleSite, (file: string) => string> = {
   hainaauto: (file) => `https://img.hainaauto.com/vehicle/${encodeURIComponent(file)}`,
