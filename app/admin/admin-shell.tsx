@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { BriefcaseBusiness, FileSignature, LayoutDashboard, LogOut, Mail, Plus, TrendingUp, Users } from "lucide-react";
+import { BriefcaseBusiness, DatabaseZap, FileSignature, LayoutDashboard, LogOut, Mail, Plus, TrendingUp, Users } from "lucide-react";
 import styles from "./admin.module.css";
 
 const LINKS = [
@@ -16,6 +16,7 @@ const LINKS = [
 const DESKTOP_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   ...LINKS,
+  { href: "/admin/imports", label: "Imports", icon: DatabaseZap },
   { href: "/admin/mail", label: "Mail", icon: Mail },
 ] as const;
 
