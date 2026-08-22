@@ -325,14 +325,6 @@ export function FilterDrawer({
     .concat(lockCondition ? [] : ["condition"])
     .filter((k) => sp[k]).length;
 
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
   return (
     <div className="mobile-filter-bar">
       <div className="filter-triggers">
