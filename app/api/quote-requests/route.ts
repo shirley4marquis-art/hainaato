@@ -16,7 +16,7 @@ import { convertFromCNY } from "../../../lib/currency";
 import { CART_MAX } from "../../../lib/cart-constants";
 import { adminSaveQuote, adminGetQuote, recordQuoteEmail, type AdminQuoteItemInput } from "../../../lib/crm";
 import { renderQuotePdf } from "../../../lib/render-quote-pdf";
-import { customerQuoteEmailHtml, sendEmail } from "../../../lib/email";
+import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
 
@@ -167,6 +167,19 @@ export async function POST(request: NextRequest) {
 
   const quote = await adminGetQuote(ref);
   const vehicleSummary = quote ? quote.items.map((item) => itemTitle(item)).join("; ") : items.map((item) => `${item.make} ${item.model}`).join("; ");
+
+  await sendQuoteCreatedSalesNotification({
+    ref,
+    documentNumber: quote?.documentNumber ?? null,
+    customerName: name,
+    customerEmail: email,
+    customerPhone: phone,
+    destinationCountry: country,
+    destinationPort: destinationPort || null,
+    vehicleSummary,
+    message,
+  });
+
   const { subject, html } = customerQuoteEmailHtml({
     customerName: name,
     ref,

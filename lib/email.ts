@@ -156,6 +156,133 @@ export async function sendLeadNotification(lead: WebLead, ref: string): Promise<
   }
 }
 
+export function quoteCreatedSalesEmailHtml(params: {
+  ref: string;
+  documentNumber: string | null;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string | null;
+  destinationCountry: string | null;
+  destinationPort: string | null;
+  vehicleSummary: string;
+  message?: string | null;
+}): { subject: string; text: string; html: string } {
+  const NAVY = "#082F63";
+  const CORAL = "#FF6B00";
+  const docRef = params.documentNumber ?? params.ref;
+  const subject = `New quote created ${docRef} — ${params.customerName}`;
+  const vehicleLines = escapeHtml(params.vehicleSummary || "Vehicle details pending").replace(/; /g, "<br>");
+  const text = [
+    `New quote created — ${docRef}`,
+    `Customer: ${params.customerName}`,
+    `Email: ${params.customerEmail}`,
+    params.customerPhone ? `Phone / WhatsApp: ${params.customerPhone}` : null,
+    params.destinationCountry ? `Destination country: ${params.destinationCountry}` : null,
+    params.destinationPort ? `Destination port: ${params.destinationPort}` : null,
+    `Vehicles: ${params.vehicleSummary}`,
+    params.message ? `Message: ${params.message}` : null,
+  ].filter(Boolean).join("\n");
+
+  const html = `<!doctype html>
+<html lang="en">
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
+<body style="margin:0;padding:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="max-width:620px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #DCE3EC;box-shadow:0 8px 28px rgba(8,47,99,.10)">
+      <tr><td style="background:${CORAL};height:7px;font-size:0;line-height:0">&nbsp;</td></tr>
+      <tr>
+        <td bgcolor="${NAVY}" style="background:${NAVY};padding:24px 28px">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+            <td width="74" valign="middle">${logoImg()}</td>
+            <td valign="middle"><div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">New Quote Follow-up</div></td>
+          </tr></table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:30px 30px 10px">
+          <div style="display:inline-block;background:#EAF2FF;color:${NAVY};border-radius:999px;padding:7px 12px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Quote ${escapeHtml(docRef)}</div>
+          <h1 style="margin:18px 0 10px;font-size:25px;line-height:1.25;color:${NAVY};letter-spacing:-.02em">A new quotation request has been created</h1>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#44536A">Follow up with the customer as soon as possible.</p>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:12px;margin-bottom:18px"><tr><td style="padding:18px 20px">
+            <div style="font-size:10px;color:#7B879A;font-weight:800;letter-spacing:.10em;text-transform:uppercase;margin-bottom:8px">Customer details</div>
+            <div style="font-size:14px;line-height:1.8;color:${NAVY};font-weight:700">
+              <div><b>Name:</b> ${escapeHtml(params.customerName)}</div>
+              <div><b>Email:</b> ${escapeHtml(params.customerEmail)}</div>
+              ${params.customerPhone ? `<div><b>Phone:</b> ${escapeHtml(params.customerPhone)}</div>` : ""}
+              ${params.destinationCountry ? `<div><b>Country:</b> ${escapeHtml(params.destinationCountry)}</div>` : ""}
+              ${params.destinationPort ? `<div><b>Port:</b> ${escapeHtml(params.destinationPort)}</div>` : ""}
+            </div>
+          </td></tr></table>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:12px"><tr><td style="padding:18px 20px">
+            <div style="font-size:10px;color:#7B879A;font-weight:800;letter-spacing:.10em;text-transform:uppercase;margin-bottom:8px">Vehicles included</div>
+            <div style="font-size:14px;line-height:1.75;color:${NAVY};font-weight:700">${vehicleLines}</div>
+            ${params.message ? `<div style="margin-top:12px;font-size:13px;line-height:1.7;color:#44536A"><b>Message:</b><br>${escapeHtml(params.message).replace(/\n/g, "<br>")}</div>` : ""}
+          </td></tr></table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:20px 30px 28px"><div style="height:1px;background:#E3E8EF;margin-bottom:18px"></div><div style="font-size:11px;color:#7B879A;line-height:1.7">
+          <b style="color:${NAVY}">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
+          <a href="mailto:sales@hainaautochina.com" style="color:${NAVY}">sales@hainaautochina.com</a> · <a href="https://www.hainaautochina.com" style="color:${NAVY}">hainaautochina.com</a>
+        </div>
+        </td>
+      </tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>`;
+
+  return { subject, text, html };
+}
+
+export async function sendQuoteCreatedSalesNotification(params: {
+  ref: string;
+  documentNumber: string | null;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string | null;
+  destinationCountry: string | null;
+  destinationPort: string | null;
+  vehicleSummary: string;
+  message?: string | null;
+}): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.LEADS_FROM_EMAIL || process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
+  const to = process.env.LEADS_TO_EMAIL || process.env.SALES_TO_EMAIL || "sales@hainaautochina.com";
+
+  if (!apiKey) {
+    console.warn(`[quotes] Sales notification not sent for ${params.ref} — RESEND_API_KEY is not configured.`);
+    return;
+  }
+
+  try {
+    const { subject, text, html } = quoteCreatedSalesEmailHtml(params);
+    const response = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        reply_to: "sales@hainaautochina.com",
+        subject,
+        text,
+        html,
+        attachments: [logoAttachment()],
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Resend API error ${response.status}: ${body}`);
+    }
+  } catch (error) {
+    console.error(`[quotes] Sales notification failed for ${params.ref}:`, error);
+  }
+}
+
 // Pure HTML builder, kept separate from the actual send below so callers
 // (app/api/quote-requests/route.ts) always have the exact email content to
 // record in quote_emails via lib/crm.ts's recordQuoteEmail — regardless of

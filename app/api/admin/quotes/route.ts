@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminListQuotes, adminSaveQuote, type AdminQuoteInput } from "../../../../lib/crm";
+import { sendQuoteCreatedSalesNotification } from "../../../../lib/email";
 
 export async function GET() {
   try {
@@ -23,6 +24,20 @@ export async function POST(request: NextRequest) {
   }
   try {
     const ref = await adminSaveQuote(body);
+    const vehicleSummary = body.items?.map((item) => `${item.make || "Vehicle"} ${item.model || ""}`.trim()).filter(Boolean).join("; ") || "Vehicle quote";
+
+    await sendQuoteCreatedSalesNotification({
+      ref,
+      documentNumber: null,
+      customerName: body.customer?.name ?? "Customer",
+      customerEmail: body.customer?.email ?? "",
+      customerPhone: body.customer?.phone ?? null,
+      destinationCountry: body.destinationCountry ?? null,
+      destinationPort: body.destinationPort ?? null,
+      vehicleSummary,
+      message: body.notes ?? null,
+    });
+
     return NextResponse.json({ ok: true, ref });
   } catch (error) {
     console.error("[admin/quotes] save failed:", error);
