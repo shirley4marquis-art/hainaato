@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.2" baseProfile="tiny-ps" width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <title>HainaAuto</title>
+  <desc>HainaAuto brand mark for BIMI email sender logo display.</desc>
+  <rect width="256" height="256" fill="#ffffff"/>
+  <circle cx="128" cy="128" r="118" fill="#ffffff" stroke="#082f63" stroke-width="8"/>
+  <path d="M54 72h30v47h88V72h30v112h-30v-39H84v39H54V72z" fill="#1238b3"/>
+  <path d="M94 197l34-98 34 98h-30l-5-18h-30l-5 18H94zm10-43h16l-8-29-8 29z" fill="#ffd229"/>
+  <path d="M47 205h162v13H47v-13z" fill="#1238b3"/>
+</svg>
