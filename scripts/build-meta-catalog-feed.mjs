@@ -89,8 +89,11 @@ const isSuv = (v) => bodyTypeIs(v, "off-road vehicle/suv");
 const isPassenger = (v) => bodyTypeIs(v, "passenger car");
 const isCommercial = (v) => bodyTypeIs(v, "commercial vehicles/mpvs");
 const isFourByFour = (v) => isPickup(v) || (isSuv(v) && FOUR_WHEEL_TITLE_RE.test(v.title));
+const HEAVY_TRUCK_BODY_RE = /dump truck|tipper|tractor truck|mixer truck|heavy truck|machinery|equipment/i;
+const HEAVY_TRUCK_TITLE_RE = /dump truck|tipper|tractor truck|truck head|mixer truck|cement mixer|heavy truck|semi[- ]?truck|howo|sinotruk|shacman/i;
+const isHeavyTruck = (v) => !isPickup(v) && (HEAVY_TRUCK_BODY_RE.test(v.bodyType ?? "") || HEAVY_TRUCK_TITLE_RE.test(v.title));
 
-// Same five buckets curateSelection() sorts into, exposed as the
+// Same buckets curateSelection() sorts into, exposed as the
 // broad-to-narrow category label Meta's product_type field expects
 // (https://www.facebook.com/business/help/120325381656392) — e.g.
 // "4x4 Trucks > Toyota > Hilux". Category comes first so a rule-based
@@ -100,6 +103,7 @@ function categoryLabel(v) {
   if (isSuv(v)) return "SUVs & Off-Road";
   if (isPassenger(v)) return "Passenger Cars";
   if (isCommercial(v)) return "Commercial Vehicles & MPVs";
+  if (isHeavyTruck(v)) return "Heavy Trucks & Machinery";
   return "Other";
 }
 
@@ -112,7 +116,7 @@ function productType(v, brand) {
 // values already present in the catalog, not free text — so filtering on
 // product_type (a unique "Category > Brand > Model" string per listing) never
 // offers a "4x4 Trucks" option to pick, only ~800 individual full strings.
-// custom_label_0 carries just the bare category (one of 5 fixed values), so
+// custom_label_0 carries just the bare category, so
 // it shows up as a short, pickable list: Attribute "Custom label 0",
 // Condition "is any of these", Value "4x4 Trucks".
 function customLabel0(v) {
@@ -140,10 +144,12 @@ function sortTrucksToyotaFirst(priorityTrucks) {
 
 function curateSelection(eligible) {
   const priorityTrucks = sortTrucksToyotaFirst(eligible.filter(isFourByFour));
+  const priorityTruckSlugs = new Set(priorityTrucks.map((v) => v.slug));
+  const heavyTrucks = eligible.filter((v) => isHeavyTruck(v) && !priorityTruckSlugs.has(v.slug));
   const suvRemainder = eligible.filter((v) => isSuv(v) && !FOUR_WHEEL_TITLE_RE.test(v.title));
   const passengerCars = eligible.filter(isPassenger);
   const commercialVehicles = eligible.filter(isCommercial);
-  const claimed = new Set([...priorityTrucks, ...suvRemainder, ...passengerCars, ...commercialVehicles].map((v) => v.slug));
+  const claimed = new Set([...priorityTrucks, ...suvRemainder, ...passengerCars, ...commercialVehicles, ...heavyTrucks].map((v) => v.slug));
   const other = eligible.filter((v) => !claimed.has(v.slug));
 
   const remainderBuckets = [
@@ -152,7 +158,7 @@ function curateSelection(eligible) {
     ["Commercial vehicles & MPVs", commercialVehicles],
     ["Other", other],
   ];
-  const remainingBudget = Math.max(0, TOTAL_CAP - priorityTrucks.length);
+  const remainingBudget = Math.max(0, TOTAL_CAP - priorityTrucks.length - heavyTrucks.length);
   const remainderPoolSize = remainderBuckets.reduce((sum, [, list]) => sum + list.length, 0);
   const quotas = remainderBuckets.map(([, list]) =>
     remainderPoolSize > 0 ? Math.round((remainingBudget * list.length) / remainderPoolSize) : 0
@@ -164,10 +170,12 @@ function curateSelection(eligible) {
   if (largest >= 0) quotas[largest] += drift;
 
   console.log(`4x4 trucks (priority, all included): ${priorityTrucks.length}`);
+  console.log(`Heavy trucks & machinery (priority, all included): ${heavyTrucks.length}`);
   remainderBuckets.forEach(([label, list], i) => console.log(`${label}: ${quotas[i]} of ${list.length}`));
 
   return [
     ...priorityTrucks,
+    ...heavyTrucks,
     ...remainderBuckets.flatMap(([, list], i) => evenSample(list, quotas[i])),
   ];
 }

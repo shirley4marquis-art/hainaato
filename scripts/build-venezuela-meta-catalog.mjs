@@ -17,12 +17,13 @@ const brandAliases = new Map([
   ["jietu", "Jetour"], ["remote", "Farizon"], ["nezha", "Neta"], ["nata", "Neta"],
   ["jike", "Zeekr"], ["jikrypton", "Zeekr"], ["extreme", "Zeekr"],
   ["panamera", "Porsche"], ["continental", "Bentley"], ["transit", "Ford"],
+  ["sinotruk / howo", "Sinotruk HOWO"], ["sinotruk", "Sinotruk"], ["howo", "Sinotruk HOWO"],
 ]);
 const approvedFallbackBrands = new Set([
   "Aston Martin", "Audi", "Bentley", "BMW", "Changan", "Dongfeng", "Farizon", "Foton",
   "Haval", "Isuzu", "Iveco", "JAC", "Jaguar", "Jinbei", "JMC", "Kairui", "Lamborghini",
   "Maxus", "Mazda", "McLaren", "Mercedes-Benz", "MG", "MINI", "Mitsubishi", "Neta",
-  "Porsche", "SAIC", "Sinotruk", "Subaru", "Wuling", "Yutong", "Zeekr",
+  "Porsche", "SAIC", "Sinotruk", "Sinotruk HOWO", "Subaru", "Wuling", "Yutong", "Zeekr",
 ]);
 
 const brandRules = [
@@ -165,7 +166,7 @@ function csvField(value) {
 }
 
 function imagePath(v, file) {
-  if (v.site === "hendrick" || v.site === "hongyu") return `${SITE_URL}/vehicle-images/${v.site}/${encodeURIComponent(v.id)}/${encodeURIComponent(file)}`;
+  if (v.site === "hendrick" || v.site === "hongyu" || v.site === "madeinchina") return `${SITE_URL}/vehicle-images/${v.site}/${encodeURIComponent(v.id)}/${encodeURIComponent(file)}`;
   return `${SITE_URL}/api/vehicle-image/${v.site}/${encodeURIComponent(v.id)}/${encodeURIComponent(file)}`;
 }
 
@@ -216,7 +217,6 @@ const eligible = index
   .sort(comparePriority);
 
 const selected = [];
-const brandCounts = new Map();
 const trimCounts = new Map();
 const trimBuckets = new Map();
 for (const vehicle of eligible) {
