@@ -11,6 +11,16 @@
 import type { WebLead } from "./crm";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
+const EMAIL_LOGO_CID = "hainaauto-logo";
+const EMAIL_LOGO_URL = "https://www.hainaautochina.com/hainaauto-email-logo.png";
+
+function logoAttachment() {
+  return { filename: "hainaauto-logo.png", path: EMAIL_LOGO_URL, content_id: EMAIL_LOGO_CID };
+}
+
+function logoImg(width = 62, height = 62): string {
+  return `<img src="cid:${EMAIL_LOGO_CID}" width="${width}" height="${height}" alt="Haina Auto" style="display:block;width:${width}px;height:${height}px;border:0;border-radius:10px;background:#fff">`;
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -36,7 +46,7 @@ export function customSalesEmailHtml(params: {
   const cta = params.callToActionLabel && params.callToActionUrl
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td bgcolor="#FF6B00" style="border-radius:8px"><a href="${escapeHtml(params.callToActionUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(params.callToActionLabel)}</a></td></tr></table>`
     : "";
-  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74"><img src="cid:hainaauto-logo" width="62" height="62" alt="Haina Auto" style="display:block;border-radius:10px;background:#fff"></td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:sales@hainaautochina.com" style="color:#082F63">sales@hainaautochina.com</a> · <a href="https://www.hainaautochina.com" style="color:#082F63">hainaautochina.com</a></td></tr></table></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:sales@hainaautochina.com" style="color:#082F63">sales@hainaautochina.com</a> · <a href="https://www.hainaautochina.com" style="color:#082F63">hainaautochina.com</a></td></tr></table></td></tr></table></body></html>`;
 }
 
 // Table-based, inline-styled layout (required for Outlook/Gmail rendering)
@@ -72,8 +82,13 @@ function leadNotificationHtml(lead: WebLead, ref: string): string {
     <tr><td style="background:${CORAL};height:6px;font-size:0;line-height:0">&nbsp;</td></tr>
     <tr>
       <td style="background:${NAVY};padding:24px 28px">
-        <div style="color:#fff;font-size:20px;font-weight:700;letter-spacing:-.02em">HAINA AUTO EXPORT</div>
-        <div style="color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:4px">New Website Lead — ${escapeHtml(ref)}</div>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+          <td width="72" valign="middle">${logoImg(58, 58)}</td>
+          <td valign="middle">
+            <div style="color:#fff;font-size:20px;font-weight:700;letter-spacing:-.02em">HAINA AUTO EXPORT</div>
+            <div style="color:#93c5fd;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:4px">New Website Lead — ${escapeHtml(ref)}</div>
+          </td>
+        </tr></table>
       </td>
     </tr>
     <tr>
@@ -131,6 +146,7 @@ export async function sendLeadNotification(lead: WebLead, ref: string): Promise<
       subject: `New HainaAuto lead ${ref} — ${lead.name}`,
       text: lines.join("\n"),
       html: leadNotificationHtml(lead, ref),
+      attachments: [logoAttachment()],
     }),
   });
 
@@ -168,7 +184,7 @@ export function customerQuoteEmailHtml(params: {
     <tr>
       <td bgcolor="${NAVY}" style="background:${NAVY};padding:24px 28px">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-          <td width="74" valign="middle"><img src="cid:hainaauto-logo" width="62" height="62" alt="Haina Auto" style="display:block;width:62px;height:62px;border:0;border-radius:10px;background:#fff"></td>
+          <td width="74" valign="middle">${logoImg()}</td>
           <td valign="middle"><div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td>
         </tr></table>
       </td>
@@ -244,7 +260,7 @@ export async function sendEmail(params: {
         html: params.html,
         attachments: [
           ...(params.attachment ? [{ filename: params.attachment.filename, content: params.attachment.content.toString("base64") }] : []),
-          { filename: "hainaauto-logo.png", path: "https://www.hainaautochina.com/hainaauto-email-logo.png", content_id: "hainaauto-logo" },
+          logoAttachment(),
         ],
       }),
     });
