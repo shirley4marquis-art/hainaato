@@ -132,9 +132,12 @@ if (listings.length === 0) {
 
 let index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
 const details = JSON.parse(fs.readFileSync(detailsPath, "utf8"));
-const publishedSlugs = new Set(listings.map((listing) => `${site}-${slugify(listing.source_product_id || listing.id)}`));
-index = index.filter((vehicle) => !publishedSlugs.has(vehicle.slug));
+index = index.filter((vehicle) => vehicle.site !== site);
 const imported = [];
+
+for (const slug of Object.keys(details)) {
+  if (details[slug]?.site === site) delete details[slug];
+}
 
 for (const listing of listings) {
   const id = slugify(listing.source_product_id || listing.id);

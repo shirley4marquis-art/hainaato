@@ -1,0 +1,37 @@
+[
+  {
+    "run_id": "mic-1787375571371",
+    "source": "made-in-china",
+    "started_at": "2026-08-22T05:12:51.371Z",
+    "completed_at": "2026-08-22T05:14:03.240Z",
+    "queries": [
+      "HOWO truck",
+      "SINOTRUK HOWO dump truck",
+      "SHACMAN dump truck",
+      "SHACMAN tractor truck",
+      "FAW tractor truck",
+      "Foton Auman truck",
+      "Yutong bus",
+      "King Long bus",
+      "Higer bus",
+      "XCMG excavator",
+      "XCMG wheel loader",
+      "SANY excavator",
+      "LiuGong wheel loader",
+      "Shantui bulldozer",
+      "Zoomlion crane",
+      "construction machinery",
+      "mining truck",
+      "road roller",
+      "motor grader"
+    ],
+    "pages_scanned": 2,
+    "listings_found": 40,
+    "listings_imported": 30,
+    "duplicates": 0,
+    "rejected": 1,
+    "errors": [
+      "https://toaks168.en.made-in-china.com/product/sApUuXJGqWYk/China-Trade-Stunning-Price-HOWO-Used-China-HOWO-6-4-Heavy-Duty-Dump-Truck-for-Transportation-Low-Price-Dump-Truck-with-Powerful-Engine.html: Missing supplier/manufacturer"
+    ]
+  }
+]

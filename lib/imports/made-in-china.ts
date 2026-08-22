@@ -29,11 +29,28 @@ function cleanText(value: string): string {
     .trim();
 }
 
+function cleanTitle(value: string): string {
+  return cleanText(value).replace(/^\[(?:Hot Item|New Product|Featured Product)\]\s*/i, "");
+}
+
 function absoluteUrl(value: string): string {
   try {
     return new URL(value, SOURCE_ORIGIN).toString().replace(/^http:\/\//, "https://");
   } catch {
     return "";
+  }
+}
+
+function isMadeInChinaHost(hostname: string): boolean {
+  return hostname === SOURCE_HOST || hostname.endsWith(".made-in-china.com");
+}
+
+function isProductUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return isMadeInChinaHost(url.hostname) && /^\/product\//i.test(url.pathname) && /\.html$/i.test(url.pathname);
+  } catch {
+    return false;
   }
 }
 
@@ -72,13 +89,12 @@ function discoverProductLinks(html: string): DiscoveredLink[] {
   const links = new Map<string, string>();
   const anchorPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   for (const match of html.matchAll(anchorPattern)) {
-    const href = absoluteUrl(match[1]);
-    if (!href || !href.includes(SOURCE_HOST)) continue;
-    if (!/\/product-detail\//i.test(href) && !/\.html(?:\?|$)/i.test(href)) continue;
+    const href = absoluteUrl(match[1]).split("#")[0].split("?")[0];
+    if (!href || !isProductUrl(href)) continue;
     const title = cleanText(match[2]);
     if (title.length < 8) continue;
     if (!/(truck|bus|excavator|loader|bulldozer|grader|roller|crane|machinery|equipment|forklift|mining)/i.test(`${title} ${href}`)) continue;
-    links.set(href.split("?")[0], title);
+    links.set(href, title);
   }
   return [...links.entries()].slice(0, 20).map(([url, title]) => ({ url, title }));
 }
@@ -102,13 +118,19 @@ function extractImages(html: string): string[] {
 
 function extractSourceId(url: string): string {
   const pathname = new URL(url).pathname;
+  const productId = pathname.match(/\/product\/([^/]+)\//i)?.[1];
+  if (productId) return productId;
   const match = pathname.match(/([A-Za-z0-9_-]{8,})(?:\.html)?$/);
   return match?.[1] ?? crypto.createHash("sha1").update(url).digest("hex").slice(0, 16);
 }
 
-function extractSupplier(html: string): { name: string; location: string; type: string } {
+function extractSupplier(html: string, description: string): { name: string; location: string; type: string } {
   const text = cleanText(html);
-  const company = text.match(/([A-Z][A-Za-z0-9 .,&()'-]{4,80}(?:Co\.,?\s*Ltd\.?|Company Limited|Group Co\.,?\s*Ltd\.?))/)?.[1] ?? "";
+  const descCompany = description.match(/-\s*([A-Z][A-Za-z0-9 .,&()'-]{4,90}(?:Co\.,?\s*Ltd\.?|Company Limited|Group Co\.,?\s*Ltd\.?))\s*$/)?.[1];
+  const companyMatches = [...text.matchAll(/([A-Z][A-Za-z0-9 .,&()'-]{4,90}(?:Co\.,?\s*Ltd\.?|Company Limited|Group Co\.,?\s*Ltd\.?))/g)]
+    .map((match) => match[1].replace(/^(?:Year|Months|Manual|Automatic|Diesel|Brand New|One Year Warranty|Cargo Box for Ore Muck Transportation)\s+/i, "").trim())
+    .filter((name) => /\b(?:Co\.,?\s*Ltd\.?|Company Limited|Group Co\.,?\s*Ltd\.?)$/i.test(name));
+  const company = descCompany ?? companyMatches.sort((a, b) => a.length - b.length)[0] ?? "";
   const location = text.match(/\b(Shandong|Shanghai|Jiangsu|Zhejiang|Henan|Hebei|Hubei|Hunan|Guangdong|Guangxi|Fujian|Shaanxi|Sichuan|Chongqing|Beijing|Tianjin|Anhui|Liaoning|Yunnan|Xinjiang),?\s*China\b/i)?.[0] ?? "China";
   const type = /manufacturer/i.test(text) ? "Manufacturer" : /trading/i.test(text) ? "Trading Company" : "";
   return { name: cleanText(company), location: cleanText(location), type };
@@ -139,12 +161,12 @@ function extractSpecs(html: string): Record<string, string> {
 async function extractProduct(url: string, fallbackTitle: string): Promise<ImportedListing> {
   const html = await fetchPublicHtml(url);
   const fullText = cleanText(html);
-  const title = metaContent(html, "og:title") || fallbackTitle;
+  const title = cleanTitle(metaContent(html, "og:title") || fallbackTitle);
   const description = metaContent(html, "description") || fullText.slice(0, 700);
   const brandInfo = inferBrand(`${title} ${description}`);
   const category = mapCategory(`${title} ${description}`);
   const price = parsePrice(fullText);
-  const supplier = extractSupplier(html);
+  const supplier = extractSupplier(html, description);
   const specs = extractSpecs(html);
   const images = extractImages(html).map((original_url, index) => ({
     original_url,
@@ -271,4 +293,3 @@ export async function runMadeInChinaImport(overrides: Partial<ImportConfig> = {}
   await saveImportLog(run);
   return run;
 }
-
