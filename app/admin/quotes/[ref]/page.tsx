@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { AdminShell } from "../../admin-shell";
 import { QuoteForm } from "../../quote-form";
-import { EmailHistory } from "../../email-history";
+import { QuoteEmailCenter } from "../../quote-email-center";
 import { adminGetQuote, listQuoteEmails } from "../../../../lib/crm";
+import { buildQuoteEmailDrafts } from "../../../../lib/quote-email-drafts";
 import styles from "../../admin.module.css";
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -14,6 +15,7 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
   const { ref } = await params;
   const [quote, emails] = await Promise.all([adminGetQuote(ref), listQuoteEmails(ref)]);
   if (!quote) notFound();
+  const drafts = buildQuoteEmailDrafts(quote);
 
   return (
     <AdminShell>
@@ -29,7 +31,7 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
         </p>
       )}
       <QuoteForm initial={quote} />
-      <EmailHistory quoteRef={ref} emails={emails} />
+      <QuoteEmailCenter quoteRef={ref} customerEmail={quote.customer.email ?? null} drafts={drafts} emails={emails} />
     </AdminShell>
   );
 }
