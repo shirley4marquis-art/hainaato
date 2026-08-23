@@ -139,14 +139,14 @@ export default async function VehicleDetail({
   const metaLine = [
     vehicle.year,
     vehicle.mileageKm != null ? formatKm(vehicle.mileageKm) : null,
-    fuelChoiceLabel(),
+    fuelChoiceLabel(vehicle.fuel),
     vehicle.location,
   ]
     .filter(Boolean)
     .join(" · ");
 
   const stockCode = vehicle.specs["Código de inventario"] || `${vehicle.site === "hainaauto" ? "HA" : vehicle.site === "cntransit" ? "CN" : vehicle.site === "hongyu" ? "HA-CN" : "HA-US"}-${vehicle.id}`;
-  const chips = [vehicle.driveType, fuelChoiceLabel(), vehicle.gearbox, `Stock ${stockCode}`].filter(
+  const chips = [vehicle.driveType, fuelChoiceLabel(vehicle.fuel), vehicle.gearbox, `Stock ${stockCode}`].filter(
     Boolean
   ) as string[];
   const totalVehicles = getTotalVehicleCount();
@@ -209,7 +209,7 @@ export default async function VehicleDetail({
               <Price cny={vehicle.priceCNY}/>
             </div>
             <p className="cif-price-note"><b>CIF included</b> Vehicle, international ocean freight and marine insurance are included in HAINA AUTO quotations unless marked FOB.</p>
-            <p className="cif-price-note"><b>Fuel choice</b> Gasoline is the primary option; Diesel can be requested where available.</p>
+            <p className="cif-price-note"><b>Fuel choice</b> Diesel and Gasoline are shown by the actual vehicle configuration; Hybrid and Electric remain separate categories.</p>
           </div>
 
           <ul className="buy-checklist">

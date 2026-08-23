@@ -60,7 +60,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle}:{vehicleSlug:strin
     const data=new FormData(form);
     setState("sending");setError(null);
     const email=field(data,"email")??"";
-    const fuelPreference=field(data,"fuelPreference")??"Gasoline";
+    const fuelPreference=field(data,"fuelPreference") ?? "Diesel";
     const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference}]});
     if(result.ok){setRef(result.documentNumber||result.ref);setEmailSent(result.emailSent);setSubmittedEmail(email);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
@@ -92,7 +92,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle}:{vehicleSlug:strin
       <label htmlFor="rv-quantity">Quantity</label>
       <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1}/>
       <label htmlFor="rv-fuelPreference">Preferred fuel</label>
-      <select id="rv-fuelPreference" name="fuelPreference" defaultValue="Gasoline">
+      <select id="rv-fuelPreference" name="fuelPreference" defaultValue="Diesel">
         {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
       </select>
       <label className="wide" htmlFor="rv-message">Additional requirements</label>
@@ -121,7 +121,7 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
   const [quantities,setQuantities]=useState<Record<string,number>>({});
   const [fuelPreferences,setFuelPreferences]=useState<Record<string,string>>({});
   const qtyFor=(slug:string)=>quantities[slug]??1;
-  const fuelFor=(slug:string)=>fuelPreferences[slug]??"Gasoline";
+  const fuelFor=(slug:string)=>fuelPreferences[slug] ?? "Diesel";
 
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();

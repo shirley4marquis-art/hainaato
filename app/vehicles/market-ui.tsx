@@ -92,17 +92,17 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           </div>
           <div className="vlist-baseinfo-item">
             <span className="label">FUEL</span>
-            <span className="value">{fuelChoiceLabel()}</span>
+            <span className="value">{fuelChoiceLabel(v.fuel)}</span>
           </div>
           <div className="vlist-baseinfo-item"><span className="label">BODY TYPE</span><span className="value">{v.bodyType?normalizeBodyType(v.bodyType):"—"}</span></div>
           <div className="vlist-baseinfo-item"><span className="label">TRANSM.</span><span className="value truncate">{v.transmission??"—"}</span></div>
         </div>
         <div className="vlist-tags">
           <span className="tag">{v.condition === "new" ? "New Car" : "Actual Mileage"}</span>
-          <span className="tag">Gasoline default</span>
+          <span className="tag">{fuelChoiceLabel(v.fuel)}</span>
           <span className="tag">Original vehicle photos</span><span className="tag">Export Ready</span><span className="tag">Available</span>
         </div>
-        <dl className="vlist-details"><div><dt>Model Year</dt><dd>{v.year??"—"}</dd></div><div><dt>Color</dt><dd>{v.color??"—"}</dd></div><div><dt>Fuel options</dt><dd>{fuelChoiceLabel()}</dd></div><div><dt>Transmission</dt><dd>{v.transmission??"—"}</dd></div><div><dt>Body Type</dt><dd>{v.bodyType?normalizeBodyType(v.bodyType):"—"}</dd></div><div><dt>Location</dt><dd>{v.location??"China"}</dd></div></dl>
+        <dl className="vlist-details"><div><dt>Model Year</dt><dd>{v.year??"—"}</dd></div><div><dt>Color</dt><dd>{v.color??"—"}</dd></div><div><dt>Fuel options</dt><dd>{fuelChoiceLabel(v.fuel)}</dd></div><div><dt>Transmission</dt><dd>{v.transmission??"—"}</dd></div><div><dt>Body Type</dt><dd>{v.bodyType?normalizeBodyType(v.bodyType):"—"}</dd></div><div><dt>Location</dt><dd>{v.location??"China"}</dd></div></dl>
       </div>
       <div className="vlist-right">
         <div className="vlist-location"><MapPin aria-hidden="true"/>{v.location ?? "China"}</div>
