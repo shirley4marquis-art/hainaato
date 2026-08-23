@@ -13,6 +13,37 @@ const localImportsPath = path.join(root, "data", "imported-listings.json");
 const imageRoot = path.join(root, "public", "vehicle-images", site);
 const connectionString = process.env.IMPORT_DATABASE_URL || process.env.CRM_DATABASE_URL;
 
+// Made-in-China supplier pages often include catalog filler images, repeated
+// blank frames, detail closeups, or other truck models in the same carousel.
+// Keep only the visually audited photos that match each published listing.
+// The order matters: the first file becomes the listing thumbnail.
+const curatedImageFilesById = new Map(Object.entries({
+  bryuwpjlhnwc: ["01.webp", "04.webp", "05.webp", "06.webp"],
+  wgurambzilrp: ["01.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  uaprdieyzkko: ["01.webp", "05.webp"],
+  kysrozvdcjkh: ["01.webp"],
+  hdoarrkvbqap: ["01.webp", "05.webp", "06.webp"],
+  lefrsmfgibrp: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  srbylpvdwkcy: ["05.webp", "06.webp", "07.webp", "08.webp", "01.webp", "04.webp"],
+  bgjprxklaeyo: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  zarpqqfumlyy: ["01.webp", "05.webp"],
+  dyarmofucxvi: ["01.webp", "04.webp", "05.webp", "06.webp", "07.webp"],
+  wrrukpjzhohy: ["01.webp", "03.webp", "04.webp", "05.webp"],
+  utyupnrocyps: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  waerqutoilrm: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  ftorckxtmruq: ["01.webp", "05.webp", "06.webp", "08.webp"],
+  mryufsltbovy: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  lzcgmrxhfjaf: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  czggtwuvbfte: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  qjwucnsocgpr: ["01.webp", "04.webp", "05.webp"],
+  xrsphbxufywf: ["01.webp", "04.webp", "05.webp"],
+  lrpywdjufchu: ["01.webp", "05.webp"],
+  uzetbgvchsfg: ["01.webp", "04.webp", "05.webp", "06.webp", "08.webp"],
+  rahubfnvybpu: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+  qfjrsdehzbuu: ["01.webp", "04.webp", "05.webp", "06.webp"],
+  lgkrwfhoxmrs: ["01.webp", "05.webp", "06.webp", "07.webp", "08.webp"],
+}));
+
 function slugify(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 }
@@ -87,6 +118,13 @@ async function downloadImages(listing, id) {
   return files;
 }
 
+function curatedImagesFor(id, images) {
+  const curated = curatedImageFilesById.get(id);
+  if (!curated) return images;
+  const available = new Set(images);
+  return curated.filter((file) => available.has(file));
+}
+
 function specsFor(listing, stockCode) {
   const specs = listing.specifications ?? {};
   return {
@@ -142,7 +180,7 @@ for (const slug of Object.keys(details)) {
 for (const listing of listings) {
   const id = slugify(listing.source_product_id || listing.id);
   const slug = `${site}-${id}`;
-  const images = await downloadImages(listing, id);
+  const images = curatedImagesFor(id, await downloadImages(listing, id));
   if (images.length === 0) {
     console.warn(`Skipping ${slug}: no usable images downloaded.`);
     continue;
