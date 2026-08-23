@@ -4,6 +4,7 @@ import {submitLead} from "./submit-lead";
 import {submitQuoteRequest} from "./submit-quote-request";
 import {clearCart} from "./cart-store";
 import {DestinationPortFields} from "./destination-port-fields";
+import {FUEL_OPTIONS} from "../lib/fuel-options";
 
 type Status="idle"|"sending"|"sent"|"error";
 
@@ -11,7 +12,6 @@ function field(data:FormData,key:string):string|undefined{const v=data.get(key);
 function checked(data:FormData,key:string):boolean{return data.get(key)==="on"}
 
 const CONSENT_LABEL="Allow an anonymized status update (reference, destination and status only — never your name or contact details) to appear in the shipment updates ticker on this site.";
-
 export function RequestForm({kind}:{kind:"quote"|"contact"|"dealer"}){
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
@@ -60,7 +60,8 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle}:{vehicleSlug:strin
     const data=new FormData(form);
     setState("sending");setError(null);
     const email=field(data,"email")??"";
-    const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1}]});
+    const fuelPreference=field(data,"fuelPreference")??"Gasoline";
+    const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference}]});
     if(result.ok){setRef(result.documentNumber||result.ref);setEmailSent(result.emailSent);setSubmittedEmail(email);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
   }
@@ -90,6 +91,10 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle}:{vehicleSlug:strin
       <input id="rv-cityState" name="cityState" autoComplete="address-level2"/>
       <label htmlFor="rv-quantity">Quantity</label>
       <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1}/>
+      <label htmlFor="rv-fuelPreference">Preferred fuel</label>
+      <select id="rv-fuelPreference" name="fuelPreference" defaultValue="Gasoline">
+        {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+      </select>
       <label className="wide" htmlFor="rv-message">Additional requirements</label>
       <textarea className="wide" id="rv-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
@@ -114,7 +119,9 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
   const [quantities,setQuantities]=useState<Record<string,number>>({});
+  const [fuelPreferences,setFuelPreferences]=useState<Record<string,string>>({});
   const qtyFor=(slug:string)=>quantities[slug]??1;
+  const fuelFor=(slug:string)=>fuelPreferences[slug]??"Gasoline";
 
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
@@ -130,7 +137,7 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
       destinationPort:field(data,"destinationPort"),
       message:field(data,"message"),
       publicConsent:checked(data,"publicConsent"),
-      vehicles:vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug)})),
+      vehicles:vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug),fuelPreference:fuelFor(v.slug)})),
     });
     if(result.ok){onSubmitted(result.ref,result.documentNumber);clearCart()}
     else{setError(result.error);setState("error")}
@@ -138,17 +145,24 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
 
   return <form className="request-form" onSubmit={submit} aria-busy={state==="sending"}>
     <h2>Request a Formal Quotation</h2>
-    <p style={{margin:"-8px 0 16px",fontSize:13,color:"var(--muted)"}}>We'll generate a personalized PDF quotation from these listings and email it to you immediately — no need to wait for a reply.</p>
+    <p style={{margin:"-8px 0 16px",fontSize:13,color:"var(--muted)"}}>We&apos;ll generate a personalized PDF quotation from these listings and email it to you immediately — no need to wait for a reply.</p>
     <div className="form-grid">
       <label className="wide" htmlFor="cr-vehicles">Vehicles &amp; quantity ({vehicles.length})</label>
       <div className="wide" style={{display:"flex",flexDirection:"column",gap:8,marginBottom:4}}>
         {vehicles.map((v)=>(
-          <div key={v.slug} style={{display:"flex",alignItems:"center",gap:10,fontSize:13}}>
+          <div key={v.slug} style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 80px 118px",alignItems:"center",gap:10,fontSize:13}}>
             <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</span>
             <label style={{display:"flex",alignItems:"center",gap:6,fontWeight:400,margin:0}}>
               Qty
               <input type="number" min={1} max={50} value={qtyFor(v.slug)} style={{width:60}}
                 onChange={(e)=>setQuantities((q)=>({...q,[v.slug]:Math.max(1,Number(e.target.value)||1)}))}/>
+            </label>
+            <label style={{display:"flex",alignItems:"center",gap:6,fontWeight:400,margin:0}}>
+              Fuel
+              <select value={fuelFor(v.slug)} style={{width:82}}
+                onChange={(e)=>setFuelPreferences((current)=>({...current,[v.slug]:e.target.value}))}>
+                {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+              </select>
             </label>
           </div>
         ))}

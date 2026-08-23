@@ -34,10 +34,10 @@ export async function POST(request: Request) {
       item: {
         make, model: indexEntry?.model || titleParts.join(" ") || vehicle.title, year: vehicle.year,
         condition: indexEntry?.condition ?? (vehicle.mileageKm === 0 ? "new" : "used"), mileageKm: vehicle.mileageKm,
-        fuelType: vehicle.fuel, transmission: vehicle.gearbox, drivetrain: vehicle.driveType,
+        fuelType: "Gasoline", transmission: vehicle.gearbox, drivetrain: vehicle.driveType,
         exteriorColor: vehicle.color, qty: 1, fobOriginal: vehicle.priceCNY ?? 0,
         discount: 0, fobFinal: vehicle.priceCNY ?? 0, historyNotes: `Vehicle link: https://www.hainaautochina.com/vehicles/${vehicle.slug}`,
-        specSummary: [vehicle.bodyType, vehicle.fuel, vehicle.gearbox, vehicle.driveType].filter(Boolean).join(" · ") || vehicle.overview,
+        specSummary: [vehicle.bodyType, "Fuel requested: Gasoline", vehicle.gearbox, vehicle.driveType].filter(Boolean).join(" · ") || vehicle.overview,
         photos,
       },
     };

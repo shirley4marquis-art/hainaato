@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVehicleIndexEntryBySlug } from "../../../lib/vehicles";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 import { rankVehicleImages } from "../../../lib/image-ranking";
-import { imagePath, normalizeFuel } from "../../../lib/format";
+import { imagePath } from "../../../lib/format";
 import { convertFromCNY } from "../../../lib/currency";
 import { CART_MAX } from "../../../lib/cart-constants";
 import { adminSaveQuote, adminGetQuote, recordQuoteEmail, type AdminQuoteItemInput } from "../../../lib/crm";
@@ -19,11 +19,12 @@ import { renderQuotePdf } from "../../../lib/render-quote-pdf";
 import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
+import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 60;
 
-type RequestedVehicle = { slug: string; qty: number };
+type RequestedVehicle = { slug: string; qty: number; fuelPreference: FuelPreference };
 
 function str(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -39,7 +40,8 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
     const slug = str((entry as Record<string, unknown>).slug);
     const qtyRaw = (entry as Record<string, unknown>).qty;
     const qty = Math.min(50, Math.max(1, Math.round(Number(qtyRaw) || 1)));
-    if (slug) out.push({ slug, qty });
+    const fuelPreference = normalizeFuelPreference((entry as Record<string, unknown>).fuelPreference);
+    if (slug) out.push({ slug, qty, fuelPreference });
   }
   return out.slice(0, CART_MAX);
 }
@@ -48,7 +50,7 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
 // the whole point being staff/the customer never hand-type specs. Returns
 // null for a slug that no longer resolves (delisted between add-to-cart and
 // submit) so the caller can skip it rather than fail the whole request.
-function buildItemFromListing(slug: string, qty: number): AdminQuoteItemInput | null {
+function buildItemFromListing(slug: string, qty: number, fuelPreference: FuelPreference): AdminQuoteItemInput | null {
   const indexEntry = getVehicleIndexEntryBySlug(slug);
   const detail = getVehicleBySlug(slug);
   if (!indexEntry || !detail || detail.priceCNY == null) return null;
@@ -63,7 +65,7 @@ function buildItemFromListing(slug: string, qty: number): AdminQuoteItemInput | 
     indexEntry.model,
     detail.mileageKm != null ? `${detail.mileageKm.toLocaleString("en-US")} km` : null,
     detail.color,
-    detail.fuel ? normalizeFuel(detail.fuel) : null,
+    `Fuel requested: ${fuelPreference}`,
     indexEntry.transmission,
     detail.location ? `Located in ${detail.location}` : null,
   ].filter(Boolean);
@@ -76,7 +78,7 @@ function buildItemFromListing(slug: string, qty: number): AdminQuoteItemInput | 
     year: detail.year,
     condition: indexEntry.condition,
     mileageKm: detail.mileageKm,
-    fuelType: detail.fuel ? normalizeFuel(detail.fuel) : null,
+    fuelType: fuelPreference,
     transmission: indexEntry.transmission,
     drivetrain: detail.driveType,
     exteriorColor: detail.color,
@@ -117,7 +119,7 @@ export async function POST(request: NextRequest) {
   }
 
   const items = requestedVehicles
-    .map(({ slug, qty }) => buildItemFromListing(slug, qty))
+    .map(({ slug, qty, fuelPreference }) => buildItemFromListing(slug, qty, fuelPreference))
     .filter((item): item is AdminQuoteItemInput => item !== null);
 
   if (items.length === 0) {

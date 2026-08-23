@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ClipboardPaste, Plus, Trash2, User, FileText, Car, Image as ImageIcon, WandSparkles } from "lucide-react";
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
+import { FUEL_OPTIONS } from "../../lib/fuel-options";
 
 const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed", "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered", "lost"] as const;
 
@@ -21,6 +22,7 @@ function blankItem(): ItemDraft {
     make: "",
     model: "",
     condition: "used",
+    fuelType: "Gasoline",
     qty: 1,
     fobOriginal: 0,
     fobFinal: 0,
@@ -301,7 +303,11 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
                 </select>
               </label>
               <label>Mileage (km)<input type="number" value={item.mileageKm ?? ""} onChange={(e) => updateItem(item.key, { mileageKm: e.target.value ? num(e.target.value) : null })} /></label>
-              <label>Fuel type<input value={item.fuelType ?? ""} onChange={(e) => updateItem(item.key, { fuelType: e.target.value })} /></label>
+              <label>Fuel type
+                <select value={item.fuelType ?? "Gasoline"} onChange={(e) => updateItem(item.key, { fuelType: e.target.value })}>
+                  {FUEL_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </label>
               <label>Engine<input value={item.engine ?? ""} onChange={(e) => updateItem(item.key, { engine: e.target.value })} /></label>
               <label>Power (hp)<input type="number" value={item.powerHp ?? ""} onChange={(e) => updateItem(item.key, { powerHp: e.target.value ? num(e.target.value) : null })} /></label>
               <label>Transmission<input value={item.transmission ?? ""} onChange={(e) => updateItem(item.key, { transmission: e.target.value })} /></label>
