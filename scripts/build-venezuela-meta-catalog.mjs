@@ -52,6 +52,7 @@ const wantedTrimRules = [
 ];
 const categoryNames = {
   pickup: "Camionetas y pickups",
+  truck: "Camiones y pickups",
   suv: "SUV y todoterrenos",
   passenger: "Sedanes y hatchbacks",
   commercial: "Vehículos comerciales y familiares",
@@ -64,11 +65,12 @@ const categoryNames = {
 function bodyType(v) {
   const value = (v.bodyType ?? "").toLowerCase();
   const title = v.title ?? "";
+  if (/dump truck|heavy truck|tractor truck|mixer truck|machinery|equipment/.test(value) || /excavat|loader|crane|dump truck|tipper|tractor truck|semi[- ]?truck|heavy machinery|mixer truck|cement mixer|\bhowo\b|sinotruk|shacman/i.test(title)) return "machinery";
   if (/motorcycle|motorbike|scooter/.test(value) || /\bmotorcycle\b|\bmotorbike\b|\bscooter\b/i.test(title)) return "motorcycle";
   if (/sports car|coupe|convertible/.test(value) || /supercar|hypercar|\bgt[ -]?r\b|\b911\b|\br8\b|\b718\b/i.test(title)) return "supercar";
   if (value.includes("pickup") || /\bhilux\b|\branger\b|\bfrontier\b|\bnavara\b|\bsilverado\b|\bf-?150\b|\bmaverick\b|\bd-max\b|\bpickup\b/i.test(title)) return "pickup";
   if (/commercial|mpv|van|bus/.test(value) || /\bminivan\b|\bpassenger van\b|\bpeople carrier\b/i.test(title)) return "commercial";
-  if (/truck|machinery|equipment/.test(value) || /excavat|loader|crane|dump truck|tractor|semi[- ]?truck|heavy machinery/i.test(title)) return "machinery";
+  if (/truck/.test(value) || /\btruck\b|\blorry\b/i.test(title)) return "truck";
   if (value.includes("suv") || value.includes("off-road")) return "suv";
   if (/passenger|sedan|hatchback/.test(value) || value === "car") return "passenger";
   return "other";
@@ -101,7 +103,8 @@ function catalogBrand(v) {
   // A primary brand with a non-matching model is outside this Venezuela-focused feed.
   if (brandRules.some(([brand]) => raw.toLowerCase() === brand.toLowerCase())) return null;
   const normalized = brandAliases.get(raw.toLowerCase()) ?? raw;
-  const eligibleType = bodyType(v) === "supercar" || bodyType(v) === "motorcycle" || bodyType(v) === "machinery";
+  const type = bodyType(v);
+  const eligibleType = type === "supercar" || type === "motorcycle" || type === "machinery" || type === "truck";
   return eligibleType && approvedFallbackBrands.has(normalized) ? normalized : null;
 }
 
@@ -145,9 +148,10 @@ function trimRank(v) {
 
 function priority(v) {
   const rank = trimRank(v);
-  const typeRank = bodyType(v) === "pickup" ? 0 : bodyType(v) === "suv" ? 1 : 2;
+  const type = bodyType(v);
+  const typeRank = type === "machinery" ? 0 : type === "truck" || type === "pickup" ? 1 : type === "suv" ? 2 : type === "commercial" ? 3 : 4;
   const conditionRank = v.condition === "new" ? 0 : 1;
-  return [rank, typeRank, conditionRank, -(v.year ?? 0), v.priceCNY ?? Number.MAX_SAFE_INTEGER, v.slug];
+  return [typeRank, rank, conditionRank, -(v.year ?? 0), v.priceCNY ?? Number.MAX_SAFE_INTEGER, v.slug];
 }
 
 function comparePriority(a, b) {

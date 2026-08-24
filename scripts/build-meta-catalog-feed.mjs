@@ -68,11 +68,11 @@ function fullImagesFor(v) {
 // feed, and USD matches DEFAULT_CURRENCY there.
 const USD_PER_CNY = 0.139;
 
-// Feed is capped and curated rather than dumping the full catalogue: 4x4
-// trucks (every pickup truck, plus SUVs/off-roaders whose title advertises
-// 4WD/AWD/4x4 — the two body styles export buyers in our core regions search
-// for as "4x4") get a guaranteed spot ahead of everything else. Whatever
-// budget is left after that is split across the remaining body-type buckets
+// Feed is capped and curated rather than dumping the full catalogue: heavy
+// machinery/heavy trucks lead the feed, then 4x4 trucks and pickups (every
+// pickup truck, plus SUVs/off-roaders whose title advertises 4WD/AWD/4x4).
+// Whatever budget is left after those priority groups is split across the
+// remaining body-type buckets
 // in proportion to how much inventory each one has, so a single rare bucket
 // can't crowd out common ones and vice versa. Each bucket is then evenly
 // sampled across its own listings (not just the first N) so the result
@@ -174,8 +174,8 @@ function curateSelection(eligible) {
   remainderBuckets.forEach(([label, list], i) => console.log(`${label}: ${quotas[i]} of ${list.length}`));
 
   return [
-    ...priorityTrucks,
     ...heavyTrucks,
+    ...priorityTrucks,
     ...remainderBuckets.flatMap(([, list], i) => evenSample(list, quotas[i])),
   ];
 }
