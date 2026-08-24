@@ -2,7 +2,9 @@ import Link from "next/link";
 import { ArrowRight, Inbox, Plus } from "lucide-react";
 import { AdminShell } from "../admin-shell";
 import { adminListQuotes } from "../../../lib/crm";
+import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { STATUS_META, STATUS_ORDER, type QuoteStatus } from "../status";
+import { QuoteDeleteButton } from "../quote-delete-button";
 import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +20,32 @@ const GROUPS = {
 
 type GroupKey = keyof typeof GROUPS;
 
-export default async function AdminQuotesList({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
+export default async function AdminQuotesList({ searchParams }: { searchParams: Promise<{ group?: string; flag?: string }> }) {
   const quotes = await adminListQuotes();
-  const requested = (await searchParams).group;
+  const params = await searchParams;
+  const requested = params.group;
   const activeGroup: GroupKey = requested && requested in GROUPS ? requested as GroupKey : "all";
   const allowed = new Set<string>(GROUPS[activeGroup].statuses);
-  const filtered = quotes.filter((quote) => allowed.has(quote.status));
+  const emailFlagOnly = params.flag === "email";
+  const groupFiltered = quotes.filter((quote) => allowed.has(quote.status));
+  const filtered = emailFlagOnly ? groupFiltered.filter((quote) => !isLikelyRealEmail(quote.customerEmail)) : groupFiltered;
+  const suspectCount = groupFiltered.filter((quote) => !isLikelyRealEmail(quote.customerEmail)).length;
+
+  function groupHref(key: GroupKey): string {
+    const qs = new URLSearchParams();
+    if (key !== "all") qs.set("group", key);
+    if (emailFlagOnly) qs.set("flag", "email");
+    const query = qs.toString();
+    return query ? `/admin/quotes?${query}` : "/admin/quotes";
+  }
+
+  function emailToggleHref(): string {
+    const qs = new URLSearchParams();
+    if (activeGroup !== "all") qs.set("group", activeGroup);
+    if (!emailFlagOnly) qs.set("flag", "email");
+    const query = qs.toString();
+    return query ? `/admin/quotes?${query}` : "/admin/quotes";
+  }
 
   return (
     <AdminShell>
@@ -36,8 +58,9 @@ export default async function AdminQuotesList({ searchParams }: { searchParams: 
         {(Object.entries(GROUPS) as [GroupKey, typeof GROUPS[GroupKey]][]).map(([key, group]) => {
           const groupStatuses = new Set<string>(group.statuses);
           const count = quotes.filter((quote) => groupStatuses.has(quote.status)).length;
-          return <Link key={key} href={key === "all" ? "/admin/quotes" : `/admin/quotes?group=${key}`} className={key === activeGroup ? styles.filterActive : undefined}>{group.label}<b>{count}</b></Link>;
+          return <Link key={key} href={groupHref(key)} className={key === activeGroup ? styles.filterActive : undefined}>{group.label}<b>{count}</b></Link>;
         })}
+        <Link href={emailToggleHref()} className={emailFlagOnly ? styles.filterActive : undefined}>⚠ No/fake email<b>{suspectCount}</b></Link>
       </div>
 
       {filtered.length === 0 ? (
@@ -50,21 +73,28 @@ export default async function AdminQuotesList({ searchParams }: { searchParams: 
             const Icon = meta.icon;
             const progressIndex = Math.max(0, STATUS_ORDER.indexOf(status));
             const progress = status === "lost" ? 0 : Math.round((progressIndex / (STATUS_ORDER.length - 2)) * 100);
+            const realEmail = isLikelyRealEmail(quote.customerEmail);
             return (
-              <Link className={styles.orderCard} href={`/admin/quotes/${quote.ref}`} key={quote.ref}>
-                <div className={styles.orderMain}>
-                  <span className={styles.orderRef}>{quote.documentNumber ?? quote.ref}</span>
-                  <h2>{quote.customerName}</h2>
-                  <p>{quote.vehicleSummary} · {quote.destinationCountry}</p>
-                </div>
-                <div className={styles.orderProgress}>
-                  <span className={styles.statusPill} data-tone={meta.tone}><Icon size={11} /> {meta.label}</span>
-                  <div><i style={{ width: `${progress}%` }} /></div>
-                  <small>{status === "lost" ? "Closed" : `${progress}% progress`}</small>
-                </div>
-                <div className={styles.orderValue}><b>{quote.currency} {quote.cifTotal.toLocaleString()}</b><small>{new Date(quote.createdAt).toLocaleDateString()}</small></div>
-                <ArrowRight className={styles.orderArrow} size={17} />
-              </Link>
+              <div className={styles.orderCardWrap} key={quote.ref}>
+                <Link className={styles.orderCard} href={`/admin/quotes/${quote.ref}`}>
+                  <div className={styles.orderMain}>
+                    <span className={styles.orderRef}>{quote.documentNumber ?? quote.ref}</span>
+                    <h2>{quote.customerName}</h2>
+                    <p>{quote.vehicleSummary} · {quote.destinationCountry}</p>
+                    <span className={`${styles.emailBadge}${realEmail ? "" : ` ${styles.emailBadgeWarn}`}`}>
+                      {quote.customerEmail ?? "No email on file"}
+                    </span>
+                  </div>
+                  <div className={styles.orderProgress}>
+                    <span className={styles.statusPill} data-tone={meta.tone}><Icon size={11} /> {meta.label}</span>
+                    <div><i style={{ width: `${progress}%` }} /></div>
+                    <small>{status === "lost" ? "Closed" : `${progress}% progress`}</small>
+                  </div>
+                  <div className={styles.orderValue}><b>{quote.currency} {quote.cifTotal.toLocaleString()}</b><small>{new Date(quote.createdAt).toLocaleDateString()}</small></div>
+                  <ArrowRight className={styles.orderArrow} size={17} />
+                </Link>
+                <QuoteDeleteButton ref={quote.ref} label={quote.documentNumber ?? quote.ref} />
+              </div>
             );
           })}
         </div>

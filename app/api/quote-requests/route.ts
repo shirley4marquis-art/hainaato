@@ -20,6 +20,7 @@ import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } 
 import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
 import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
+import { isLikelyRealEmail } from "../../../lib/valid-email";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 60;
@@ -112,6 +113,9 @@ export async function POST(request: NextRequest) {
 
   if (!name) return NextResponse.json({ ok: false, error: "Full name is required." }, { status: 400 });
   if (!email) return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
+  if (!isLikelyRealEmail(email)) {
+    return NextResponse.json({ ok: false, error: "Please enter a valid email address." }, { status: 400 });
+  }
   if (!phone) return NextResponse.json({ ok: false, error: "Phone / WhatsApp is required." }, { status: 400 });
   if (!country) return NextResponse.json({ ok: false, error: "Country is required." }, { status: 400 });
   if (requestedVehicles.length === 0) {

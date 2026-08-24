@@ -517,6 +517,7 @@ export type AdminQuoteSummary = {
   ref: string;
   documentNumber: string | null;
   customerName: string;
+  customerEmail: string | null;
   destinationCountry: string;
   vehicleSummary: string;
   currency: string;
@@ -528,7 +529,8 @@ export type AdminQuoteSummary = {
 
 export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
   const { rows } = await getPool().query(`
-    SELECT q.ref, q.document_number, c.name AS customer_name, q.destination_country, q.currency, q.cif_total,
+    SELECT q.ref, q.document_number, c.name AS customer_name, c.email AS customer_email,
+           q.destination_country, q.currency, q.cif_total,
            q.status, q.source, q.created_at,
            (SELECT string_agg(make || ' ' || model, ', ' ORDER BY sort_order) FROM quote_items WHERE quote_id = q.id) AS vehicle_summary
     FROM quotes q JOIN customers c ON c.id = q.customer_id
@@ -538,6 +540,7 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
     ref: r.ref as string,
     documentNumber: (r.document_number as string) ?? null,
     customerName: r.customer_name as string,
+    customerEmail: (r.customer_email as string) ?? null,
     destinationCountry: r.destination_country as string,
     vehicleSummary: (r.vehicle_summary as string) ?? "—",
     source: (r.source as string) ?? null,
@@ -546,6 +549,39 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
     status: r.status as string,
     createdAt: (r.created_at as Date).toISOString(),
   }));
+}
+
+// Removes a quote and everything scoped to it (line items, their photos,
+// follow-ups, sent-email records) — the customer row is left alone since it
+// may be linked to other quotes. Used from the admin quotes list to clear
+// out test/junk records (no real email on file) that never should have
+// counted as a live order.
+export async function adminDeleteQuote(ref: string): Promise<boolean> {
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query("SELECT id FROM quotes WHERE ref = $1", [ref]);
+    const quoteId = rows[0]?.id as number | undefined;
+    if (quoteId == null) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    await client.query(
+      "DELETE FROM quote_item_photos WHERE quote_item_id IN (SELECT id FROM quote_items WHERE quote_id = $1)",
+      [quoteId]
+    );
+    await client.query("DELETE FROM quote_items WHERE quote_id = $1", [quoteId]);
+    await client.query("DELETE FROM quote_emails WHERE quote_id = $1", [quoteId]);
+    await client.query("DELETE FROM follow_ups WHERE quote_id = $1", [quoteId]);
+    await client.query("DELETE FROM quotes WHERE id = $1", [quoteId]);
+    await client.query("COMMIT");
+    return true;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export type AdminCustomerSummary = {

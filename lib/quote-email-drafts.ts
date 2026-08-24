@@ -17,7 +17,7 @@ export type QuoteEmailDraft = {
 
 const EMAIL_LOGO_CID = "hainaauto-logo";
 const SALES_EMAIL = "sales@hainaautochina.com";
-const WHATSAPP_URL = "https://wa.me/message/RYZOAHE44OJQM1";
+const WHATSAPP_URL = "https://wa.me/8615531026121";
 
 function escapeHtml(value: string): string {
   return value
