@@ -52,13 +52,13 @@ const wantedTrimRules = [
 ];
 const categoryNames = {
   pickup: "Camionetas y pickups",
-  truck: "Camiones y pickups",
-  suv: "SUV y todoterrenos",
+  truck: "Camiones",
+  suv: "SUVs y todoterrenos",
   passenger: "Sedanes y hatchbacks",
   commercial: "Vehículos comerciales y familiares",
-  supercar: "Superautos y deportivos",
+  supercar: "Supercarros y deportivos",
   motorcycle: "Motocicletas",
-  machinery: "Maquinaria y camiones",
+  machinery: "Maquinaria pesada",
   other: "Otros vehículos",
 };
 
@@ -149,7 +149,8 @@ function trimRank(v) {
 function priority(v) {
   const rank = trimRank(v);
   const type = bodyType(v);
-  const typeRank = type === "machinery" ? 0 : type === "truck" || type === "pickup" ? 1 : type === "suv" ? 2 : type === "commercial" ? 3 : 4;
+  const typeOrder = ["machinery", "pickup", "truck", "suv", "passenger", "commercial", "supercar", "motorcycle", "other"];
+  const typeRank = typeOrder.includes(type) ? typeOrder.indexOf(type) : typeOrder.length;
   const conditionRank = v.condition === "new" ? 0 : 1;
   return [typeRank, rank, conditionRank, -(v.year ?? 0), v.priceCNY ?? Number.MAX_SAFE_INTEGER, v.slug];
 }
@@ -248,7 +249,7 @@ while (selected.length < TOTAL_CAP) {
 const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"];
 validateSelection(selected);
 const lines = [header.join(",")];
-for (const v of selected) {
+for (const v of [...selected].sort(comparePriority)) {
   const brand = catalogBrand(v);
   const type = bodyType(v);
   const priceUsd = v.priceCNY * USD_PER_CNY;

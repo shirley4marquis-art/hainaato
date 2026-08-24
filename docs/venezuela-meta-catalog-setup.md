@@ -1,6 +1,6 @@
 # Venezuela Meta Catalogue: Taxonomy and Setup Guide
 
-Last verified: 19 August 2026
+Last verified: 24 August 2026
 
 This guide is the operating procedure for HainaAuto's Venezuelan Meta catalogue. It explains how vehicles are classified in the feed, how to create clean product sets in Commerce Manager, and how to update the catalogue without breaking item IDs, tracking, or Spanish landing pages.
 
@@ -33,16 +33,19 @@ The generator classifies each record in a fixed order so ambiguous vehicles rece
 
 The order matters. For example, a Ford Ranger whose source body type says “SUV” is still categorized as a pickup, while a passenger van is commercial rather than machinery.
 
+The published CSV is ordered for campaign priority, with every category kept separate: maquinaria pesada first, then camionetas/pickups, camiones, SUVs y todoterrenos, sedanes/hatchbacks, vehículos comerciales, supercarros/deportivos, motocicletas, and other vehicles.
+
 ### Published category counts
 
 | Product set | `custom_label_1` | Total | New | Used |
 |---|---|---:|---:|---:|
-| SUVs and off-road | `category_suv` | 513 | 96 | 417 |
-| Sedans and hatchbacks | `category_passenger` | 280 | 67 | 213 |
-| Supercars and sports cars | `category_supercar` | 107 | 6 | 101 |
-| Machinery and trucks | `category_machinery` | 72 | 5 | 67 |
-| Pickups | `category_pickup` | 14 | 3 | 11 |
-| Commercial and family vehicles | `category_commercial` | 14 | 0 | 14 |
+| Maquinaria pesada | `category_machinery` | 20 | 5 | 15 |
+| Camionetas y pickups | `category_pickup` | 17 | 5 | 12 |
+| Camiones | `category_truck` | 73 | 5 | 68 |
+| SUVs y todoterrenos | `category_suv` | 545 | 101 | 444 |
+| Sedanes y hatchbacks | `category_passenger` | 224 | 56 | 168 |
+| Vehículos comerciales y familiares | `category_commercial` | 14 | 0 | 14 |
+| Supercarros y deportivos | `category_supercar` | 107 | 6 | 101 |
 
 There are currently no approved motorcycle records in the selected 1,000-item feed. Do not create an empty motorcycle set. It will appear automatically as `category_motorcycle` when eligible inventory is available.
 
@@ -51,9 +54,10 @@ There are currently no approved motorcycle records in the selected 1,000-item fe
 `product_type` is the customer-readable hierarchy:
 
 ```text
-SUV y todoterrenos > Toyota > RAV4 Hybrid
+SUVs y todoterrenos > Toyota > RAV4 Hybrid
 Camionetas y pickups > Ford > Ranger 2.3T
 Sedanes y hatchbacks > BYD > Seal 06
+Supercarros y deportivos > Porsche > 911 Carrera
 ```
 
 Use `product_type` for browsing and collection presentation. Use custom labels for advertising filters because their values are stable and language-independent.
@@ -63,23 +67,24 @@ Use `product_type` for browsing and collection presentation. Use custom labels f
 | Field | Purpose | Values |
 |---|---|---|
 | `custom_label_0` | Market | `market_venezuela` |
-| `custom_label_1` | Primary vehicle category | `category_suv`, `category_passenger`, `category_pickup`, `category_commercial`, `category_machinery`, `category_supercar`, `category_motorcycle`, `category_other` |
+| `custom_label_1` | Primary vehicle category | `category_machinery`, `category_pickup`, `category_truck`, `category_suv`, `category_passenger`, `category_commercial`, `category_supercar`, `category_motorcycle`, `category_other` |
 | `custom_label_2` | Condition | `condition_new`, `condition_used` |
 | `custom_label_3` | Model-year band | `year_2025_plus`, `year_2023_2024`, `year_pre_2023`, `year_unknown` |
 | `custom_label_4` | USD price band | `price_under_15000`, `price_15000_24999`, `price_25000_39999`, `price_40000_plus` |
 
 Current year distribution:
 
-- `year_2025_plus`: 408
+- `year_2025_plus`: 394
 - `year_2023_2024`: 584
 - `year_pre_2023`: 8
+- `year_unknown`: 14
 
 Current price distribution:
 
-- `price_under_15000`: 648
-- `price_15000_24999`: 200
-- `price_25000_39999`: 64
-- `price_40000_plus`: 88
+- `price_under_15000`: 641
+- `price_15000_24999`: 232
+- `price_25000_39999`: 54
+- `price_40000_plus`: 73
 
 Brand is already a native feed field. Do not waste a custom label by repeating it. Trim/model is the second level of `product_type`; it should not occupy a custom label either.
 
@@ -112,21 +117,25 @@ Create these sets in **Catalogue → Sets**. Use the exact names and filters so 
 | `VE — All inventory` | `custom_label_0 = market_venezuela` |
 | `VE — New vehicles` | market label + `custom_label_2 = condition_new` |
 | `VE — Used vehicles` | market label + `custom_label_2 = condition_used` |
-| `VE — SUVs` | market label + `custom_label_1 = category_suv` |
-| `VE — Passenger cars` | market label + `custom_label_1 = category_passenger` |
-| `VE — Pickups` | market label + `custom_label_1 = category_pickup` |
-| `VE — Commercial vehicles` | market label + `custom_label_1 = category_commercial` |
-| `VE — Trucks and machinery` | market label + `custom_label_1 = category_machinery` |
-| `VE — Sports and luxury` | market label + `custom_label_1 = category_supercar` |
+| `VE — Maquinaria pesada` | market label + `custom_label_1 = category_machinery` |
+| `VE — Camionetas y pickups` | market label + `custom_label_1 = category_pickup` |
+| `VE — Camiones` | market label + `custom_label_1 = category_truck` |
+| `VE — SUVs y todoterrenos` | market label + `custom_label_1 = category_suv` |
+| `VE — Sedanes y hatchbacks` | market label + `custom_label_1 = category_passenger` |
+| `VE — Vehículos comerciales` | market label + `custom_label_1 = category_commercial` |
+| `VE — Supercarros y deportivos` | market label + `custom_label_1 = category_supercar` |
 
 ### Recommended campaign sets
 
 | Set name | Filters |
 |---|---|
-| `VE — New SUVs` | market + SUV + new |
-| `VE — Used SUVs` | market + SUV + used |
-| `VE — New passenger cars` | market + passenger + new |
-| `VE — Used passenger cars` | market + passenger + used |
+| `VE — Prioridad maquinaria pesada` | market + machinery |
+| `VE — Prioridad camionetas y pickups` | market + pickups |
+| `VE — Prioridad camiones` | market + trucks |
+| `VE — SUVs nuevos` | market + SUV + new |
+| `VE — SUVs usados` | market + SUV + used |
+| `VE — Sedanes nuevos` | market + passenger + new |
+| `VE — Sedanes usados` | market + passenger + used |
 | `VE — Under $15k` | market + `price_under_15000` |
 | `VE — $15k–$24,999` | market + `price_15000_24999` |
 | `VE — $25k–$39,999` | market + `price_25000_39999` |
@@ -143,12 +152,16 @@ Use a simple structure first:
 
 ```text
 Campaign: VE | Catalogue | Leads or Sales
+├── Ad set: Maquinaria pesada
+│   └── Product set: VE — Maquinaria pesada
+├── Ad set: Camionetas y pickups
+│   └── Product set: VE — Camionetas y pickups
+├── Ad set: Camiones
+│   └── Product set: VE — Camiones
 ├── Ad set: SUVs
-│   └── Product set: VE — SUVs
-├── Ad set: Passenger cars
-│   └── Product set: VE — Passenger cars
-├── Ad set: Pickups and commercial
-│   └── Product sets: VE — Pickups / VE — Commercial vehicles
+│   └── Product set: VE — SUVs y todoterrenos
+├── Ad set: Supercarros
+│   └── Product set: VE — Supercarros y deportivos
 └── Ad set: Value inventory
     └── Product set: VE — Under $15k
 ```
