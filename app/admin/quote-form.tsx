@@ -9,6 +9,7 @@ import { FUEL_OPTIONS } from "../../lib/fuel-options";
 const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed", "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered", "lost"] as const;
 
 type ItemDraft = AdminQuoteItemInput & { key: string };
+type VehicleLookupResponse = { ok?: boolean; vehicles?: { item?: AdminQuoteItemInput; error?: string }[]; error?: string };
 
 let keySeq = 0;
 function newKey() {
@@ -35,11 +36,17 @@ function num(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function vehicleUrlsFromText(text: string): string[] {
+  const urlMatches = text.match(/(?:https?:\/\/[^\s<>"']+)?\/vehicles\/[a-z0-9-]+/gi) ?? [];
+  return [...new Set(urlMatches.map((url) => url.replace(/[),.;]+$/, "")))];
+}
+
 export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pasteText, setPasteText] = useState("");
+  const [vehiclePasteText, setVehiclePasteText] = useState("");
   const [detecting, setDetecting] = useState(false);
   const [detectionNotice, setDetectionNotice] = useState<string | null>(null);
 
@@ -110,6 +117,14 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     updateItem(key, { photos: (item.photos ?? []).filter((_, i) => i !== index) });
   }
 
+  async function lookupVehicleItems(urls: string[]): Promise<{ items: ItemDraft[]; resolved: number; failed: number }> {
+    const response = await fetch("/api/admin/quote-intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls }) });
+    const data = await response.json().catch(() => null) as VehicleLookupResponse | null;
+    if (!response.ok || !data?.ok) throw new Error(data?.error || "Vehicle lookup failed.");
+    const detectedItems = (data.vehicles ?? []).flatMap((entry) => entry.item ? [{ ...entry.item, key: newKey() } as ItemDraft] : []);
+    return { items: detectedItems, resolved: detectedItems.length, failed: urls.length - detectedItems.length };
+  }
+
   async function detectPastedInquiry() {
     const text = pasteText.trim();
     if (!text || detecting) return;
@@ -123,24 +138,47 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     const port = labelled(["destination port", "delivery port", "port", "puerto(?: de destino)?"]);
     const country = labelled(["destination country", "country", "pa[ií]s(?: de destino)?"]);
     const phone = labelled(["phone", "whatsapp", "tel(?:ephone)?", "tel[eé]fono"]);
-    const urlMatches = text.match(/(?:https?:\/\/[^\s<>"']+)?\/vehicles\/[a-z0-9-]+/gi) ?? [];
-    const urls = [...new Set(urlMatches.map((url) => url.replace(/[),.;]+$/, "")))];
+    const urls = vehicleUrlsFromText(text);
     setCustomer((current) => ({ ...current, name: name || current.name, email: email || current.email, phone: phone || current.phone }));
     setQuote((current) => ({ ...current, destinationPort: port || current.destinationPort, destinationCountry: country || current.destinationCountry }));
     let resolved = 0; let failed = 0;
     if (urls.length) {
       try {
-        const response = await fetch("/api/admin/quote-intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ urls }) });
-        const data = await response.json().catch(() => null) as { ok?: boolean; vehicles?: { item?: AdminQuoteItemInput; error?: string }[]; error?: string } | null;
-        if (!response.ok || !data?.ok) throw new Error(data?.error || "Vehicle lookup failed.");
-        const detectedItems = (data.vehicles ?? []).flatMap((entry) => entry.item ? [{ ...entry.item, key: newKey() } as ItemDraft] : []);
-        resolved = detectedItems.length; failed = urls.length - resolved;
-        if (detectedItems.length) { setItems(detectedItems); setQuote((current) => ({ ...current, currency: "CNY" })); }
+        const detected = await lookupVehicleItems(urls);
+        resolved = detected.resolved; failed = detected.failed;
+        if (detected.items.length) { setItems(detected.items); setQuote((current) => ({ ...current, currency: "USD" })); }
       } catch (lookupError) { setError(lookupError instanceof Error ? lookupError.message : "Vehicle lookup failed."); }
     }
     const fields = [name && "name", email && "email", phone && "phone", port && "port", country && "country"].filter(Boolean);
     setDetectionNotice(`Detected ${fields.length ? fields.join(", ") : "no labelled client fields"}${resolved ? ` and ${resolved} catalogue vehicle${resolved === 1 ? "" : "s"}` : ""}${failed ? `. ${failed} vehicle link${failed === 1 ? " was" : "s were"} not found` : ""}. Review before creating the quote.`);
     setDetecting(false);
+  }
+
+  async function appendPastedVehicles() {
+    const text = vehiclePasteText.trim();
+    if (!text || detecting) return;
+    const urls = vehicleUrlsFromText(text);
+    if (!urls.length) {
+      setDetectionNotice(null);
+      setError("Paste one or more HainaAuto vehicle links from the catalogue.");
+      return;
+    }
+    setDetecting(true); setError(null); setDetectionNotice(null);
+    try {
+      const detected = await lookupVehicleItems(urls);
+      if (!detected.items.length) {
+        setError("No matching catalogue vehicles were found for those links.");
+        return;
+      }
+      setItems((current) => [...current, ...detected.items]);
+      setQuote((current) => ({ ...current, currency: "USD" }));
+      setVehiclePasteText("");
+      setDetectionNotice(`Added ${detected.resolved} catalogue vehicle${detected.resolved === 1 ? "" : "s"} in USD${detected.failed ? `. ${detected.failed} link${detected.failed === 1 ? " was" : "s were"} not found` : ""}. Review and save the quote.`);
+    } catch (lookupError) {
+      setError(lookupError instanceof Error ? lookupError.message : "Vehicle lookup failed.");
+    } finally {
+      setDetecting(false);
+    }
   }
 
   async function submit() {
@@ -285,6 +323,12 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}><Car size={14} /> Vehicles</h2>
+        {initial && <div className={styles.intakePanel}>
+          <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste vehicle link</h2><p>Add another catalogue vehicle to this existing quote. Details, photos, fuel and USD price fill automatically.</p></div></div>
+          <textarea rows={3} value={vehiclePasteText} onChange={(event) => setVehiclePasteText(event.target.value)} placeholder="https://www.hainaautochina.com/vehicles/vehicle-slug"/>
+          <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={appendPastedVehicles} disabled={detecting || !vehiclePasteText.trim()}><ClipboardPaste size={14}/>{detecting ? "Adding vehicle…" : "Add pasted vehicle"}</button><small>Nothing is saved until you click Save changes.</small></div>
+          {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
+        </div>}
         {items.map((item, index) => (
           <div className={styles.itemCard} key={item.key}>
             <div className={styles.itemCardHead}>

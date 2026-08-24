@@ -1,11 +1,7 @@
 "use client";
-import { formatPrice } from "../lib/currency";
-import { useCurrency } from "./currency-store";
+import { DEFAULT_CURRENCY, formatPrice } from "../lib/currency";
 
-// Renders a CNY amount converted into whichever currency the visitor picked
-// from the header selector (defaults to CNY). Use this instead of
-// lib/format.ts's formatCNY anywhere the price is user-visible.
+// Buyer-facing prices stay in USD regardless of browser language or locale.
 export function Price({ cny }: { cny: number | null | undefined }) {
-  const currency = useCurrency();
-  return <>{formatPrice(cny, currency)}</>;
+  return <>{formatPrice(cny, DEFAULT_CURRENCY)}</>;
 }

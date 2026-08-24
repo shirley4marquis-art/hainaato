@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getVehicleBySlug } from "../../../../lib/vehicle-details";
-import { imagePath } from "../../../../lib/format";
+import { imagePath, normalizeFuel } from "../../../../lib/format";
 import { rankVehicleImages } from "../../../../lib/image-ranking";
 import { getVehicleIndexEntryBySlug } from "../../../../lib/vehicles";
+import { convertFromCNY } from "../../../../lib/currency";
 
 type IntakeRequest = { urls?: string[] };
 
@@ -13,6 +14,11 @@ function slugFromVehicleUrl(value: string): string | null {
     const match = url.pathname.match(/^\/vehicles\/([^/?#]+)\/?$/);
     return match ? decodeURIComponent(match[1]) : null;
   } catch { return null; }
+}
+
+function usdFromCNY(cny: number | null | undefined): number {
+  if (cny == null) return 0;
+  return Number(convertFromCNY(cny, "USD").toFixed(2));
 }
 
 export async function POST(request: Request) {
@@ -26,6 +32,8 @@ export async function POST(request: Request) {
     const indexEntry = getVehicleIndexEntryBySlug(slug);
     const titleParts = vehicle.title.trim().split(/\s+/);
     const make = indexEntry?.brand || titleParts.shift() || "Vehicle";
+    const fuelType = (indexEntry?.fuel || vehicle.fuel) ? normalizeFuel(indexEntry?.fuel || vehicle.fuel || "") : null;
+    const usdPrice = usdFromCNY(vehicle.priceCNY);
     const photos = rankVehicleImages(vehicle.images).slice(0, 4).map((file, index) => ({
       url: imagePath(vehicle.site, vehicle.id, file), caption: index === 0 ? "Main vehicle view" : `Vehicle view ${index + 1}`,
     }));
@@ -34,13 +42,13 @@ export async function POST(request: Request) {
       item: {
         make, model: indexEntry?.model || titleParts.join(" ") || vehicle.title, year: vehicle.year,
         condition: indexEntry?.condition ?? (vehicle.mileageKm === 0 ? "new" : "used"), mileageKm: vehicle.mileageKm,
-        fuelType: "Gasoline", transmission: vehicle.gearbox, drivetrain: vehicle.driveType,
-        exteriorColor: vehicle.color, qty: 1, fobOriginal: vehicle.priceCNY ?? 0,
-        discount: 0, fobFinal: vehicle.priceCNY ?? 0, historyNotes: `Vehicle link: https://www.hainaautochina.com/vehicles/${vehicle.slug}`,
-        specSummary: [vehicle.bodyType, "Fuel requested: Gasoline", vehicle.gearbox, vehicle.driveType].filter(Boolean).join(" · ") || vehicle.overview,
+        fuelType: fuelType ?? undefined, transmission: vehicle.gearbox, drivetrain: vehicle.driveType,
+        exteriorColor: vehicle.color, qty: 1, fobOriginal: usdPrice,
+        discount: 0, fobFinal: usdPrice, historyNotes: `Vehicle link: https://www.hainaautochina.com/vehicles/${vehicle.slug}`,
+        specSummary: [vehicle.bodyType, fuelType, vehicle.gearbox, vehicle.driveType].filter(Boolean).join(" · ") || vehicle.overview,
         photos,
       },
     };
   });
-  return NextResponse.json({ ok: true, vehicles });
+  return NextResponse.json({ ok: true, currency: "USD", vehicles });
 }
