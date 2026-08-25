@@ -13,7 +13,7 @@ export const maxDuration = 60;
 
 const DRAFT_TYPES = new Set<QuoteEmailDraftType>(["quotation", "follow_up", "contract_deposit", "shipping_docs", "arrival_balance"]);
 const MAX_ATTACHMENT_COUNT = 5;
-const MAX_ATTACHMENT_BYTES = 3.5 * 1024 * 1024;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
 function parseRecipients(value: string | null | undefined): string[] {
   return (value ?? "")
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
     if (totalSize > MAX_ATTACHMENT_BYTES) {
-      return NextResponse.json({ ok: false, error: "Attachments must be 3.5 MB or less in total." }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Attachments must be 10 MB or less in total." }, { status: 400 });
     }
 
     const attachments: EmailAttachment[] = await Promise.all(

@@ -1,13 +1,13 @@
 "use client";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
-import { CheckCircle2, Eye, FileText, Paperclip, RefreshCw, Send } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { CheckCircle2, Eye, FileText, Paperclip, RefreshCw, Send, X } from "lucide-react";
 import styles from "./admin.module.css";
 import type { QuoteEmailRecord } from "../../lib/crm";
 import type { QuoteEmailDraft, QuoteEmailDraftType } from "../../lib/quote-email-drafts";
 
 const MAX_CUSTOM_ATTACHMENT_COUNT = 5;
-const MAX_CUSTOM_ATTACHMENT_BYTES = 3.5 * 1024 * 1024;
+const MAX_CUSTOM_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -35,7 +35,25 @@ export function QuoteEmailCenter({
   const [customFiles, setCustomFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const selected = useMemo(() => drafts.find((draft) => draft.type === selectedType) ?? drafts[0], [drafts, selectedType]);
+
+  function validateCustomFiles(files: File[]): string | null {
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    if (files.length > MAX_CUSTOM_ATTACHMENT_COUNT) return `Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`;
+    if (total > MAX_CUSTOM_ATTACHMENT_BYTES) return "Attachments must be 10 MB or less in total.";
+    return null;
+  }
+
+  function updateCustomFiles(files: File[]) {
+    setCustomFiles(files);
+    setError(validateCustomFiles(files));
+    if (files.length === 0 && fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeCustomFile(index: number) {
+    updateCustomFiles(customFiles.filter((_, fileIndex) => fileIndex !== index));
+  }
 
   async function sendDraft(type: QuoteEmailDraftType) {
     if (busyType) return;
@@ -66,13 +84,9 @@ export function QuoteEmailCenter({
   async function sendCustomEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (customBusy) return;
-    const totalAttachmentBytes = customFiles.reduce((sum, file) => sum + file.size, 0);
-    if (customFiles.length > MAX_CUSTOM_ATTACHMENT_COUNT) {
-      setError(`Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`);
-      return;
-    }
-    if (totalAttachmentBytes > MAX_CUSTOM_ATTACHMENT_BYTES) {
-      setError("Attachments must be 3.5 MB or less in total.");
+    const fileError = validateCustomFiles(customFiles);
+    if (fileError) {
+      setError(fileError);
       return;
     }
     setCustomBusy(true);
@@ -188,32 +202,33 @@ export function QuoteEmailCenter({
           <label className={styles.mailWide}>
             Attachments
             <input
+              ref={fileInputRef}
               type="file"
               multiple
               onChange={(event) => {
                 const files = Array.from(event.currentTarget.files ?? []);
-                setCustomFiles(files);
-                const total = files.reduce((sum, file) => sum + file.size, 0);
-                if (files.length > MAX_CUSTOM_ATTACHMENT_COUNT) {
-                  setError(`Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`);
-                } else if (total > MAX_CUSTOM_ATTACHMENT_BYTES) {
-                  setError("Attachments must be 3.5 MB or less in total.");
-                } else {
-                  setError(null);
-                }
+                updateCustomFiles(files);
               }}
             />
           </label>
         </div>
         {customFiles.length > 0 && (
           <div className={styles.attachmentList}>
-            {customFiles.map((file) => (
-              <span key={`${file.name}-${file.size}`}>{file.name} · {formatFileSize(file.size)}</span>
+            {customFiles.map((file, index) => (
+              <span key={`${file.name}-${file.size}-${index}`}>
+                {file.name} · {formatFileSize(file.size)}
+                <button type="button" onClick={() => removeCustomFile(index)} aria-label={`Remove ${file.name}`}>
+                  <X size={11} />
+                </button>
+              </span>
             ))}
+            <button type="button" className={styles.attachmentClearBtn} onClick={() => updateCustomFiles([])}>
+              Clear files
+            </button>
           </div>
         )}
         <p className={styles.mailPreviewNote}>
-          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 3.5 MB total.
+          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 10 MB total.
         </p>
         <button type="submit" className={styles.btn} disabled={customBusy}>
           <Send size={13} /> {customBusy ? "Sending..." : "Send custom email"}
