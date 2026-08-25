@@ -6,5 +6,1565 @@
   "hainaauto-98279531": {
     "priceCNY": 238800,
     "note": "Manual correction 2026-08-15: -¥130,000 from formula price (¥418,800 -> ¥288,800), then a further -¥50,000 (¥288,800 -> ¥238,800)."
+  },
+  "hainaauto-940113460": {
+    "priceCNY": 145792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥181,763 -> ¥145,792)."
+  },
+  "hainaauto-006513542": {
+    "priceCNY": 168472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥204,443 -> ¥168,472)."
+  },
+  "hainaauto-683513715": {
+    "priceCNY": 187792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥223,763 -> ¥187,792)."
+  },
+  "hainaauto-785113716": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-165913849": {
+    "priceCNY": 188392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥224,363 -> ¥188,392)."
+  },
+  "hainaauto-609913853": {
+    "priceCNY": 171592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥207,563 -> ¥171,592)."
+  },
+  "hainaauto-583313917": {
+    "priceCNY": 148792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,763 -> ¥148,792)."
+  },
+  "hainaauto-475013918": {
+    "priceCNY": 154192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,163 -> ¥154,192)."
+  },
+  "hainaauto-370213980": {
+    "priceCNY": 190192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥226,163 -> ¥190,192)."
+  },
+  "hainaauto-656813985": {
+    "priceCNY": 202672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥238,643 -> ¥202,672)."
+  },
+  "hainaauto-178615561": {
+    "priceCNY": 172672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥208,643 -> ¥172,672)."
+  },
+  "hainaauto-404215631": {
+    "priceCNY": 133792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥169,763 -> ¥133,792)."
+  },
+  "hainaauto-427815648": {
+    "priceCNY": 193072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥229,043 -> ¥193,072)."
+  },
+  "hainaauto-400715775": {
+    "priceCNY": 142732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,703 -> ¥142,732)."
+  },
+  "hainaauto-981215965": {
+    "priceCNY": 159592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥195,563 -> ¥159,592)."
+  },
+  "hainaauto-366616086": {
+    "priceCNY": 152272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,243 -> ¥152,272)."
+  },
+  "hainaauto-404016337": {
+    "priceCNY": 160792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥196,763 -> ¥160,792)."
+  },
+  "hainaauto-910516669": {
+    "priceCNY": 148672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,643 -> ¥148,672)."
+  },
+  "hainaauto-806116781": {
+    "priceCNY": 152272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,243 -> ¥152,272)."
+  },
+  "hainaauto-848716862": {
+    "priceCNY": 147592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥183,563 -> ¥147,592)."
+  },
+  "hainaauto-348816991": {
+    "priceCNY": 142072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,043 -> ¥142,072)."
+  },
+  "hainaauto-242417044": {
+    "priceCNY": 166792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥202,763 -> ¥166,792)."
+  },
+  "hainaauto-756117125": {
+    "priceCNY": 134392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥170,363 -> ¥134,392)."
+  },
+  "hainaauto-922517189": {
+    "priceCNY": 139792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥175,763 -> ¥139,792)."
+  },
+  "hainaauto-321817237": {
+    "priceCNY": 154792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,763 -> ¥154,792)."
+  },
+  "hainaauto-466717553": {
+    "priceCNY": 164872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥200,843 -> ¥164,872)."
+  },
+  "hainaauto-124817730": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-755517800": {
+    "priceCNY": 166072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥202,043 -> ¥166,072)."
+  },
+  "hainaauto-613817798": {
+    "priceCNY": 151792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥187,763 -> ¥151,792)."
+  },
+  "hainaauto-607217996": {
+    "priceCNY": 160672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥196,643 -> ¥160,672)."
+  },
+  "hainaauto-167618327": {
+    "priceCNY": 135592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥171,563 -> ¥135,592)."
+  },
+  "hainaauto-664118601": {
+    "priceCNY": 136072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,043 -> ¥136,072)."
+  },
+  "hainaauto-533418730": {
+    "priceCNY": 148072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,043 -> ¥148,072)."
+  },
+  "hainaauto-134019413": {
+    "priceCNY": 201592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥237,563 -> ¥201,592)."
+  },
+  "hainaauto-665319575": {
+    "priceCNY": 207592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥243,563 -> ¥207,592)."
+  },
+  "hainaauto-402619736": {
+    "priceCNY": 151192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥187,163 -> ¥151,192)."
+  },
+  "hainaauto-477419735": {
+    "priceCNY": 153592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥189,563 -> ¥153,592)."
+  },
+  "hainaauto-642319963": {
+    "priceCNY": 152752,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,723 -> ¥152,752)."
+  },
+  "hainaauto-612320127": {
+    "priceCNY": 151792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥187,763 -> ¥151,792)."
+  },
+  "hainaauto-699520740": {
+    "priceCNY": 157072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,043 -> ¥157,072)."
+  },
+  "hainaauto-849220975": {
+    "priceCNY": 151072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥187,043 -> ¥151,072)."
+  },
+  "hainaauto-697021063": {
+    "priceCNY": 152392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,363 -> ¥152,392)."
+  },
+  "hainaauto-965521381": {
+    "priceCNY": 195592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥231,563 -> ¥195,592)."
+  },
+  "hainaauto-398321990": {
+    "priceCNY": 126592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥162,563 -> ¥126,592)."
+  },
+  "hainaauto-563122063": {
+    "priceCNY": 146272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥182,243 -> ¥146,272)."
+  },
+  "hainaauto-173622498": {
+    "priceCNY": 149992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥185,963 -> ¥149,992)."
+  },
+  "hainaauto-681023137": {
+    "priceCNY": 150592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥186,563 -> ¥150,592)."
+  },
+  "hainaauto-797323210": {
+    "priceCNY": 183472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥219,443 -> ¥183,472)."
+  },
+  "hainaauto-395723657": {
+    "priceCNY": 126592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥162,563 -> ¥126,592)."
+  },
+  "hainaauto-543923821": {
+    "priceCNY": 136672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,643 -> ¥136,672)."
+  },
+  "hainaauto-298823968": {
+    "priceCNY": 198592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥234,563 -> ¥198,592)."
+  },
+  "hainaauto-819224060": {
+    "priceCNY": 154072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,043 -> ¥154,072)."
+  },
+  "hainaauto-773124221": {
+    "priceCNY": 153592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥189,563 -> ¥153,592)."
+  },
+  "hainaauto-155224741": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-788525035": {
+    "priceCNY": 142072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,043 -> ¥142,072)."
+  },
+  "hainaauto-431026010": {
+    "priceCNY": 157792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,763 -> ¥157,792)."
+  },
+  "hainaauto-041926091": {
+    "priceCNY": 169072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥205,043 -> ¥169,072)."
+  },
+  "hainaauto-553026650": {
+    "priceCNY": 139192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥175,163 -> ¥139,192)."
+  },
+  "hainaauto-766526829": {
+    "priceCNY": 141472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥177,443 -> ¥141,472)."
+  },
+  "hainaauto-723526903": {
+    "priceCNY": 196792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥232,763 -> ¥196,792)."
+  },
+  "hainaauto-661929040": {
+    "priceCNY": 130492,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥166,463 -> ¥130,492)."
+  },
+  "hainaauto-765929052": {
+    "priceCNY": 178192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥214,163 -> ¥178,192)."
+  },
+  "hainaauto-610229129": {
+    "priceCNY": 164392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥200,363 -> ¥164,392)."
+  },
+  "hainaauto-641729139": {
+    "priceCNY": 140992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥176,963 -> ¥140,992)."
+  },
+  "hainaauto-986329852": {
+    "priceCNY": 137872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥173,843 -> ¥137,872)."
+  },
+  "hainaauto-870830864": {
+    "priceCNY": 144472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥180,443 -> ¥144,472)."
+  },
+  "hainaauto-085631126": {
+    "priceCNY": 169192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥205,163 -> ¥169,192)."
+  },
+  "hainaauto-163832879": {
+    "priceCNY": 166672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥202,643 -> ¥166,672)."
+  },
+  "hainaauto-957933053": {
+    "priceCNY": 193192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥229,163 -> ¥193,192)."
+  },
+  "hainaauto-519733143": {
+    "priceCNY": 200332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥236,303 -> ¥200,332)."
+  },
+  "hainaauto-788333152": {
+    "priceCNY": 143932,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥179,903 -> ¥143,932)."
+  },
+  "hainaauto-841333333": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-405634216": {
+    "priceCNY": 155992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥191,963 -> ¥155,992)."
+  },
+  "hainaauto-140234363": {
+    "priceCNY": 136792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,763 -> ¥136,792)."
+  },
+  "hainaauto-986234651": {
+    "priceCNY": 156472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥192,443 -> ¥156,472)."
+  },
+  "hainaauto-146934803": {
+    "priceCNY": 174472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥210,443 -> ¥174,472)."
+  },
+  "hainaauto-173635185": {
+    "priceCNY": 146392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥182,363 -> ¥146,392)."
+  },
+  "hainaauto-207635336": {
+    "priceCNY": 155872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥191,843 -> ¥155,872)."
+  },
+  "hainaauto-056035935": {
+    "priceCNY": 211792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥247,763 -> ¥211,792)."
+  },
+  "hainaauto-401436013": {
+    "priceCNY": 193072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥229,043 -> ¥193,072)."
+  },
+  "hainaauto-976736176": {
+    "priceCNY": 197992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥233,963 -> ¥197,992)."
+  },
+  "hainaauto-702636566": {
+    "priceCNY": 141892,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥177,863 -> ¥141,892)."
+  },
+  "hainaauto-402536636": {
+    "priceCNY": 161992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥197,963 -> ¥161,992)."
+  },
+  "hainaauto-836837113": {
+    "priceCNY": 122392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,363 -> ¥122,392)."
+  },
+  "hainaauto-518637359": {
+    "priceCNY": 190672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥226,643 -> ¥190,672)."
+  },
+  "hainaauto-310637633": {
+    "priceCNY": 173992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥209,963 -> ¥173,992)."
+  },
+  "hainaauto-706237822": {
+    "priceCNY": 172072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥208,043 -> ¥172,072)."
+  },
+  "hainaauto-163338082": {
+    "priceCNY": 152392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,363 -> ¥152,392)."
+  },
+  "hainaauto-032539010": {
+    "priceCNY": 147592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥183,563 -> ¥147,592)."
+  },
+  "hainaauto-650839426": {
+    "priceCNY": 148792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,763 -> ¥148,792)."
+  },
+  "hainaauto-066139746": {
+    "priceCNY": 126592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥162,563 -> ¥126,592)."
+  },
+  "hainaauto-854239862": {
+    "priceCNY": 182392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥218,363 -> ¥182,392)."
+  },
+  "hainaauto-485841249": {
+    "priceCNY": 190792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥226,763 -> ¥190,792)."
+  },
+  "hainaauto-144641259": {
+    "priceCNY": 182392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥218,363 -> ¥182,392)."
+  },
+  "hainaauto-656541560": {
+    "priceCNY": 144592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥180,563 -> ¥144,592)."
+  },
+  "hainaauto-620041880": {
+    "priceCNY": 165592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥201,563 -> ¥165,592)."
+  },
+  "hainaauto-699841970": {
+    "priceCNY": 145792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥181,763 -> ¥145,792)."
+  },
+  "hainaauto-370943113": {
+    "priceCNY": 190792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥226,763 -> ¥190,792)."
+  },
+  "hainaauto-819643323": {
+    "priceCNY": 140272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥176,243 -> ¥140,272)."
+  },
+  "hainaauto-336346010": {
+    "priceCNY": 207592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥243,563 -> ¥207,592)."
+  },
+  "hainaauto-427446632": {
+    "priceCNY": 157792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,763 -> ¥157,792)."
+  },
+  "hainaauto-935546800": {
+    "priceCNY": 142792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,763 -> ¥142,792)."
+  },
+  "hainaauto-776346962": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-279047027": {
+    "priceCNY": 214792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥250,763 -> ¥214,792)."
+  },
+  "hainaauto-277347126": {
+    "priceCNY": 154672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥190,643 -> ¥154,672)."
+  },
+  "hainaauto-733947217": {
+    "priceCNY": 119992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,963 -> ¥119,992)."
+  },
+  "hainaauto-184847751": {
+    "priceCNY": 190732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥226,703 -> ¥190,732)."
+  },
+  "hainaauto-683647926": {
+    "priceCNY": 136792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,763 -> ¥136,792)."
+  },
+  "hainaauto-417548060": {
+    "priceCNY": 185992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥221,963 -> ¥185,992)."
+  },
+  "hainaauto-898448318": {
+    "priceCNY": 160672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥196,643 -> ¥160,672)."
+  },
+  "hainaauto-518249908": {
+    "priceCNY": 166192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥202,163 -> ¥166,192)."
+  },
+  "hainaauto-588150030": {
+    "priceCNY": 136792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,763 -> ¥136,792)."
+  },
+  "hainaauto-590550537": {
+    "priceCNY": 124192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,163 -> ¥124,192)."
+  },
+  "hainaauto-239350672": {
+    "priceCNY": 198592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥234,563 -> ¥198,592)."
+  },
+  "hainaauto-797951608": {
+    "priceCNY": 148672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,643 -> ¥148,672)."
+  },
+  "hainaauto-637851675": {
+    "priceCNY": 182272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥218,243 -> ¥182,272)."
+  },
+  "hainaauto-863651756": {
+    "priceCNY": 153592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥189,563 -> ¥153,592)."
+  },
+  "hainaauto-204652245": {
+    "priceCNY": 166672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥202,643 -> ¥166,672)."
+  },
+  "hainaauto-461152719": {
+    "priceCNY": 123592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥159,563 -> ¥123,592)."
+  },
+  "cntransit-041016760": {
+    "priceCNY": 184192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥220,163 -> ¥184,192)."
+  },
+  "cntransit-115517865": {
+    "priceCNY": 144592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥180,563 -> ¥144,592)."
+  },
+  "cntransit-12067882": {
+    "priceCNY": 137332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥173,303 -> ¥137,332)."
+  },
+  "cntransit-13099301": {
+    "priceCNY": 142072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,043 -> ¥142,072)."
+  },
+  "cntransit-13386116": {
+    "priceCNY": 155272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥191,243 -> ¥155,272)."
+  },
+  "cntransit-143916379": {
+    "priceCNY": 185272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥221,243 -> ¥185,272)."
+  },
+  "cntransit-14956159": {
+    "priceCNY": 158392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥194,363 -> ¥158,392)."
+  },
+  "cntransit-162513791": {
+    "priceCNY": 119272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,243 -> ¥119,272)."
+  },
+  "cntransit-193312558": {
+    "priceCNY": 152392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,363 -> ¥152,392)."
+  },
+  "cntransit-213215207": {
+    "priceCNY": 187372,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥223,343 -> ¥187,372)."
+  },
+  "cntransit-268118572": {
+    "priceCNY": 152392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥188,363 -> ¥152,392)."
+  },
+  "cntransit-28448167": {
+    "priceCNY": 124192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,163 -> ¥124,192)."
+  },
+  "cntransit-302117228": {
+    "priceCNY": 140392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥176,363 -> ¥140,392)."
+  },
+  "cntransit-309417994": {
+    "priceCNY": 131392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥167,363 -> ¥131,392)."
+  },
+  "cntransit-33016502": {
+    "priceCNY": 143392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥179,363 -> ¥143,392)."
+  },
+  "cntransit-363118123": {
+    "priceCNY": 202672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥238,643 -> ¥202,672)."
+  },
+  "cntransit-38087881": {
+    "priceCNY": 137332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥173,303 -> ¥137,332)."
+  },
+  "cntransit-39279403": {
+    "priceCNY": 201472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥237,443 -> ¥201,472)."
+  },
+  "cntransit-394714344": {
+    "priceCNY": 167272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥203,243 -> ¥167,272)."
+  },
+  "cntransit-429315396": {
+    "priceCNY": 209272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥245,243 -> ¥209,272)."
+  },
+  "cntransit-441413580": {
+    "priceCNY": 179272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥215,243 -> ¥179,272)."
+  },
+  "cntransit-448017681": {
+    "priceCNY": 133672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥169,643 -> ¥133,672)."
+  },
+  "cntransit-479814540": {
+    "priceCNY": 167272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥203,243 -> ¥167,272)."
+  },
+  "cntransit-511913468": {
+    "priceCNY": 156472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥192,443 -> ¥156,472)."
+  },
+  "cntransit-52369566": {
+    "priceCNY": 139672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥175,643 -> ¥139,672)."
+  },
+  "cntransit-536818461": {
+    "priceCNY": 145672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥181,643 -> ¥145,672)."
+  },
+  "cntransit-53965980": {
+    "priceCNY": 160192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥196,163 -> ¥160,192)."
+  },
+  "cntransit-594014607": {
+    "priceCNY": 142672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,643 -> ¥142,672)."
+  },
+  "cntransit-618417927": {
+    "priceCNY": 157672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,643 -> ¥157,672)."
+  },
+  "cntransit-621117664": {
+    "priceCNY": 149392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥185,363 -> ¥149,392)."
+  },
+  "cntransit-64036314": {
+    "priceCNY": 155272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥191,243 -> ¥155,272)."
+  },
+  "cntransit-66917826": {
+    "priceCNY": 142132,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥178,103 -> ¥142,132)."
+  },
+  "cntransit-692719015": {
+    "priceCNY": 209272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥245,243 -> ¥209,272)."
+  },
+  "cntransit-739018850": {
+    "priceCNY": 134692,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥170,663 -> ¥134,692)."
+  },
+  "cntransit-767313972": {
+    "priceCNY": 155272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥191,243 -> ¥155,272)."
+  },
+  "cntransit-780815725": {
+    "priceCNY": 159472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥195,443 -> ¥159,472)."
+  },
+  "cntransit-82319506": {
+    "priceCNY": 169672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥205,643 -> ¥169,672)."
+  },
+  "cntransit-824618519": {
+    "priceCNY": 132592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥168,563 -> ¥132,592)."
+  },
+  "cntransit-84763064": {
+    "priceCNY": 168592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥204,563 -> ¥168,592)."
+  },
+  "cntransit-861616166": {
+    "priceCNY": 200992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥236,963 -> ¥200,992)."
+  },
+  "cntransit-880114223": {
+    "priceCNY": 146392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥182,363 -> ¥146,392)."
+  },
+  "cntransit-885617870": {
+    "priceCNY": 117472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,443 -> ¥117,472)."
+  },
+  "cntransit-898017592": {
+    "priceCNY": 157072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,043 -> ¥157,072)."
+  },
+  "cntransit-920418440": {
+    "priceCNY": 157672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥193,643 -> ¥157,672)."
+  },
+  "cntransit-962115590": {
+    "priceCNY": 164272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥200,243 -> ¥164,272)."
+  },
+  "cntransit-975116191": {
+    "priceCNY": 148072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥184,043 -> ¥148,072)."
+  },
+  "cntransit-978813713": {
+    "priceCNY": 125392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,363 -> ¥125,392)."
+  },
+  "cntransit-98878012": {
+    "priceCNY": 137872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥173,843 -> ¥137,872)."
+  },
+  "hainaauto-934013410": {
+    "priceCNY": 94672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥130,643 -> ¥94,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-230913483": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-947413688": {
+    "priceCNY": 90472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥126,443 -> ¥90,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-537613733": {
+    "priceCNY": 106072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,043 -> ¥106,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-131513752": {
+    "priceCNY": 112072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,043 -> ¥112,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-080913878": {
+    "priceCNY": 123592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥159,563 -> ¥123,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-945813996": {
+    "priceCNY": 128272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥164,243 -> ¥128,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-985614007": {
+    "priceCNY": 115792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,763 -> ¥115,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-837214196": {
+    "priceCNY": 118792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,763 -> ¥118,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-641715383": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-270915851": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-175016349": {
+    "priceCNY": 119992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,963 -> ¥119,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-092316616": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-340816743": {
+    "priceCNY": 106732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,703 -> ¥106,732). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-220916946": {
+    "priceCNY": 109792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,763 -> ¥109,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-715116941": {
+    "priceCNY": 127072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥163,043 -> ¥127,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-454017078": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-966717082": {
+    "priceCNY": 118192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,163 -> ¥118,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-666317136": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-157417204": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-324017362": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-982517435": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-486717517": {
+    "priceCNY": 116392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,363 -> ¥116,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-536318030": {
+    "priceCNY": 122272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,243 -> ¥122,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-378118224": {
+    "priceCNY": 120472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,443 -> ¥120,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-284118419": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-703218610": {
+    "priceCNY": 114592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥150,563 -> ¥114,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-537819318": {
+    "priceCNY": 123592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥159,563 -> ¥123,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-065519784": {
+    "priceCNY": 129892,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥165,863 -> ¥129,892). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-066419843": {
+    "priceCNY": 114592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥150,563 -> ¥114,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-458919938": {
+    "priceCNY": 112732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,703 -> ¥112,732). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-348420095": {
+    "priceCNY": 124792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,763 -> ¥124,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-415420401": {
+    "priceCNY": 125872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,843 -> ¥125,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-044420639": {
+    "priceCNY": 121192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,163 -> ¥121,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-888920801": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-181120815": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-557620954": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-325121015": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-781121107": {
+    "priceCNY": 100672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥136,643 -> ¥100,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-173621183": {
+    "priceCNY": 119872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,843 -> ¥119,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-389821247": {
+    "priceCNY": 104392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥140,363 -> ¥104,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-765521487": {
+    "priceCNY": 120472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,443 -> ¥120,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-626521728": {
+    "priceCNY": 112192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,163 -> ¥112,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-042121740": {
+    "priceCNY": 101992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥137,963 -> ¥101,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-257421826": {
+    "priceCNY": 100672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥136,643 -> ¥100,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-404921825": {
+    "priceCNY": 105592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,563 -> ¥105,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-155321824": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-889922129": {
+    "priceCNY": 127072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥163,043 -> ¥127,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-350722144": {
+    "priceCNY": 116392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,363 -> ¥116,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-540422193": {
+    "priceCNY": 106792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,763 -> ¥106,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-236422273": {
+    "priceCNY": 134272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥170,243 -> ¥134,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-939122407": {
+    "priceCNY": 107992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥143,963 -> ¥107,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-517522636": {
+    "priceCNY": 110392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,363 -> ¥110,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-273522706": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-152322709": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-864922800": {
+    "priceCNY": 117472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,443 -> ¥117,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-865523021": {
+    "priceCNY": 114892,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥150,863 -> ¥114,892). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-606323033": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-618623171": {
+    "priceCNY": 119992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,963 -> ¥119,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-044323340": {
+    "priceCNY": 98872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥134,843 -> ¥98,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-267223787": {
+    "priceCNY": 111592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,563 -> ¥111,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-416224490": {
+    "priceCNY": 108592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥144,563 -> ¥108,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-343324847": {
+    "priceCNY": 125872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,843 -> ¥125,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-135424865": {
+    "priceCNY": 106792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,763 -> ¥106,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-415425062": {
+    "priceCNY": 118792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,763 -> ¥118,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-502325144": {
+    "priceCNY": 135592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥171,563 -> ¥135,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-604225148": {
+    "priceCNY": 115792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,763 -> ¥115,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-558925334": {
+    "priceCNY": 105472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,443 -> ¥105,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-806125914": {
+    "priceCNY": 121072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,043 -> ¥121,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-607626299": {
+    "priceCNY": 94192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥130,163 -> ¥94,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-714826300": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-426326566": {
+    "priceCNY": 94732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥130,703 -> ¥94,732). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-063026574": {
+    "priceCNY": 111592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,563 -> ¥111,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-630826656": {
+    "priceCNY": 122392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,363 -> ¥122,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-545327594": {
+    "priceCNY": 119872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,843 -> ¥119,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-842627665": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-265627667": {
+    "priceCNY": 123592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥159,563 -> ¥123,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-934428126": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-205828220": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-332628229": {
+    "priceCNY": 160792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥196,763 -> ¥160,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-864028311": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-564428490": {
+    "priceCNY": 117472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,443 -> ¥117,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-418128669": {
+    "priceCNY": 100792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥136,763 -> ¥100,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-002429150": {
+    "priceCNY": 110392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,363 -> ¥110,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-149329605": {
+    "priceCNY": 116992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,963 -> ¥116,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-001929786": {
+    "priceCNY": 144592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥180,563 -> ¥144,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-846029854": {
+    "priceCNY": 129592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥165,563 -> ¥129,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-087729878": {
+    "priceCNY": 89992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥125,963 -> ¥89,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-088430055": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-197630594": {
+    "priceCNY": 126532,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥162,503 -> ¥126,532). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-324130703": {
+    "priceCNY": 115792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,763 -> ¥115,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-365130890": {
+    "priceCNY": 87592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥123,563 -> ¥87,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-497230966": {
+    "priceCNY": 98992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥134,963 -> ¥98,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-843531042": {
+    "priceCNY": 120892,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,863 -> ¥120,892). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-815631235": {
+    "priceCNY": 118192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,163 -> ¥118,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-882831572": {
+    "priceCNY": 116872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,843 -> ¥116,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-476332023": {
+    "priceCNY": 108472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥144,443 -> ¥108,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-863632099": {
+    "priceCNY": 136792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥172,763 -> ¥136,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-740932204": {
+    "priceCNY": 114292,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥150,263 -> ¥114,292). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-315632464": {
+    "priceCNY": 113392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,363 -> ¥113,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-460732554": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-198232621": {
+    "priceCNY": 118792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,763 -> ¥118,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-951933722": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-583033812": {
+    "priceCNY": 128872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥164,843 -> ¥128,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-341534003": {
+    "priceCNY": 122992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,963 -> ¥122,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-906234110": {
+    "priceCNY": 115792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,763 -> ¥115,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-123034373": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-804034440": {
+    "priceCNY": 94792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥130,763 -> ¥94,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-336034454": {
+    "priceCNY": 105592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,563 -> ¥105,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-248634542": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-537934920": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-102135004": {
+    "priceCNY": 105592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,563 -> ¥105,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-333735080": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-826535363": {
+    "priceCNY": 121192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,163 -> ¥121,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-735436043": {
+    "priceCNY": 121072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,043 -> ¥121,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-685036417": {
+    "priceCNY": 121792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,763 -> ¥121,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-061636661": {
+    "priceCNY": 125692,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,663 -> ¥125,692). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-455037289": {
+    "priceCNY": 115792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,763 -> ¥115,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-486437650": {
+    "priceCNY": 111592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,563 -> ¥111,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-727137658": {
+    "priceCNY": 118072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,043 -> ¥118,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-018938021": {
+    "priceCNY": 130792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥166,763 -> ¥130,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-194439160": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-520139467": {
+    "priceCNY": 121492,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,463 -> ¥121,492). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-819839566": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-931640081": {
+    "priceCNY": 121072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,043 -> ¥121,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-254640957": {
+    "priceCNY": 121192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,163 -> ¥121,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-373541575": {
+    "priceCNY": 105592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,563 -> ¥105,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-716441937": {
+    "priceCNY": 105592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥141,563 -> ¥105,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-226842261": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-305242752": {
+    "priceCNY": 129532,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥165,503 -> ¥129,532). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-844642978": {
+    "priceCNY": 106672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,643 -> ¥106,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-001646737": {
+    "priceCNY": 124732,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,703 -> ¥124,732). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-118946812": {
+    "priceCNY": 126592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥162,563 -> ¥126,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-550146968": {
+    "priceCNY": 108472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥144,443 -> ¥108,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-269247049": {
+    "priceCNY": 111592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,563 -> ¥111,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-462147154": {
+    "priceCNY": 124792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,763 -> ¥124,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-924147156": {
+    "priceCNY": 116272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,243 -> ¥116,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-614047231": {
+    "priceCNY": 119872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,843 -> ¥119,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-862047790": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-264047795": {
+    "priceCNY": 103792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥139,763 -> ¥103,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-464848361": {
+    "priceCNY": 124072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,043 -> ¥124,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-231848491": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-979948489": {
+    "priceCNY": 134872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥170,843 -> ¥134,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-631948628": {
+    "priceCNY": 122272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,243 -> ¥122,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-279350581": {
+    "priceCNY": 120892,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,863 -> ¥120,892). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-155550773": {
+    "priceCNY": 124072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,043 -> ¥124,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-770951480": {
+    "priceCNY": 94672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥130,643 -> ¥94,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-431251545": {
+    "priceCNY": 109792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,763 -> ¥109,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-701751786": {
+    "priceCNY": 95392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥131,363 -> ¥95,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-888951791": {
+    "priceCNY": 87592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥123,563 -> ¥87,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-154551795": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-574352212": {
+    "priceCNY": 120592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,563 -> ¥120,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-277552221": {
+    "priceCNY": 93592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥129,563 -> ¥93,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-905852342": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-836852406": {
+    "priceCNY": 119992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,963 -> ¥119,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-768752543": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-01882916": {
+    "priceCNY": 104992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥140,963 -> ¥104,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-05298834": {
+    "priceCNY": 120472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥156,443 -> ¥120,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-060415873": {
+    "priceCNY": 116872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,843 -> ¥116,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-074018469": {
+    "priceCNY": 125272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,243 -> ¥125,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-07986393": {
+    "priceCNY": 125332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,303 -> ¥125,332). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-088915034": {
+    "priceCNY": 121672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,643 -> ¥121,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-156717890": {
+    "priceCNY": 115672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,643 -> ¥115,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-17026518": {
+    "priceCNY": 116872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,843 -> ¥116,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-19317945": {
+    "priceCNY": 122992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,963 -> ¥122,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-206916518": {
+    "priceCNY": 125272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,243 -> ¥125,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-209112763": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-209715756": {
+    "priceCNY": 110872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,843 -> ¥110,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-253315487": {
+    "priceCNY": 121672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,643 -> ¥121,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-26862216": {
+    "priceCNY": 111472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,443 -> ¥111,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-284218013": {
+    "priceCNY": 110392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,363 -> ¥110,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-284913609": {
+    "priceCNY": 113272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,243 -> ¥113,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-294117298": {
+    "priceCNY": 123472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥159,443 -> ¥123,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-318418023": {
+    "priceCNY": 112672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,643 -> ¥112,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-326910134": {
+    "priceCNY": 110392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,363 -> ¥110,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-327410127": {
+    "priceCNY": 98392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥134,363 -> ¥98,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-347118864": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-35229323": {
+    "priceCNY": 108592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥144,563 -> ¥108,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-376714486": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-378614109": {
+    "priceCNY": 100792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥136,763 -> ¥100,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-385616866": {
+    "priceCNY": 112192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,163 -> ¥112,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-391318019": {
+    "priceCNY": 124672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,643 -> ¥124,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-40946005": {
+    "priceCNY": 122992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,963 -> ¥122,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-411212592": {
+    "priceCNY": 112792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥148,763 -> ¥112,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-473116862": {
+    "priceCNY": 99592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥135,563 -> ¥99,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-475715295": {
+    "priceCNY": 125272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥161,243 -> ¥125,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-514914827": {
+    "priceCNY": 102592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥138,563 -> ¥102,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-51527895": {
+    "priceCNY": 111472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,443 -> ¥111,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-541415432": {
+    "priceCNY": 113272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,243 -> ¥113,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-555918218": {
+    "priceCNY": 124792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥160,763 -> ¥124,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-569514744": {
+    "priceCNY": 118672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥154,643 -> ¥118,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-580513029": {
+    "priceCNY": 116872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,843 -> ¥116,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-595912965": {
+    "priceCNY": 106792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,763 -> ¥106,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-600815738": {
+    "priceCNY": 113392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,363 -> ¥113,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-62488994": {
+    "priceCNY": 121672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,643 -> ¥121,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-63636711": {
+    "priceCNY": 101272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥137,243 -> ¥101,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-639017167": {
+    "priceCNY": 128992,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥164,963 -> ¥128,992). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-644419062": {
+    "priceCNY": 119392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,363 -> ¥119,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-647912644": {
+    "priceCNY": 139072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥175,043 -> ¥139,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-651118140": {
+    "priceCNY": 115672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,643 -> ¥115,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-65676176": {
+    "priceCNY": 109072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,043 -> ¥109,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-68689154": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-69028565": {
+    "priceCNY": 119332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥155,303 -> ¥119,332). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-69168784": {
+    "priceCNY": 146392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥182,363 -> ¥146,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-701017821": {
+    "priceCNY": 116392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥152,363 -> ¥116,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-71829477": {
+    "priceCNY": 110872,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥146,843 -> ¥110,872). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-72118603": {
+    "priceCNY": 113272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,243 -> ¥113,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-725614951": {
+    "priceCNY": 97072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥133,043 -> ¥97,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-74437836": {
+    "priceCNY": 101272,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥137,243 -> ¥101,272). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-76322852": {
+    "priceCNY": 117592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥153,563 -> ¥117,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-790413740": {
+    "priceCNY": 106792,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥142,763 -> ¥106,792). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-794317622": {
+    "priceCNY": 101392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥137,363 -> ¥101,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-820916472": {
+    "priceCNY": 97072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥133,043 -> ¥97,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-825013871": {
+    "priceCNY": 115192,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,163 -> ¥115,192). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-84635953": {
+    "priceCNY": 102592,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥138,563 -> ¥102,592). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-854116920": {
+    "priceCNY": 111472,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥147,443 -> ¥111,472). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-87606011": {
+    "priceCNY": 113332,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥149,303 -> ¥113,332). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-882516650": {
+    "priceCNY": 109672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,643 -> ¥109,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-907518724": {
+    "priceCNY": 121672,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥157,643 -> ¥121,672). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-910615621": {
+    "priceCNY": 115072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥151,043 -> ¥115,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-941416150": {
+    "priceCNY": 122392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,363 -> ¥122,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-954514556": {
+    "priceCNY": 122392,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥158,363 -> ¥122,392). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "cntransit-970118084": {
+    "priceCNY": 109072,
+    "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,043 -> ¥109,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
   }
 }
