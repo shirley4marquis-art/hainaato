@@ -32,13 +32,13 @@ export function MailComposer({ clients, initialCustomerId }: { clients: AdminCus
       const response = await fetch("/api/admin/mail", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId: selected?.id ?? null, customerName: name, to, subject, heading, message, callToActionLabel: ctaLabel, callToActionUrl: ctaUrl }) });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok) setError(data?.error || "Email could not be sent.");
-      else { setNotice(`Email sent to ${to} from sales@hainaautochina.com.`); setSubject(""); setHeading(""); setMessage(""); setCtaLabel(""); setCtaUrl(""); }
+      else { setNotice(`Email sent to ${to} from HAINA AUTO | 海纳百川国际汽贸.`); setSubject(""); setHeading(""); setMessage(""); setCtaLabel(""); setCtaUrl(""); }
     } catch { setError("Network error — please try again."); }
     finally { setBusy(false); }
   }
 
   return <form className={styles.mailComposer} onSubmit={submit}>
-    <div className={styles.mailComposerHead}><div><span>FROM</span><b>HainaAuto Sales &lt;sales@hainaautochina.com&gt;</b></div><Send size={18}/></div>
+    <div className={styles.mailComposerHead}><div><span>FROM</span><b>HAINA AUTO | 海纳百川国际汽贸</b></div><Send size={18}/></div>
     <div className={styles.mailFields}>
       <label>CRM client<select value={customerId} onChange={(event) => selectClient(event.target.value)}><option value="">Manual recipient</option>{clients.filter((client) => client.email).map((client) => <option value={client.id} key={client.id}>{client.name} — {client.email}</option>)}</select></label>
       <label>Recipient name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="Client name" /></label>

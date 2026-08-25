@@ -13,6 +13,7 @@ import type { WebLead } from "./crm";
 const RESEND_API_URL = "https://api.resend.com/emails";
 const EMAIL_LOGO_CID = "hainaauto-logo";
 const EMAIL_LOGO_URL = "https://www.hainaautochina.com/hainaauto-email-logo.png";
+const CUSTOMER_SENDER_NAME = "HAINA AUTO | 海纳百川国际汽贸";
 
 function logoAttachment() {
   return { filename: "hainaauto-logo.png", path: EMAIL_LOGO_URL, content_id: EMAIL_LOGO_CID };
@@ -29,6 +30,18 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function senderEmailAddress(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  const bracketed = trimmed.match(/<([^>]+)>/);
+  return (bracketed?.[1] ?? trimmed).trim();
+}
+
+function brandedCustomerSender(value: string | null | undefined): string {
+  const email = senderEmailAddress(value) || "sales@hainaautochina.com";
+  return `${CUSTOMER_SENDER_NAME} <${email}>`;
 }
 
 export function customSalesEmailHtml(params: {
@@ -396,7 +409,7 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CUSTOMER_FROM_EMAIL || process.env.LEADS_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
+  const from = brandedCustomerSender(process.env.CUSTOMER_FROM_EMAIL || process.env.LEADS_FROM_EMAIL);
   if (!apiKey) {
     return { ok: false, error: "RESEND_API_KEY is not configured." };
   }
