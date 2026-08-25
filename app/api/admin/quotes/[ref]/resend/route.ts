@@ -13,13 +13,22 @@ export const maxDuration = 60;
 
 const DRAFT_TYPES = new Set<QuoteEmailDraftType>(["quotation", "follow_up", "contract_deposit", "shipping_docs", "arrival_balance"]);
 const MAX_ATTACHMENT_COUNT = 5;
-const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
+const MAX_ATTACHMENT_BYTES = 3.5 * 1024 * 1024;
 
 function parseRecipients(value: string | null | undefined): string[] {
   return (value ?? "")
     .split(/[,;\n]/)
     .map((email) => email.trim())
     .filter(Boolean);
+}
+
+function safeAttachmentName(name: string): string {
+  const normalized = name
+    .normalize("NFKD")
+    .replace(/[^\w.\- ]+/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || "attachment";
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
@@ -56,13 +65,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
     if (totalSize > MAX_ATTACHMENT_BYTES) {
-      return NextResponse.json({ ok: false, error: "Attachments must be 8 MB or less in total." }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Attachments must be 3.5 MB or less in total." }, { status: 400 });
     }
 
     const attachments: EmailAttachment[] = await Promise.all(
       files.map(async (file) => ({
-        filename: file.name || "attachment",
+        filename: safeAttachmentName(file.name),
         content: Buffer.from(await file.arrayBuffer()),
+        contentType: file.type || "application/octet-stream",
       }))
     );
     const html = customQuoteEmailHtml({

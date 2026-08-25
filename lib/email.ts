@@ -375,7 +375,7 @@ export function customerQuoteEmailHtml(params: {
 }
 
 export type SendResult = { ok: true; providerMessageId: string | null } | { ok: false; error: string };
-export type EmailAttachment = { filename: string; content: Buffer };
+export type EmailAttachment = { filename: string; content: Buffer; contentType?: string };
 
 // Generic Resend send with an optional PDF attachment — separate from
 // sendLeadNotification above (internal-only, no attachment support needed
@@ -402,6 +402,7 @@ export async function sendEmail(params: {
     ].map((attachment) => ({
       filename: attachment.filename,
       content: attachment.content.toString("base64"),
+      ...(attachment.contentType ? { content_type: attachment.contentType } : {}),
     }));
 
     const response = await fetch(RESEND_API_URL, {

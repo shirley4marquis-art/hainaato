@@ -6,6 +6,15 @@ import styles from "./admin.module.css";
 import type { QuoteEmailRecord } from "../../lib/crm";
 import type { QuoteEmailDraft, QuoteEmailDraftType } from "../../lib/quote-email-drafts";
 
+const MAX_CUSTOM_ATTACHMENT_COUNT = 5;
+const MAX_CUSTOM_ATTACHMENT_BYTES = 3.5 * 1024 * 1024;
+
+function formatFileSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.ceil(bytes / 1024)} KB`;
+  return `${bytes} B`;
+}
+
 export function QuoteEmailCenter({
   quoteRef,
   customerEmail,
@@ -57,6 +66,15 @@ export function QuoteEmailCenter({
   async function sendCustomEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (customBusy) return;
+    const totalAttachmentBytes = customFiles.reduce((sum, file) => sum + file.size, 0);
+    if (customFiles.length > MAX_CUSTOM_ATTACHMENT_COUNT) {
+      setError(`Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`);
+      return;
+    }
+    if (totalAttachmentBytes > MAX_CUSTOM_ATTACHMENT_BYTES) {
+      setError("Attachments must be 3.5 MB or less in total.");
+      return;
+    }
     setCustomBusy(true);
     setError(null);
     setNotice(null);
@@ -172,19 +190,30 @@ export function QuoteEmailCenter({
             <input
               type="file"
               multiple
-              onChange={(event) => setCustomFiles(Array.from(event.currentTarget.files ?? []))}
+              onChange={(event) => {
+                const files = Array.from(event.currentTarget.files ?? []);
+                setCustomFiles(files);
+                const total = files.reduce((sum, file) => sum + file.size, 0);
+                if (files.length > MAX_CUSTOM_ATTACHMENT_COUNT) {
+                  setError(`Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`);
+                } else if (total > MAX_CUSTOM_ATTACHMENT_BYTES) {
+                  setError("Attachments must be 3.5 MB or less in total.");
+                } else {
+                  setError(null);
+                }
+              }}
             />
           </label>
         </div>
         {customFiles.length > 0 && (
           <div className={styles.attachmentList}>
             {customFiles.map((file) => (
-              <span key={`${file.name}-${file.size}`}>{file.name}</span>
+              <span key={`${file.name}-${file.size}`}>{file.name} · {formatFileSize(file.size)}</span>
             ))}
           </div>
         )}
         <p className={styles.mailPreviewNote}>
-          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 8 MB total.
+          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 3.5 MB total.
         </p>
         <button type="submit" className={styles.btn} disabled={customBusy}>
           <Send size={13} /> {customBusy ? "Sending..." : "Send custom email"}
