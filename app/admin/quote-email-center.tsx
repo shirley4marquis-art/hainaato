@@ -1,6 +1,7 @@
 "use client";
+import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Eye, FileText, RefreshCw, Send } from "lucide-react";
+import { CheckCircle2, Eye, FileText, Paperclip, RefreshCw, Send } from "lucide-react";
 import styles from "./admin.module.css";
 import type { QuoteEmailRecord } from "../../lib/crm";
 import type { QuoteEmailDraft, QuoteEmailDraftType } from "../../lib/quote-email-drafts";
@@ -18,6 +19,11 @@ export function QuoteEmailCenter({
 }) {
   const [selectedType, setSelectedType] = useState<QuoteEmailDraftType>("quotation");
   const [busyType, setBusyType] = useState<QuoteEmailDraftType | null>(null);
+  const [customBusy, setCustomBusy] = useState(false);
+  const [customTo, setCustomTo] = useState(customerEmail ?? "");
+  const [customSubject, setCustomSubject] = useState(`Regarding your HainaAuto quotation ${quoteRef}`);
+  const [customMessage, setCustomMessage] = useState("");
+  const [customFiles, setCustomFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const selected = useMemo(() => drafts.find((draft) => draft.type === selectedType) ?? drafts[0], [drafts, selectedType]);
@@ -45,6 +51,37 @@ export function QuoteEmailCenter({
       setError("Network error — please try again.");
     } finally {
       setBusyType(null);
+    }
+  }
+
+  async function sendCustomEmail(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (customBusy) return;
+    setCustomBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const form = new FormData();
+      form.set("mode", "custom");
+      form.set("toEmail", customTo);
+      form.set("subject", customSubject);
+      form.set("message", customMessage);
+      customFiles.forEach((file) => form.append("attachments", file));
+      const response = await fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}/resend`, {
+        method: "POST",
+        body: form,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
+        setError(data?.error || "Custom email could not be sent.");
+      } else {
+        setNotice(`Custom email sent to ${customTo}.`);
+        location.reload();
+      }
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setCustomBusy(false);
     }
   }
 
@@ -96,6 +133,63 @@ export function QuoteEmailCenter({
           <iframe title={`${selected.label} preview`} srcDoc={selected.html} />
         </article>
       </div>
+
+      <form className={styles.mailComposer} style={{ marginTop: 18 }} onSubmit={sendCustomEmail}>
+        <div className={styles.mailComposerHead}>
+          <div>
+            <span>CUSTOM EMAIL</span>
+            <b>Send a branded message with attachments</b>
+          </div>
+          <Paperclip size={18} />
+        </div>
+        <div className={styles.mailFields}>
+          <label className={styles.mailWide}>
+            To
+            <input
+              value={customTo}
+              onChange={(event) => setCustomTo(event.target.value)}
+              placeholder="client@email.com, second@email.com"
+              type="text"
+              required
+            />
+          </label>
+          <label className={styles.mailWide}>
+            Subject
+            <input value={customSubject} onChange={(event) => setCustomSubject(event.target.value)} type="text" required />
+          </label>
+          <label className={styles.mailWide}>
+            Message
+            <textarea
+              rows={7}
+              value={customMessage}
+              onChange={(event) => setCustomMessage(event.target.value)}
+              placeholder="Write the custom message for this client..."
+              required
+            />
+          </label>
+          <label className={styles.mailWide}>
+            Attachments
+            <input
+              type="file"
+              multiple
+              onChange={(event) => setCustomFiles(Array.from(event.currentTarget.files ?? []))}
+            />
+          </label>
+        </div>
+        {customFiles.length > 0 && (
+          <div className={styles.attachmentList}>
+            {customFiles.map((file) => (
+              <span key={`${file.name}-${file.size}`}>{file.name}</span>
+            ))}
+          </div>
+        )}
+        <p className={styles.mailPreviewNote}>
+          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 8 MB total.
+        </p>
+        <button type="submit" className={styles.btn} disabled={customBusy}>
+          <Send size={13} /> {customBusy ? "Sending..." : "Send custom email"}
+        </button>
+      </form>
 
       <div className={styles.emailHistoryBlock}>
         <div className={styles.pageHeading} style={{ margin: "24px 0 12px" }}>

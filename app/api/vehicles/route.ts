@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { searchVehicles } from "../../../lib/vehicles";
+import { searchVehicles, type VehicleSearchParams } from "../../../lib/vehicles";
+
+function oneOf<T extends string>(value: string | undefined, allowed: readonly T[]): T | undefined {
+  return value && allowed.includes(value as T) ? (value as T) : undefined;
+}
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const params = Object.fromEntries(url.searchParams.entries());
 
-  const searchParams: any = {
+  const searchParams: VehicleSearchParams = {
     q: params.q || undefined,
     brand: params.brand || undefined,
     model: params.model || undefined,
@@ -14,13 +18,13 @@ export async function GET(req: Request) {
     color: params.color || undefined,
     minPrice: params.minPrice ? Number(params.minPrice) : undefined,
     maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
-    condition: params.condition as any,
-    availability: params.availability as any,
+    condition: oneOf(params.condition, ["new", "used"] as const),
+    availability: oneOf(params.availability, ["available", "reserved", "sold"] as const),
     minYear: params.minYear ? Number(params.minYear) : undefined,
     maxYear: params.maxYear ? Number(params.maxYear) : undefined,
     minMileage: params.minMileage ? Number(params.minMileage) : undefined,
     maxMileage: params.maxMileage ? Number(params.maxMileage) : undefined,
-    sort: params.sort as any,
+    sort: oneOf(params.sort, ["latest", "price-asc", "price-desc"] as const),
     page: params.page ? Number(params.page) : 1,
     pageSize: params.pageSize ? Number(params.pageSize) : 24,
   };

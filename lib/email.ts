@@ -49,6 +49,24 @@ export function customSalesEmailHtml(params: {
   return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:sales@hainaautochina.com" style="color:#082F63">sales@hainaautochina.com</a> · <a href="https://www.hainaautochina.com" style="color:#082F63">hainaautochina.com</a></td></tr></table></td></tr></table></body></html>`;
 }
 
+export function customQuoteEmailHtml(params: {
+  customerName: string;
+  quoteRef: string;
+  subject: string;
+  message: string;
+}): string {
+  const message = [
+    params.message,
+    "",
+    `Quote reference: ${params.quoteRef}`,
+  ].join("\n");
+  return customSalesEmailHtml({
+    customerName: params.customerName,
+    heading: params.subject,
+    message,
+  });
+}
+
 // Table-based, inline-styled layout (required for Outlook/Gmail rendering)
 // matching the brand colors already used across the site's own header and
 // the staff-issued PDF quotes (--mkt-navy #082F63, --mkt-coral #FF6B00 in
@@ -357,6 +375,7 @@ export function customerQuoteEmailHtml(params: {
 }
 
 export type SendResult = { ok: true; providerMessageId: string | null } | { ok: false; error: string };
+export type EmailAttachment = { filename: string; content: Buffer };
 
 // Generic Resend send with an optional PDF attachment — separate from
 // sendLeadNotification above (internal-only, no attachment support needed
@@ -364,10 +383,11 @@ export type SendResult = { ok: true; providerMessageId: string | null } | { ok: 
 // back to the caller rather than swallowing it, so it can be logged either
 // way via lib/crm.ts's recordQuoteEmail.
 export async function sendEmail(params: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
-  attachment?: { filename: string; content: Buffer };
+  attachment?: EmailAttachment;
+  attachments?: EmailAttachment[];
 }): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
@@ -376,6 +396,14 @@ export async function sendEmail(params: {
   }
 
   try {
+    const attachments = [
+      ...(params.attachments ?? []),
+      ...(params.attachment ? [params.attachment] : []),
+    ].map((attachment) => ({
+      filename: attachment.filename,
+      content: attachment.content.toString("base64"),
+    }));
+
     const response = await fetch(RESEND_API_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -385,10 +413,7 @@ export async function sendEmail(params: {
         to: params.to,
         subject: params.subject,
         html: params.html,
-        attachments: [
-          ...(params.attachment ? [{ filename: params.attachment.filename, content: params.attachment.content.toString("base64") }] : []),
-          logoAttachment(),
-        ],
+        attachments: [...attachments, logoAttachment()],
       }),
     });
     if (!response.ok) {
