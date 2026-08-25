@@ -1,13 +1,15 @@
 "use client";
 import type { FormEvent } from "react";
 import { useMemo, useRef, useState } from "react";
+import type { PutBlobResult } from "@vercel/blob";
+import { upload } from "@vercel/blob/client";
 import { CheckCircle2, Eye, FileText, Paperclip, RefreshCw, Send, X } from "lucide-react";
 import styles from "./admin.module.css";
 import type { QuoteEmailRecord } from "../../lib/crm";
 import type { QuoteEmailDraft, QuoteEmailDraftType } from "../../lib/quote-email-drafts";
 
 const MAX_CUSTOM_ATTACHMENT_COUNT = 5;
-const MAX_CUSTOM_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const MAX_CUSTOM_ATTACHMENT_BYTES = 100 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -33,15 +35,17 @@ export function QuoteEmailCenter({
   const [customSubject, setCustomSubject] = useState(`Regarding your HainaAuto quotation ${quoteRef}`);
   const [customMessage, setCustomMessage] = useState("");
   const [customFiles, setCustomFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
   const selected = useMemo(() => drafts.find((draft) => draft.type === selectedType) ?? drafts[0], [drafts, selectedType]);
 
   function validateCustomFiles(files: File[]): string | null {
     const total = files.reduce((sum, file) => sum + file.size, 0);
     if (files.length > MAX_CUSTOM_ATTACHMENT_COUNT) return `Attach up to ${MAX_CUSTOM_ATTACHMENT_COUNT} files.`;
-    if (total > MAX_CUSTOM_ATTACHMENT_BYTES) return "Attachments must be 10 MB or less in total.";
+    if (total > MAX_CUSTOM_ATTACHMENT_BYTES) return "Files must be 100 MB or less in total.";
     return null;
   }
 
@@ -53,6 +57,43 @@ export function QuoteEmailCenter({
 
   function removeCustomFile(index: number) {
     updateCustomFiles(customFiles.filter((_, fileIndex) => fileIndex !== index));
+  }
+
+  function safeUploadName(name: string): string {
+    return name.normalize("NFKD").replace(/[^\w.\- ]+/g, "").replace(/\s+/g, "-").replace(/^-+|-+$/g, "") || "quote-file";
+  }
+
+  async function uploadCustomFiles(): Promise<Array<{ name: string; url: string; size: number }>> {
+    if (customFiles.length === 0) return [];
+    const uploaded: Array<{ name: string; url: string; size: number }> = [];
+    const totalBytes = customFiles.reduce((sum, file) => sum + file.size, 0);
+    let completedBytes = 0;
+    uploadAbortRef.current = new AbortController();
+    setUploadProgress(0);
+    for (const file of customFiles) {
+      const startedAtBytes = completedBytes;
+      const blob: PutBlobResult = await upload(
+        `quote-attachments/${quoteRef}/${Date.now()}-${safeUploadName(file.name)}`,
+        file,
+        {
+          access: "public",
+          handleUploadUrl: "/api/admin/uploads/quote-attachments",
+          contentType: file.type || "application/octet-stream",
+          multipart: file.size > 8 * 1024 * 1024,
+          abortSignal: uploadAbortRef.current.signal,
+          clientPayload: JSON.stringify({ quoteRef, contentType: file.type || "application/octet-stream" }),
+          onUploadProgress: ({ loaded }) => {
+            const current = Math.min(totalBytes, startedAtBytes + loaded);
+            setUploadProgress(Math.round((current / totalBytes) * 100));
+          },
+        }
+      );
+      completedBytes += file.size;
+      setUploadProgress(Math.round((completedBytes / totalBytes) * 100));
+      uploaded.push({ name: file.name, url: blob.downloadUrl || blob.url, size: file.size });
+    }
+    uploadAbortRef.current = null;
+    return uploaded;
   }
 
   async function sendDraft(type: QuoteEmailDraftType) {
@@ -93,15 +134,17 @@ export function QuoteEmailCenter({
     setError(null);
     setNotice(null);
     try {
-      const form = new FormData();
-      form.set("mode", "custom");
-      form.set("toEmail", customTo);
-      form.set("subject", customSubject);
-      form.set("message", customMessage);
-      customFiles.forEach((file) => form.append("attachments", file));
+      const uploadedFiles = await uploadCustomFiles();
       const response = await fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}/resend`, {
         method: "POST",
-        body: form,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "custom_links",
+          toEmail: customTo,
+          subject: customSubject,
+          message: customMessage,
+          uploadedFiles,
+        }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.ok) {
@@ -111,8 +154,10 @@ export function QuoteEmailCenter({
         location.reload();
       }
     } catch {
-      setError("Network error — please try again.");
+      setError(uploadAbortRef.current?.signal.aborted ? "Upload cancelled." : "Network error — please try again.");
     } finally {
+      uploadAbortRef.current = null;
+      setUploadProgress(null);
       setCustomBusy(false);
     }
   }
@@ -228,11 +273,22 @@ export function QuoteEmailCenter({
           </div>
         )}
         <p className={styles.mailPreviewNote}>
-          <Paperclip size={13} /> Sent through the HainaAuto Resend styling. Attach up to 5 files, 10 MB total.
+          <Paperclip size={13} /> Files are uploaded securely and sent as download links. Add up to 5 files, 100 MB total.
         </p>
+        {uploadProgress != null && (
+          <div className={styles.uploadProgress}>
+            <span><i style={{ width: `${uploadProgress}%` }} /></span>
+            <b>{uploadProgress}% uploaded</b>
+          </div>
+        )}
         <button type="submit" className={styles.btn} disabled={customBusy}>
-          <Send size={13} /> {customBusy ? "Sending..." : "Send custom email"}
+          <Send size={13} /> {customBusy ? (uploadProgress != null ? "Uploading..." : "Sending...") : "Send custom email"}
         </button>
+        {customBusy && uploadProgress != null && (
+          <button type="button" className={styles.btnGhost} onClick={() => uploadAbortRef.current?.abort()}>
+            Cancel upload
+          </button>
+        )}
       </form>
 
       <div className={styles.emailHistoryBlock}>

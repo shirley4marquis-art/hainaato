@@ -15,6 +15,8 @@ const DRAFT_TYPES = new Set<QuoteEmailDraftType>(["quotation", "follow_up", "con
 const MAX_ATTACHMENT_COUNT = 5;
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
+type UploadedQuoteFile = { name?: string; url?: string; size?: number };
+
 function parseRecipients(value: string | null | undefined): string[] {
   return (value ?? "")
     .split(/[,;\n]/)
@@ -97,11 +99,63 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ ok: true, sentTo: recipients });
   }
 
+  const body = (await request.json().catch(() => null)) as {
+    mode?: string;
+    toEmail?: string;
+    subject?: string;
+    message?: string;
+    uploadedFiles?: UploadedQuoteFile[];
+    draftType?: QuoteEmailDraftType;
+  } | null;
+  if (body?.mode === "custom_links") {
+    const recipients = parseRecipients(body.toEmail || quote.customer.email || "");
+    const invalidRecipients = recipients.filter((email) => !isLikelyRealEmail(email));
+    if (recipients.length === 0) {
+      return NextResponse.json({ ok: false, error: "Enter at least one recipient email." }, { status: 400 });
+    }
+    if (invalidRecipients.length > 0) {
+      return NextResponse.json({ ok: false, error: `Check recipient email: ${invalidRecipients[0]}` }, { status: 400 });
+    }
+
+    const subject = body.subject?.trim() ?? "";
+    const message = body.message?.trim() ?? "";
+    if (!subject) return NextResponse.json({ ok: false, error: "Enter an email subject." }, { status: 400 });
+    if (!message) return NextResponse.json({ ok: false, error: "Enter an email message." }, { status: 400 });
+
+    const downloadLinks = (body.uploadedFiles ?? [])
+      .filter((file): file is Required<Pick<UploadedQuoteFile, "name" | "url">> & UploadedQuoteFile => Boolean(file.name && file.url))
+      .map((file) => ({
+        label: file.name,
+        url: file.url,
+        size: typeof file.size === "number" ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : undefined,
+      }));
+    const html = customQuoteEmailHtml({
+      customerName: quote.customer.name || "there",
+      quoteRef: quote.documentNumber ?? ref,
+      subject,
+      message,
+      downloadLinks,
+    });
+    const sendResult = await sendEmail({ to: recipients, subject, html });
+    await recordQuoteEmail(ref, {
+      toEmail: recipients.join(", "),
+      subject,
+      html,
+      status: sendResult.ok ? "sent" : "failed",
+      error: sendResult.ok ? null : sendResult.error,
+      providerMessageId: sendResult.ok ? sendResult.providerMessageId : null,
+    });
+
+    if (!sendResult.ok) {
+      return NextResponse.json({ ok: false, error: sendResult.error }, { status: 502 });
+    }
+    return NextResponse.json({ ok: true, sentTo: recipients });
+  }
+
   if (!quote.customer.email) {
     return NextResponse.json({ ok: false, error: "This customer has no email address on file." }, { status: 400 });
   }
 
-  const body = (await request.json().catch(() => null)) as { draftType?: QuoteEmailDraftType } | null;
   const draftType = body?.draftType && DRAFT_TYPES.has(body.draftType) ? body.draftType : "quotation";
   const draft = buildQuoteEmailDraft(quote, draftType);
 
