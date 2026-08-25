@@ -1,5 +1,6 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { CheckCircle2, Download, FileText } from "lucide-react";
 import { PageHero, SiteShell } from "../../ui";
 import { QUOTE_STATUS_LABELS } from "../../../lib/format";
 
@@ -12,11 +13,15 @@ type QuoteStatus = {
 };
 
 type State = "idle" | "loading" | "found" | "not-found" | "error";
+type DownloadState = "idle" | "preparing" | "downloading" | "done" | "error";
 
 export default function Status() {
   const [state, setState] = useState<State>("idle");
   const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState<QuoteStatus | null>(null);
+  const [downloadState, setDownloadState] = useState<DownloadState>("idle");
+  const [downloadPct, setDownloadPct] = useState(0);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,6 +32,8 @@ export default function Status() {
     setState("loading");
     setError(null);
     setQuote(null);
+    setDownloadState("idle");
+    setDownloadError(null);
     try {
       const response = await fetch(`/api/quote-status?ref=${encodeURIComponent(ref.trim())}`);
       const data = await response.json();
@@ -42,6 +49,48 @@ export default function Status() {
     } catch {
       setError("Network error — please check your connection and try again.");
       setState("error");
+    }
+  }
+
+  async function downloadPdf(ref: string) {
+    if (downloadState === "preparing" || downloadState === "downloading") return;
+    setDownloadState("preparing");
+    setDownloadPct(0);
+    setDownloadError(null);
+    try {
+      const response = await fetch(`/api/quote-pdf?ref=${encodeURIComponent(ref)}`);
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Could not download the PDF.");
+      }
+      const total = Number(response.headers.get("Content-Length") || 0);
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+      setDownloadState("downloading");
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          chunks.push(value);
+          received += value.length;
+          if (total > 0) setDownloadPct(Math.min(100, Math.round((received / total) * 100)));
+        }
+      }
+      const blob = new Blob(chunks as BlobPart[], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `HainaAuto-Quote-${ref}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setDownloadPct(100);
+      setDownloadState("done");
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : "Could not download the PDF.");
+      setDownloadState("error");
     }
   }
 
@@ -69,11 +118,52 @@ export default function Status() {
             </p>
           )}
           {state === "found" && quote && (
-            <p className="success" role="status">
-              <b>{quote.ref}</b> — {QUOTE_STATUS_LABELS[quote.status] || quote.status}
-              <br />
-              Destination: {quote.destinationCountry} · Requested {quote.quoteDate} · Last updated {quote.updatedAt}
-            </p>
+            <>
+              <p className="success" role="status">
+                <b>{quote.ref}</b> — {QUOTE_STATUS_LABELS[quote.status] || quote.status}
+                <br />
+                Destination: {quote.destinationCountry} · Requested {quote.quoteDate} · Last updated {quote.updatedAt}
+              </p>
+              <div className="pdf-download">
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={() => downloadPdf(quote.ref)}
+                  disabled={downloadState === "preparing" || downloadState === "downloading"}
+                >
+                  {downloadState === "preparing" && <>Preparing your document…</>}
+                  {downloadState === "downloading" && <>Downloading… {downloadPct}%</>}
+                  {downloadState === "done" && (
+                    <>
+                      <CheckCircle2 size={16} /> Downloaded
+                    </>
+                  )}
+                  {(downloadState === "idle" || downloadState === "error") && (
+                    <>
+                      <Download size={16} /> Download quote PDF
+                    </>
+                  )}
+                </button>
+                {(downloadState === "preparing" || downloadState === "downloading") && (
+                  <div className="pdf-download-bar" aria-hidden="true">
+                    <i
+                      className={downloadState === "preparing" ? "indeterminate" : ""}
+                      style={downloadState === "downloading" ? { width: `${downloadPct}%` } : undefined}
+                    />
+                  </div>
+                )}
+                {downloadState === "done" && (
+                  <p className="pdf-download-note">
+                    <FileText size={13} /> Saved as HainaAuto-Quote-{quote.ref}.pdf
+                  </p>
+                )}
+                {downloadState === "error" && downloadError && (
+                  <p className="form-error" role="alert">
+                    {downloadError}
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </form>
       </section>
