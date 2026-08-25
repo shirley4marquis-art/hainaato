@@ -5,6 +5,7 @@ import { ClipboardPaste, Plus, Trash2, User, FileText, Car, Image as ImageIcon, 
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 import { FUEL_OPTIONS } from "../../lib/fuel-options";
+import { CUSTOM_COLOR_SURCHARGE_USD } from "../../lib/vehicle-customization";
 
 const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed", "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered", "lost"] as const;
 
@@ -115,6 +116,20 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     const item = items.find((it) => it.key === key);
     if (!item) return;
     updateItem(key, { photos: (item.photos ?? []).filter((_, i) => i !== index) });
+  }
+  function applyCustomColor(key: string) {
+    const item = items.find((it) => it.key === key);
+    if (!item) return;
+    const note = `Custom color requested (+$${CUSTOM_COLOR_SURCHARGE_USD} USD)`;
+    const summary = item.specSummary?.includes("Custom color requested")
+      ? item.specSummary
+      : [item.specSummary, note].filter(Boolean).join(" · ");
+    updateItem(key, {
+      exteriorColor: item.exteriorColor?.startsWith("Custom color") ? item.exteriorColor : `Custom color${item.exteriorColor ? ` (${item.exteriorColor})` : ""}`,
+      specSummary: summary,
+      fobOriginal: Number((item.fobOriginal + CUSTOM_COLOR_SURCHARGE_USD).toFixed(2)),
+      fobFinal: Number((item.fobFinal + CUSTOM_COLOR_SURCHARGE_USD).toFixed(2)),
+    });
   }
 
   async function lookupVehicleItems(urls: string[]): Promise<{ items: ItemDraft[]; resolved: number; failed: number }> {
@@ -357,6 +372,9 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>Transmission<input value={item.transmission ?? ""} onChange={(e) => updateItem(item.key, { transmission: e.target.value })} /></label>
               <label>Drivetrain<input value={item.drivetrain ?? ""} onChange={(e) => updateItem(item.key, { drivetrain: e.target.value })} /></label>
               <label>Exterior color<input value={item.exteriorColor ?? ""} onChange={(e) => updateItem(item.key, { exteriorColor: e.target.value })} /></label>
+              <div className={styles.fieldAction}>
+                <button type="button" className={styles.smallBtn} onClick={() => applyCustomColor(item.key)}>{`Custom color +$${CUSTOM_COLOR_SURCHARGE_USD}`}</button>
+              </div>
               <label>Interior color<input value={item.interiorColor ?? ""} onChange={(e) => updateItem(item.key, { interiorColor: e.target.value })} /></label>
               <label>Qty<input type="number" min={1} value={item.qty} onChange={(e) => updateItem(item.key, { qty: Math.max(1, num(e.target.value)) })} /></label>
               <label>Original unit price *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>

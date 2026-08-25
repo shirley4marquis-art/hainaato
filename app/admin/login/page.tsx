@@ -4,6 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Mail, Lock } from "lucide-react";
 import styles from "../admin.module.css";
 
+function safeAdminRedirect(value: string | null): string {
+  if (!value) return "/admin";
+  if (!value.startsWith("/admin") || value.startsWith("//")) return "/admin";
+  return value;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -29,7 +35,7 @@ function LoginForm() {
         setBusy(false);
         return;
       }
-      router.push(searchParams.get("next") || "/admin");
+      router.push(safeAdminRedirect(searchParams.get("next")));
       router.refresh();
     } catch {
       setError("Network error — please try again.");

@@ -3,7 +3,7 @@ import { ArrowRight, Inbox, Plus } from "lucide-react";
 import { AdminShell } from "../admin-shell";
 import { adminListQuotes } from "../../../lib/crm";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
-import { STATUS_META, STATUS_ORDER, type QuoteStatus } from "../status";
+import { STATUS_ORDER, quoteStatusMeta, quoteStatusProgress } from "../status";
 import { QuoteDeleteButton } from "../quote-delete-button";
 import styles from "../admin.module.css";
 
@@ -25,9 +25,9 @@ export default async function AdminQuotesList({ searchParams }: { searchParams: 
   const params = await searchParams;
   const requested = params.group;
   const activeGroup: GroupKey = requested && requested in GROUPS ? requested as GroupKey : "all";
-  const allowed = new Set<string>(GROUPS[activeGroup].statuses);
+  const allowed = activeGroup === "all" ? null : new Set<string>(GROUPS[activeGroup].statuses);
   const emailFlagOnly = params.flag === "email";
-  const groupFiltered = quotes.filter((quote) => allowed.has(quote.status));
+  const groupFiltered = allowed ? quotes.filter((quote) => allowed.has(quote.status)) : quotes;
   const filtered = emailFlagOnly ? groupFiltered.filter((quote) => !isLikelyRealEmail(quote.customerEmail)) : groupFiltered;
   const suspectCount = groupFiltered.filter((quote) => !isLikelyRealEmail(quote.customerEmail)).length;
 
@@ -68,11 +68,10 @@ export default async function AdminQuotesList({ searchParams }: { searchParams: 
       ) : (
         <div className={styles.recordList}>
           {filtered.map((quote) => {
-            const status = quote.status as QuoteStatus;
-            const meta = STATUS_META[status];
+            const status = quote.status;
+            const meta = quoteStatusMeta(status);
             const Icon = meta.icon;
-            const progressIndex = Math.max(0, STATUS_ORDER.indexOf(status));
-            const progress = status === "lost" ? 0 : Math.round((progressIndex / (STATUS_ORDER.length - 2)) * 100);
+            const progress = quoteStatusProgress(status);
             const realEmail = isLikelyRealEmail(quote.customerEmail);
             return (
               <div className={styles.orderCardWrap} key={quote.ref}>

@@ -21,11 +21,12 @@ import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
 import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
+import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 60;
 
-type RequestedVehicle = { slug: string; qty: number; fuelPreference: FuelPreference };
+type RequestedVehicle = { slug: string; qty: number; fuelPreference: FuelPreference; customColor: boolean; customColorName: string | null };
 
 function str(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -42,7 +43,9 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
     const qtyRaw = (entry as Record<string, unknown>).qty;
     const qty = Math.min(50, Math.max(1, Math.round(Number(qtyRaw) || 1)));
     const fuelPreference = normalizeFuelPreference((entry as Record<string, unknown>).fuelPreference);
-    if (slug) out.push({ slug, qty, fuelPreference });
+    const customColor = (entry as Record<string, unknown>).customColor === true;
+    const customColorName = str((entry as Record<string, unknown>).customColorName) ?? null;
+    if (slug) out.push({ slug, qty, fuelPreference, customColor, customColorName });
   }
   return out.slice(0, CART_MAX);
 }
@@ -51,27 +54,33 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
 // the whole point being staff/the customer never hand-type specs. Returns
 // null for a slug that no longer resolves (delisted between add-to-cart and
 // submit) so the caller can skip it rather than fail the whole request.
-function buildItemFromListing(slug: string, qty: number, fuelPreference: FuelPreference): AdminQuoteItemInput | null {
+function buildItemFromListing({ slug, qty, fuelPreference, customColor, customColorName }: RequestedVehicle): AdminQuoteItemInput | null {
   const indexEntry = getVehicleIndexEntryBySlug(slug);
   const detail = getVehicleBySlug(slug);
   if (!indexEntry || !detail || detail.priceCNY == null) return null;
+  const includeCustomColor = customColor && supportsCustomColor(detail.bodyType);
 
   const images = rankVehicleImages(detail.images)
     .slice(0, 5)
     .map((file) => imagePath(detail.site, detail.id, file));
 
+  const colorLabel = includeCustomColor
+    ? `Custom color requested${customColorName ? `: ${customColorName}` : ""} (+$${CUSTOM_COLOR_SURCHARGE_USD} USD)`
+    : null;
   const specParts = [
     detail.year,
     indexEntry.brand,
     indexEntry.model,
     detail.mileageKm != null ? `${detail.mileageKm.toLocaleString("en-US")} km` : null,
     detail.color,
+    colorLabel,
     `Fuel requested: ${fuelPreference}`,
     indexEntry.transmission,
     detail.location ? `Located in ${detail.location}` : null,
   ].filter(Boolean);
 
-  const fobUsd = Math.round(convertFromCNY(detail.priceCNY, "USD") * 100) / 100;
+  const baseFobUsd = Math.round(convertFromCNY(detail.priceCNY, "USD") * 100) / 100;
+  const fobUsd = includeCustomColor ? Math.round((baseFobUsd + CUSTOM_COLOR_SURCHARGE_USD) * 100) / 100 : baseFobUsd;
 
   return {
     make: indexEntry.brand,
@@ -82,7 +91,7 @@ function buildItemFromListing(slug: string, qty: number, fuelPreference: FuelPre
     fuelType: fuelPreference,
     transmission: indexEntry.transmission,
     drivetrain: detail.driveType,
-    exteriorColor: detail.color,
+    exteriorColor: includeCustomColor ? `Custom color${customColorName ? `: ${customColorName}` : ""}` : detail.color,
     specSummary: specParts.join(" · "),
     qty,
     fobOriginal: fobUsd,
@@ -123,7 +132,7 @@ export async function POST(request: NextRequest) {
   }
 
   const items = requestedVehicles
-    .map(({ slug, qty, fuelPreference }) => buildItemFromListing(slug, qty, fuelPreference))
+    .map((requestedVehicle) => buildItemFromListing(requestedVehicle))
     .filter((item): item is AdminQuoteItemInput => item !== null);
 
   if (items.length === 0) {

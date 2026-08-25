@@ -1,4 +1,4 @@
-import { FileText, MessageSquareText, Wallet, CheckCircle2, Ship, PackageCheck, XCircle, type LucideIcon } from "lucide-react";
+import { FileText, MessageSquareText, Wallet, CheckCircle2, Ship, PackageCheck, XCircle, CircleHelp, type LucideIcon } from "lucide-react";
 
 export type QuoteStatus =
   | "quoted"
@@ -58,3 +58,16 @@ export const STATUS_META: Record<QuoteStatus, { label: string; icon: LucideIcon;
   delivered: { label: "Delivered", icon: PackageCheck, tone: "green" },
   lost: { label: "Lost", icon: XCircle, tone: "red" },
 };
+
+export const UNKNOWN_STATUS_META = { label: "Unknown status", icon: CircleHelp, tone: "amber" };
+
+export function quoteStatusMeta(status: string): { label: string; icon: LucideIcon; tone: string } {
+  return STATUS_META[status as QuoteStatus] ?? { ...UNKNOWN_STATUS_META, label: status.replace(/_/g, " ") || UNKNOWN_STATUS_META.label };
+}
+
+export function quoteStatusProgress(status: string): number {
+  if (status === "lost") return 0;
+  const index = STATUS_ORDER.indexOf(status as QuoteStatus);
+  if (index < 0) return 0;
+  return Math.round((index / (STATUS_ORDER.length - 2)) * 100);
+}

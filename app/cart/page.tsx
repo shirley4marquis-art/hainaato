@@ -12,6 +12,7 @@ type CartVehicle = {
   slug: string;
   title: string;
   priceCNY: number | null;
+  bodyType: string | null;
   stockCode: string;
   image: string | null;
 };
@@ -112,7 +113,7 @@ export default function Cart() {
                 </Link>
               </div>
               <CartRequestForm
-                vehicles={vehicles.map((v) => ({ slug: v.slug, title: v.title }))}
+                vehicles={vehicles.map((v) => ({ slug: v.slug, title: v.title, bodyType: v.bodyType }))}
                 onSubmitted={(ref, documentNumber) => setSubmitted({ ref, documentNumber })}
               />
             </>

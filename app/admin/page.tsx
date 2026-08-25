@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus, FileText, Truck, Wallet, Inbox } from "lucide-react";
 import { AdminShell } from "./admin-shell";
 import { adminListQuotes } from "../../lib/crm";
-import { STATUS_META, STATUS_ORDER, type QuoteStatus } from "./status";
+import { STATUS_META, STATUS_ORDER, quoteStatusMeta } from "./status";
 import styles from "./admin.module.css";
 
 // "Orders" = quotes that have moved past the negotiation stage — same table,
@@ -98,7 +98,7 @@ export default async function AdminDashboard() {
             </thead>
             <tbody>
               {recent.map((q) => {
-                const meta = STATUS_META[q.status as QuoteStatus];
+                const meta = quoteStatusMeta(q.status);
                 const Icon = meta.icon;
                 return (
                   <tr key={q.ref}>
