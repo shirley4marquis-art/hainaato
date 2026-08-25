@@ -390,7 +390,7 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
+  const from = process.env.CUSTOMER_FROM_EMAIL || process.env.LEADS_FROM_EMAIL || "HainaAuto Sales <sales@hainaautochina.com>";
   if (!apiKey) {
     return { ok: false, error: "RESEND_API_KEY is not configured." };
   }
@@ -418,6 +418,7 @@ export async function sendEmail(params: {
     });
     if (!response.ok) {
       const body = await response.text().catch(() => "");
+      console.error(`[email] Resend API error ${response.status} sending "${params.subject}" to ${Array.isArray(params.to) ? params.to.join(", ") : params.to}: ${body}`);
       return { ok: false, error: `Resend API error ${response.status}: ${body}` };
     }
     const data = (await response.json().catch(() => null)) as { id?: string } | null;
