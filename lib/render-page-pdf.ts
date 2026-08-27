@@ -5,7 +5,56 @@ export type RenderPagePdfAuth = { kind: "cookie"; cookieHeader: string } | { kin
 const MAX_PDF_IMAGE_WIDTH = 1200;
 const MAX_PDF_IMAGE_HEIGHT = 900;
 
+// Vercel's Fluid Compute can route several concurrent requests into the same
+// warm instance to avoid cold starts. Each renderPagePdf() call launches its
+// own headless Chromium process, and a handful of those launching at once in
+// one instance is enough to exhaust it (observed in production as
+// page.goto: net::ERR_INSUFFICIENT_RESOURCES, sometimes before the page even
+// starts loading). This caps how many renders run at once *per instance* —
+// extra callers queue briefly rather than piling every Chromium launch on top
+// of each other. It does nothing to throttle requests spread across separate
+// instances; the real fix for sustained abusive traffic is at the route level
+// (auth/rate limiting), not here.
+const MAX_CONCURRENT_RENDERS = 1;
+const RENDER_QUEUE_TIMEOUT_MS = 25_000;
+let activeRenders = 0;
+const renderQueue: Array<() => void> = [];
+
+async function acquireRenderSlot(): Promise<void> {
+  if (activeRenders < MAX_CONCURRENT_RENDERS) {
+    activeRenders += 1;
+    return;
+  }
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const index = renderQueue.indexOf(onTurn);
+      if (index !== -1) renderQueue.splice(index, 1);
+      reject(new Error("Timed out waiting for a free PDF renderer slot."));
+    }, RENDER_QUEUE_TIMEOUT_MS);
+    function onTurn() {
+      clearTimeout(timer);
+      resolve();
+    }
+    renderQueue.push(onTurn);
+  });
+  activeRenders += 1;
+}
+
+function releaseRenderSlot(): void {
+  activeRenders -= 1;
+  renderQueue.shift()?.();
+}
+
 export async function renderPagePdf(pathname: string, baseUrl: string, auth: RenderPagePdfAuth = { kind: "none" }): Promise<Buffer> {
+  await acquireRenderSlot();
+  try {
+    return await renderPagePdfNow(pathname, baseUrl, auth);
+  } finally {
+    releaseRenderSlot();
+  }
+}
+
+async function renderPagePdfNow(pathname: string, baseUrl: string, auth: RenderPagePdfAuth): Promise<Buffer> {
   const printUrl = new URL(pathname, baseUrl).toString();
   const printOrigin = new URL(printUrl).origin;
 
