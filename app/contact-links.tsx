@@ -1,6 +1,6 @@
 import type {SVGProps} from "react";
 
-export const WHATSAPP_URL="https://wa.me/8615531026121";
+export const WHATSAPP_URL="https://wa.me/8615032178759";
 export const TELEGRAM_URL="https://t.me/chengcekai";
 export const WECHAT_USERNAME="laowaidrivechina";
 export const WECHAT_CONTACT_URL="/contact#wechat";

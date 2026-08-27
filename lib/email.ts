@@ -139,7 +139,7 @@ function leadNotificationHtml(lead: WebLead, ref: string): string {
     <tr>
       <td style="background:#f4f5f9;padding:18px 28px;text-align:center;font-size:11px;color:#858ea9;line-height:1.6">
         HAINA AUTO EXPORT · 11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br/>
-        Tel 5623368661 · sales@hainaautochina.com · hainaautochina.com
+        Tel +86 150 3217 8759 · sales@hainaautochina.com · hainaautochina.com
       </td>
     </tr>
   </table>
@@ -373,7 +373,7 @@ export function customerQuoteEmailHtml(params: {
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px"><tr>
           <td bgcolor="${CORAL}" style="background:${CORAL};border-radius:8px"><a href="mailto:sales@hainaautochina.com?subject=Quotation%20${encodeURIComponent(docRef)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">Reply to our sales team</a></td>
           <td width="10"></td>
-          <td style="border:1px solid #CBD5E1;border-radius:8px"><a href="https://wa.me/8615531026121" style="display:inline-block;padding:12px 18px;color:${NAVY};text-decoration:none;font-size:13px;font-weight:800">WhatsApp</a></td>
+          <td style="border:1px solid #CBD5E1;border-radius:8px"><a href="https://wa.me/8615032178759" style="display:inline-block;padding:12px 18px;color:${NAVY};text-decoration:none;font-size:13px;font-weight:800">WhatsApp</a></td>
         </tr></table>
         <p style="margin:18px 0 0;font-size:12px;line-height:1.65;color:#7B879A">The attached PDF includes vehicle pricing, corresponding photos and specifications, shipping, insurance, export terms and estimated destination costs.</p>
       </td>

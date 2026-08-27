@@ -13,7 +13,7 @@ const COMPANY = {
   name: "HAINA AUTO EXPORT",
   tag: "CHINA AUTO EXPORT",
   address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China",
-  phone: "5623368661",
+  phone: "+86 150 3217 8759",
   email: "sales@hainaautochina.com",
   website: "hainaautochina.com",
   logo: "/hainaauto-logo.webp",
