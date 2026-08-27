@@ -10,7 +10,7 @@ import { renderQuotePdf } from "../../../lib/render-quote-pdf";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
   const ref = (request.nextUrl.searchParams.get("ref") || "").trim().toUpperCase();

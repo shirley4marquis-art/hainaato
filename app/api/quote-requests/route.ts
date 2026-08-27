@@ -15,7 +15,7 @@ import { imagePath } from "../../../lib/format";
 import { convertFromCNY } from "../../../lib/currency";
 import { CART_MAX } from "../../../lib/cart-constants";
 import { adminSaveQuote, adminGetQuote, recordQuoteEmail, type AdminQuoteItemInput } from "../../../lib/crm";
-import { renderQuotePdf } from "../../../lib/render-quote-pdf";
+import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
 import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
@@ -25,7 +25,7 @@ import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/ve
 import { buildVehicleConfigurationRows, buildVehicleFactRows, formatRowsForHistory } from "../../../lib/vehicle-document-details";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 type RequestedVehicle = { slug: string; qty: number; fuelPreference: FuelPreference; customColor: boolean; customColorName: string | null };
 
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
 
   let pdfBuffer: Buffer | null = null;
   try {
-    pdfBuffer = await renderQuotePdf(ref, request.url, { kind: "internal-secret" });
+    pdfBuffer = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" });
   } catch (error) {
     console.error(`[quote-requests] PDF render failed for ${ref}:`, error);
   }

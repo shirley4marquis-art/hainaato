@@ -107,8 +107,8 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
       <textarea className="wide" id="rv-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
     </div>
-    <button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Generating quotation & PDF…":"Email My Quote & PDF"}</button>
-    <div role="status" aria-live="polite">{state==="sent"&&(emailSent?<div className="success">Your quotation and PDF have been sent to {submittedEmail}{ref?` (reference ${ref})`:""}. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>:<div className="form-error">Your quotation was created{ref?` (reference ${ref})`:""}, but the email could not be delivered. Our team has the request and will resend it. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>)}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div>
+    <button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Generating PDF and sending email...":"Email My Quote & PDF"}</button>
+    <div role="status" aria-live="polite">{state==="sending"&&<p className="success">Please keep this page open. We are generating the quotation PDF and sending it to your email now.</p>}{state==="sent"&&(emailSent?<div className="success">Your quotation and PDF have been sent to {submittedEmail}{ref?` (reference ${ref})`:""}. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>:<div className="form-error">Your quotation was created{ref?` (reference ${ref})`:""}, but the email could not be delivered. Our team has the request and will resend it. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>)}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div>
   </form>
 }
 
@@ -193,9 +193,10 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="cr-consent"/> {CONSENT_LABEL}</label>
     </div>
     <button className="btn primary" disabled={state==="sending"||vehicles.length===0}>
-      {state==="sending"?"Generating your quotation…":`Request quote for ${vehicles.length} vehicle${vehicles.length===1?"":"s"}`}
+      {state==="sending"?"Generating PDF and sending email...":`Request quote for ${vehicles.length} vehicle${vehicles.length===1?"":"s"}`}
     </button>
     <div role="status" aria-live="polite">
+      {state==="sending"&&<p className="success">Please keep this page open. We are generating the quotation PDF and sending it to your email now.</p>}
       {state==="error"&&<p className="form-error" role="alert">{error}</p>}
     </div>
   </form>

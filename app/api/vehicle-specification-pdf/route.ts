@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 import { renderPagePdf } from "../../../lib/render-page-pdf";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function safeFilename(value: string): string {
   return value.replace(/[^a-z0-9-]+/gi, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 90) || "vehicle";

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminGetQuote, recordQuoteEmail } from "../../../../../../lib/crm";
-import { renderQuotePdf } from "../../../../../../lib/render-quote-pdf";
+import { renderQuotePdfWithRetry } from "../../../../../../lib/render-quote-pdf";
 import { customQuoteEmailHtml, sendEmail, type EmailAttachment } from "../../../../../../lib/email";
 import { buildQuoteEmailDraft, type QuoteEmailDraftType } from "../../../../../../lib/quote-email-drafts";
 import { isLikelyRealEmail } from "../../../../../../lib/valid-email";
@@ -9,7 +9,7 @@ import { isLikelyRealEmail } from "../../../../../../lib/valid-email";
 // customer — this is both "resend" and "regenerate a revised version" in one
 // action, since a staff price/freight edit made just before clicking this is
 // what shows up in the new PDF (there's no separate draft/revision system).
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const DRAFT_TYPES = new Set<QuoteEmailDraftType>(["quotation", "follow_up", "contract_deposit", "shipping_docs", "arrival_balance"]);
 const MAX_ATTACHMENT_COUNT = 5;
@@ -162,10 +162,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   let pdfBuffer: Buffer | null = null;
   if (draft.attachesPdf) {
     try {
-      pdfBuffer = await renderQuotePdf(ref, request.url, {
-        kind: "cookie",
-        cookieHeader: request.headers.get("cookie") ?? "",
-      });
+      pdfBuffer = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" });
     } catch (error) {
       console.error(`[admin/quotes/resend] PDF render failed for ${ref}:`, error);
       return NextResponse.json({ ok: false, error: "PDF generation failed." }, { status: 500 });

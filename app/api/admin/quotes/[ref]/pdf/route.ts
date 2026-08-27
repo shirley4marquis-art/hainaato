@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderQuotePdf } from "../../../../../../lib/render-quote-pdf";
+import { renderQuotePdfWithRetry } from "../../../../../../lib/render-quote-pdf";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
   const { ref } = await params;
   try {
-    const pdf = await renderQuotePdf(ref, request.url, {
+    const pdf = await renderQuotePdfWithRetry(ref, request.url, {
       kind: "cookie",
       cookieHeader: request.headers.get("cookie") ?? "",
     });

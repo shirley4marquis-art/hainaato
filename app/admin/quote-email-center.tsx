@@ -170,10 +170,11 @@ export function QuoteEmailCenter({
           <p>Preview the customer email after the quotation is recorded. The quote email is ready first and attaches the PDF.</p>
         </div>
         <button type="button" className={styles.btn} onClick={() => sendDraft(selected.type)} disabled={Boolean(busyType) || !customerEmail}>
-          <Send size={13} /> {busyType === selected.type ? "Sending..." : selected.attachesPdf ? "Send quote + PDF" : "Send selected email"}
+          <Send size={13} /> {busyType === selected.type ? "Generating PDF and sending..." : selected.attachesPdf ? "Send quote + PDF" : "Send selected email"}
         </button>
       </div>
       {!customerEmail && <p className={styles.formError}>This customer has no email address on file. Add one before sending.</p>}
+      {busyType && <p className={styles.formSuccess}>Please keep this page open. The quotation PDF is being generated and the email will send when it is ready.</p>}
       {error && <p className={styles.formError}>{error}</p>}
       {notice && <p className={styles.formSuccess}>{notice}</p>}
 
@@ -295,7 +296,7 @@ export function QuoteEmailCenter({
         <div className={styles.pageHeading} style={{ margin: "24px 0 12px" }}>
           <h2 style={{ fontSize: 15, margin: 0 }}>Sent email history</h2>
           <button type="button" className={styles.btnGhost} onClick={() => sendDraft("quotation")} disabled={Boolean(busyType) || !customerEmail}>
-            <RefreshCw size={13} /> {busyType === "quotation" ? "Sending..." : "Regenerate & resend quote"}
+            <RefreshCw size={13} /> {busyType === "quotation" ? "Generating PDF and sending..." : "Regenerate & resend quote"}
           </button>
         </div>
         {emails.length === 0 ? (

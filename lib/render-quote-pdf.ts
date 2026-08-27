@@ -29,3 +29,23 @@ export async function renderQuotePdf(ref: string, baseUrl: string, auth: RenderQ
   if (auth.kind === "cookie") return renderPagePdf(pathname, baseUrl, auth);
   return renderPagePdf(pathname, baseUrl, { kind: "headers", headers: { "x-internal-pdf-secret": requireInternalPdfSecret() } });
 }
+
+export async function renderQuotePdfWithRetry(
+  ref: string,
+  baseUrl: string,
+  auth: RenderQuotePdfAuth,
+  attempts = 3,
+): Promise<Buffer> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await renderQuotePdf(ref, baseUrl, auth);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+      }
+    }
+  }
+  throw lastError;
+}
