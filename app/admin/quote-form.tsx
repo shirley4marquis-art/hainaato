@@ -1,13 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClipboardPaste, Plus, Trash2, User, FileText, Car, Image as ImageIcon, WandSparkles } from "lucide-react";
+import { ClipboardPaste, Plus, Trash2, User, FileText, Car, Image as ImageIcon, WandSparkles, Truck } from "lucide-react";
 import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 import { FUEL_OPTIONS } from "../../lib/fuel-options";
 import { CUSTOM_COLOR_SURCHARGE_USD } from "../../lib/vehicle-customization";
-
-const STATUSES = ["quoted", "negotiating", "deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed", "inspection_scheduled", "inspection_passed", "export_docs_ready", "booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery", "delivered", "lost"] as const;
+import { STATUS_ORDER, quoteStatusMeta, quoteStatusProgress } from "./status";
 
 type ItemDraft = AdminQuoteItemInput & { key: string };
 type VehicleLookupResponse = { ok?: boolean; vehicles?: { item?: AdminQuoteItemInput; error?: string }[]; error?: string };
@@ -284,13 +283,36 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       </div>
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}><FileText size={14} /> Quote details</h2>
+        <h2 className={styles.sectionTitle}><Truck size={14} /> Order stage</h2>
+        <p style={{ fontSize: 12, color: "#6b7684", margin: "-4px 0 12px" }}>
+          {initial ? "This order started as a quote and moves through these stages up to delivery." : "A new order starts here as a quote."}
+        </p>
         <div className={styles.grid}>
-          <label>Status
+          <label>Current stage
             <select value={quote.status} onChange={(e) => setQuote({ ...quote, status: e.target.value })}>
-              {STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+              {STATUS_ORDER.map((s) => <option key={s} value={s}>{quoteStatusMeta(s).label}</option>)}
             </select>
           </label>
+        </div>
+        {(() => {
+          const meta = quoteStatusMeta(quote.status);
+          const progress = quoteStatusProgress(quote.status);
+          const Icon = meta.icon;
+          return (
+            <div style={{ marginTop: 10 }}>
+              <span className={styles.statusPill} data-tone={meta.tone}><Icon size={11} /> {meta.label}</span>
+              <div className={styles.orderProgress} style={{ marginTop: 8, maxWidth: 360 }}>
+                <div><i style={{ width: `${progress}%` }} /></div>
+                <small>{quote.status === "lost" ? "Closed" : `${progress}% to delivery`}</small>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}><FileText size={14} /> Quote details</h2>
+        <div className={styles.grid}>
           <label>Quote date<input type="date" value={quote.quoteDate ?? ""} onChange={(e) => setQuote({ ...quote, quoteDate: e.target.value })} /></label>
           <label>Valid until<input type="date" value={quote.validUntil ?? ""} onChange={(e) => setQuote({ ...quote, validUntil: e.target.value })} /></label>
           <label>Destination port *<input value={quote.destinationPort} onChange={(e) => setQuote({ ...quote, destinationPort: e.target.value })} /></label>

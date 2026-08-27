@@ -4,6 +4,34 @@ import { formatDate, formatMoney, itemTitle } from "./quote-document";
 
 export type QuoteEmailDraftType = "quotation" | "follow_up" | "contract_deposit" | "shipping_docs" | "arrival_balance";
 
+// Which draft is the right one to send *right now*, given where the order
+// actually is in the quote -> delivery pipeline (see app/admin/status.tsx for
+// the full status list) — so the admin's send button is always pre-loaded
+// with the email for the order's next step, not always the initial quotation.
+// Anything not listed here (delivered, lost, an unrecognized status) falls
+// back to "quotation", which is always safe to (re)send.
+const STATUS_DEFAULT_DRAFT: Record<string, QuoteEmailDraftType> = {
+  quoted: "quotation",
+  negotiating: "contract_deposit",
+  deposit_paid: "shipping_docs",
+  paid_full: "shipping_docs",
+  usdt_payment_confirmed: "shipping_docs",
+  bitcoin_payment_confirmed: "shipping_docs",
+  inspection_scheduled: "shipping_docs",
+  inspection_passed: "shipping_docs",
+  export_docs_ready: "shipping_docs",
+  booked_for_shipping: "shipping_docs",
+  shipped: "shipping_docs",
+  departed_port: "shipping_docs",
+  arrived_port: "arrival_balance",
+  customs_clearance: "arrival_balance",
+  out_for_delivery: "arrival_balance",
+};
+
+export function defaultDraftTypeForStatus(status: string): QuoteEmailDraftType {
+  return STATUS_DEFAULT_DRAFT[status] ?? "quotation";
+}
+
 export type QuoteEmailDraft = {
   type: QuoteEmailDraftType;
   label: string;

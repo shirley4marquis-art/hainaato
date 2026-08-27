@@ -59,6 +59,34 @@ export const STATUS_META: Record<QuoteStatus, { label: string; icon: LucideIcon;
   lost: { label: "Lost", icon: XCircle, tone: "red" },
 };
 
+// The canonical stage grouping for the order pipeline (quote -> payment ->
+// fulfilment -> shipping -> complete). A quote record already covers the
+// whole lifecycle in one row (see supabase/crm-schema.sql) — this is the one
+// place that groups its 17 granular statuses into the handful of stages
+// staff actually think in terms of, so every admin page (dashboard, list,
+// email center) agrees on what counts as "still a quote" vs "an active
+// order" vs "done". Keys match the existing ?group= URL values on
+// /admin/quotes — don't rename them without updating those links.
+export const ORDER_STAGE_GROUPS = {
+  quotes: { label: "Quotes", statuses: ["quoted", "negotiating"] as QuoteStatus[] },
+  payment: { label: "Payment", statuses: ["deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed"] as QuoteStatus[] },
+  fulfilment: { label: "Fulfilment", statuses: ["inspection_scheduled", "inspection_passed", "export_docs_ready"] as QuoteStatus[] },
+  shipping: { label: "Shipping", statuses: ["booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery"] as QuoteStatus[] },
+  complete: { label: "Complete", statuses: ["delivered", "lost"] as QuoteStatus[] },
+} as const;
+
+// An order stops being "just a quote" once it leaves the quotes stage, and
+// isn't done until it lands in complete — this is every status in between,
+// used by the dashboard's "Active orders" count so it doesn't silently miss
+// whatever stage isn't in its own separate list (it used to hardcode a
+// smaller subset that left several statuses, e.g. anything mid-inspection or
+// mid-shipping, counted in neither "open quotes" nor "active orders").
+export const ACTIVE_ORDER_STATUSES = new Set<string>([
+  ...ORDER_STAGE_GROUPS.payment.statuses,
+  ...ORDER_STAGE_GROUPS.fulfilment.statuses,
+  ...ORDER_STAGE_GROUPS.shipping.statuses,
+]);
+
 export const UNKNOWN_STATUS_META = { label: "Unknown status", icon: CircleHelp, tone: "amber" };
 
 export function quoteStatusMeta(status: string): { label: string; icon: LucideIcon; tone: string } {

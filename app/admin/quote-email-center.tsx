@@ -22,13 +22,17 @@ export function QuoteEmailCenter({
   customerEmail,
   drafts,
   emails,
+  defaultDraftType,
+  currentStatusLabel,
 }: {
   quoteRef: string;
   customerEmail: string | null;
   drafts: QuoteEmailDraft[];
   emails: QuoteEmailRecord[];
+  defaultDraftType: QuoteEmailDraftType;
+  currentStatusLabel: string;
 }) {
-  const [selectedType, setSelectedType] = useState<QuoteEmailDraftType>("quotation");
+  const [selectedType, setSelectedType] = useState<QuoteEmailDraftType>(defaultDraftType);
   const [busyType, setBusyType] = useState<QuoteEmailDraftType | null>(null);
   const [customBusy, setCustomBusy] = useState(false);
   const [customTo, setCustomTo] = useState(customerEmail ?? "");
@@ -167,7 +171,11 @@ export function QuoteEmailCenter({
       <div className={styles.pageHeading} style={{ marginBottom: 12 }}>
         <div>
           <h2 style={{ fontSize: 15, margin: 0 }}>Email draft center</h2>
-          <p>Preview the customer email after the quotation is recorded. The quote email is ready first and attaches the PDF.</p>
+          <p>
+            {selected.type === defaultDraftType
+              ? <>Pre-loaded with the next-step email for this order&apos;s current stage — <b>{currentStatusLabel}</b>.</>
+              : "Preview the customer email after the quotation is recorded. The quote email is ready first and attaches the PDF."}
+          </p>
         </div>
         <button type="button" className={styles.btn} onClick={() => sendDraft(selected.type)} disabled={Boolean(busyType) || !customerEmail}>
           <Send size={13} /> {busyType === selected.type ? "Generating PDF and sending..." : selected.attachesPdf ? "Send quote + PDF" : "Send selected email"}
@@ -189,7 +197,10 @@ export function QuoteEmailCenter({
               role="tab"
               aria-selected={draft.type === selected.type}
             >
-              <span>{draft.eyebrow}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {draft.eyebrow}
+                {draft.type === defaultDraftType && <i className={styles.statusPill} data-tone="teal">Next step</i>}
+              </span>
               <b>{draft.label}</b>
               <small>{draft.summary}</small>
               <em>{draft.attachesPdf ? <><FileText size={11} /> PDF attached</> : <><CheckCircle2 size={11} /> Branded email</>}</em>

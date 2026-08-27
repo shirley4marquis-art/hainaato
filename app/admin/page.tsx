@@ -2,12 +2,8 @@ import Link from "next/link";
 import { Plus, FileText, Truck, Wallet, Inbox } from "lucide-react";
 import { AdminShell } from "./admin-shell";
 import { adminListQuotes } from "../../lib/crm";
-import { STATUS_META, STATUS_ORDER, quoteStatusMeta } from "./status";
+import { ACTIVE_ORDER_STATUSES, STATUS_META, STATUS_ORDER, quoteStatusMeta } from "./status";
 import styles from "./admin.module.css";
-
-// "Orders" = quotes that have moved past the negotiation stage — same table,
-// just a later slice of the same status lifecycle (see supabase/crm-schema.sql).
-const ORDER_STATUSES = new Set(["deposit_paid", "paid_full", "shipped", "delivered"]);
 
 // See the identical note in app/admin/quotes/page.tsx — without this, this
 // page gets statically cached (no cookies()/headers() call of its own to
@@ -21,7 +17,7 @@ export default async function AdminDashboard() {
   const counts = new Map<string, number>();
   for (const q of quotes) counts.set(q.status, (counts.get(q.status) ?? 0) + 1);
   const openQuotes = quotes.filter((q) => q.status === "quoted" || q.status === "negotiating").length;
-  const activeOrders = quotes.filter((q) => ORDER_STATUSES.has(q.status)).length;
+  const activeOrders = quotes.filter((q) => ACTIVE_ORDER_STATUSES.has(q.status)).length;
   const pipelineValue = quotes
     .filter((q) => q.status !== "lost" && q.status !== "delivered")
     .reduce((sum, q) => sum + q.cifTotal, 0);
@@ -83,13 +79,13 @@ export default async function AdminDashboard() {
 
       <div className={styles.section}>
         <div className={styles.pageHeading} style={{ marginBottom: 12 }}>
-          <h2 style={{ fontSize: 15, margin: 0 }}>Recent quotes</h2>
+          <h2 style={{ fontSize: 15, margin: 0 }}>Recent orders</h2>
           <Link className={styles.btnGhost} href="/admin/quotes">View all</Link>
         </div>
         {recent.length === 0 ? (
           <div className={styles.emptyState}>
             <Inbox size={28} />
-            <p style={{ margin: 0 }}>No quotes yet.</p>
+            <p style={{ margin: 0 }}>No orders yet.</p>
           </div>
         ) : (
           <table className={styles.table}>

@@ -3,7 +3,7 @@ import { ArrowRight, Inbox, Plus } from "lucide-react";
 import { AdminShell } from "../admin-shell";
 import { adminListQuotes } from "../../../lib/crm";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
-import { STATUS_ORDER, quoteStatusMeta, quoteStatusProgress } from "../status";
+import { STATUS_ORDER, ORDER_STAGE_GROUPS, quoteStatusMeta, quoteStatusProgress } from "../status";
 import { QuoteDeleteButton } from "../quote-delete-button";
 import styles from "../admin.module.css";
 
@@ -11,11 +11,7 @@ export const dynamic = "force-dynamic";
 
 const GROUPS = {
   all: { label: "All", statuses: STATUS_ORDER },
-  quotes: { label: "Quotes", statuses: ["quoted", "negotiating"] },
-  payment: { label: "Payment", statuses: ["deposit_paid", "paid_full", "usdt_payment_confirmed", "bitcoin_payment_confirmed"] },
-  fulfilment: { label: "Fulfilment", statuses: ["inspection_scheduled", "inspection_passed", "export_docs_ready"] },
-  shipping: { label: "Shipping", statuses: ["booked_for_shipping", "shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery"] },
-  complete: { label: "Complete", statuses: ["delivered", "lost"] },
+  ...ORDER_STAGE_GROUPS,
 } as const;
 
 type GroupKey = keyof typeof GROUPS;

@@ -4,7 +4,8 @@ import { AdminShell } from "../../admin-shell";
 import { QuoteForm } from "../../quote-form";
 import { QuoteEmailCenter } from "../../quote-email-center";
 import { adminGetQuote, listQuoteEmails } from "../../../../lib/crm";
-import { buildQuoteEmailDrafts } from "../../../../lib/quote-email-drafts";
+import { buildQuoteEmailDrafts, defaultDraftTypeForStatus } from "../../../../lib/quote-email-drafts";
+import { quoteStatusMeta } from "../../status";
 import styles from "../../admin.module.css";
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -16,6 +17,8 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
   const [quote, emails] = await Promise.all([adminGetQuote(ref), listQuoteEmails(ref)]);
   if (!quote) notFound();
   const drafts = buildQuoteEmailDrafts(quote);
+  const defaultDraftType = defaultDraftTypeForStatus(quote.status ?? "quoted");
+  const statusMeta = quoteStatusMeta(quote.status ?? "quoted");
 
   return (
     <AdminShell>
@@ -31,7 +34,14 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
         </p>
       )}
       <QuoteForm initial={quote} />
-      <QuoteEmailCenter quoteRef={ref} customerEmail={quote.customer.email ?? null} drafts={drafts} emails={emails} />
+      <QuoteEmailCenter
+        quoteRef={ref}
+        customerEmail={quote.customer.email ?? null}
+        drafts={drafts}
+        emails={emails}
+        defaultDraftType={defaultDraftType}
+        currentStatusLabel={statusMeta.label}
+      />
     </AdminShell>
   );
 }
