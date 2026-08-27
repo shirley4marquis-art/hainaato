@@ -2,8 +2,12 @@
 // to render and optional auth headers/cookies when the page is protected.
 export type RenderPagePdfAuth = { kind: "cookie"; cookieHeader: string } | { kind: "headers"; headers: Record<string, string> } | { kind: "none" };
 
+const MAX_PDF_IMAGE_WIDTH = 1200;
+const MAX_PDF_IMAGE_HEIGHT = 900;
+
 export async function renderPagePdf(pathname: string, baseUrl: string, auth: RenderPagePdfAuth = { kind: "none" }): Promise<Buffer> {
   const printUrl = new URL(pathname, baseUrl).toString();
+  const printOrigin = new URL(printUrl).origin;
 
   let browser: import("playwright-core").Browser;
   if (process.env.VERCEL) {
@@ -36,8 +40,70 @@ export async function renderPagePdf(pathname: string, baseUrl: string, auth: Ren
     } else if (auth.kind === "headers") {
       await context.setExtraHTTPHeaders(auth.headers);
     }
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      const requestUrl = new URL(request.url());
+      const resourceType = request.resourceType();
+
+      if (requestUrl.origin !== printOrigin) {
+        if (resourceType === "script" || resourceType === "image" || resourceType === "font" || resourceType === "stylesheet") {
+          await route.abort();
+          return;
+        }
+        await route.continue();
+        return;
+      }
+
+      if (resourceType !== "image") {
+        await route.continue();
+        return;
+      }
+
+      try {
+        const response = await fetch(request.url(), { headers: await request.allHeaders() });
+        if (!response.ok) {
+          await route.continue();
+          return;
+        }
+        const source = Buffer.from(await response.arrayBuffer());
+        const sharp = (await import("sharp")).default;
+        const optimized = await sharp(source)
+          .rotate()
+          .resize({
+            width: MAX_PDF_IMAGE_WIDTH,
+            height: MAX_PDF_IMAGE_HEIGHT,
+            fit: "inside",
+            withoutEnlargement: true,
+          })
+          .jpeg({ quality: 78, mozjpeg: true })
+          .toBuffer();
+        await route.fulfill({
+          status: 200,
+          headers: {
+            "content-type": "image/jpeg",
+            "content-length": String(optimized.length),
+            "cache-control": "no-store",
+          },
+          body: optimized,
+        });
+      } catch {
+        await route.continue();
+      }
+    });
     const page = await context.newPage();
-    await page.goto(printUrl, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(printUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => undefined);
+    await page.evaluate(async () => {
+      await Promise.all(
+        Array.from(document.images).map((image) => {
+          if (image.complete) return undefined;
+          return new Promise<void>((resolve) => {
+            image.addEventListener("load", () => resolve(), { once: true });
+            image.addEventListener("error", () => resolve(), { once: true });
+          });
+        })
+      );
+    });
     const pdf = await page.pdf({ format: "A4", printBackground: true });
     return Buffer.from(pdf);
   } finally {
