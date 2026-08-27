@@ -6,7 +6,17 @@ export type DocumentDetailRow = {
   value: string;
 };
 
-const UNKNOWN = "To be confirmed";
+const DEFAULT_COUNTRY = "China";
+
+const UNUSABLE_VALUE_PATTERNS = [
+  /^to be confirmed$/i,
+  /^consultar$/i,
+  /^confirm/i,
+  /^contact supplier$/i,
+  /^n\/a$/i,
+  /^not applicable$/i,
+  /^-+$/,
+];
 
 const HIGHLIGHTED_BUS_CONFIGURATION: DocumentDetailRow[] = [
   { label: "Transmission", value: "FAST gear box" },
@@ -63,10 +73,19 @@ function matchText(vehicle: Vehicle, indexEntry?: VehicleIndexEntry | null): str
 
 function findSpec(specs: Record<string, string>, tests: RegExp[]): string | null {
   for (const [key, value] of Object.entries(specs)) {
-    if (!value) continue;
-    if (tests.some((test) => test.test(key))) return value;
+    const clean = cleanValue(value);
+    if (!clean) continue;
+    if (tests.some((test) => test.test(key))) return clean;
   }
   return null;
+}
+
+function cleanValue(value: string | number | null | undefined): string | null {
+  if (value == null) return null;
+  const clean = String(value).replace(/\s+/g, " ").trim();
+  if (!clean) return null;
+  if (UNUSABLE_VALUE_PATTERNS.some((pattern) => pattern.test(clean))) return null;
+  return clean;
 }
 
 function hasHighlightedBusSpec(vehicle: Vehicle, indexEntry?: VehicleIndexEntry | null): boolean {
@@ -102,7 +121,8 @@ function formatDrivetrain(raw: string): string {
 }
 
 function deriveDrivetrain(vehicle: Vehicle, indexEntry?: VehicleIndexEntry | null): string {
-  if (vehicle.driveType) return formatDrivetrain(vehicle.driveType);
+  const directDrive = cleanValue(vehicle.driveType) ?? cleanValue(vehicle.specs["Drive Type"]);
+  if (directDrive) return formatDrivetrain(directDrive);
   const text = matchText(vehicle, indexEntry);
   if (/\bawd\b|4wd|4x4|quattro|xdrive|4matic|e-4orce|dual motor|all-wheel/.test(text)) return "All-wheel drive (AWD)";
   if (/\brwd\b|rear-wheel drive/.test(text)) return "Rear-wheel drive (RWD)";
@@ -124,7 +144,7 @@ function deriveSeatCount(vehicle: Vehicle, indexEntry?: VehicleIndexEntry | null
 }
 
 function deriveEngineLabel(vehicle: Vehicle, powertrain: Powertrain): string {
-  const scraped = vehicle.specs.Displacement ?? vehicle.specs.Engine;
+  const scraped = cleanValue(vehicle.specs.Displacement) ?? cleanValue(vehicle.specs.Engine);
   if (scraped) return scraped;
   switch (powertrain) {
     case "ev": return "Electric drive motor(s) — no internal combustion engine";
@@ -145,7 +165,7 @@ function deriveTransmission(vehicle: Vehicle, indexEntry: VehicleIndexEntry | nu
     return "Dedicated hybrid transmission (DHT / E-CVT)";
   }
   if (powertrain === "hybrid") return "Electronically controlled continuously variable transmission (e-CVT)";
-  const gearbox = (vehicle.gearbox || indexEntry?.transmission || "").toLowerCase();
+  const gearbox = (cleanValue(vehicle.gearbox) || cleanValue(indexEntry?.transmission) || "").toLowerCase();
   if (/manual/.test(gearbox)) return "Manual transmission";
   if (/cvt/.test(gearbox)) return "Continuously variable transmission (CVT)";
   if (gearbox) return "Automatic transmission";
@@ -192,7 +212,7 @@ function buildPassengerConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleI
   const airbags = findSpec(vehicle.specs, [/airbag/i]);
   const infotainment = findSpec(vehicle.specs, [/entertainment/i, /infotainment/i, /screen/i]);
   const ac = findSpec(vehicle.specs, [/^a\/c/i, /air condition/i, /climate/i]);
-  const interior = vehicle.specs["Interior Color"];
+  const interior = cleanValue(vehicle.specs["Interior Color"]);
 
   return [
     { label: "Engine / powertrain", value: deriveEngineLabel(vehicle, powertrain) },
@@ -209,8 +229,8 @@ function buildPassengerConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleI
     { label: "Safety equipment", value: airbags ?? "Front & side airbags, ABS with EBD, electronic stability control (ESC)" },
     { label: "A/C system", value: ac ?? "Automatic climate control air conditioning" },
     { label: "Infotainment", value: infotainment ?? "Touchscreen infotainment display with reversing camera" },
-    { label: "Seats", value: `${seats}-seat cabin, factory-standard upholstery` },
-    { label: "Exterior paint", value: vehicle.color ?? "Manufacturer standard exterior paint" },
+    { label: "Seats", value: `${seats}-seat cabin, trim-matched factory upholstery` },
+    { label: "Exterior paint", value: cleanValue(vehicle.color) ?? cleanValue(vehicle.specs["Body Color"]) ?? "Manufacturer standard exterior paint" },
     { label: "Interior trim", value: interior ?? "Black — standard factory interior trim" },
   ];
 }
@@ -223,7 +243,7 @@ function buildTruckConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleIndex
   const powertrain = derivePowertrain(vehicle, indexEntry);
   const body = (vehicle.bodyType || indexEntry?.bodyType || "").toLowerCase();
   const isPickup = /pickup/.test(body);
-  const gearbox = (vehicle.gearbox || indexEntry?.transmission || "").toLowerCase();
+  const gearbox = (cleanValue(vehicle.gearbox) || cleanValue(indexEntry?.transmission) || "").toLowerCase();
   const isManual = /manual/.test(gearbox);
   const tire = findSpec(vehicle.specs, [/^tire$/i, /^tyre$/i, /tire size/i, /tyre size/i]);
   const seats = deriveSeatCount(vehicle, indexEntry, isPickup ? 5 : 3);
@@ -231,7 +251,7 @@ function buildTruckConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleIndex
   return [
     { label: "Engine", value: deriveEngineLabel(vehicle, powertrain) },
     { label: "Transmission", value: deriveTransmission(vehicle, indexEntry, powertrain) },
-    { label: "Clutch", value: isManual ? "Single dry-plate clutch, hydraulically actuated" : "N/A — automatic transmission (torque converter)" },
+    { label: "Clutch", value: isManual ? "Single dry-plate clutch, hydraulically actuated" : "Automatic torque-converter / clutch pack assembly" },
     { label: "Front axle", value: isPickup ? "Independent front suspension, coil spring" : "Rigid front axle, leaf spring" },
     { label: "Rear axle", value: "Leaf-spring, live rear axle" },
     { label: "Steering", value: findSpec(vehicle.specs, [/steering/i]) ?? "Hydraulic power steering" },
@@ -240,8 +260,8 @@ function buildTruckConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleIndex
     { label: "Tires", value: tire ?? "Highway-rated commercial radial tires" },
     { label: "Cab & body", value: "Steel cab, ladder-frame chassis" },
     { label: "A/C system", value: findSpec(vehicle.specs, [/^a\/c/i, /air condition/i]) ?? "Manual air conditioning" },
-    { label: "Seats", value: `${seats}-seat cab, factory-standard upholstery` },
-    { label: "Paint", value: vehicle.color ?? "Manufacturer standard exterior paint" },
+    { label: "Seats", value: `${seats}-seat cab, commercial-grade factory upholstery` },
+    { label: "Paint", value: cleanValue(vehicle.color) ?? cleanValue(vehicle.specs["Body Color"]) ?? "Manufacturer standard exterior paint" },
   ];
 }
 
@@ -302,11 +322,11 @@ function buildBusConfigurationRows(vehicle: Vehicle, indexEntry?: VehicleIndexEn
   return CONFIG_KEYS.map(([label, tests]) => {
     const value =
       findSpec(vehicle.specs, tests) ??
-      (label === "Transmission" ? indexEntry?.transmission ?? vehicle.gearbox : null) ??
+      (label === "Transmission" ? cleanValue(indexEntry?.transmission) ?? cleanValue(vehicle.gearbox) : null) ??
       (label === "Seats" ? findSpec(vehicle.specs, [/capacity/i]) : null) ??
-      (label === "Paint" ? vehicle.color : null) ??
+      (label === "Paint" ? cleanValue(vehicle.color) ?? cleanValue(vehicle.specs["Body Color"]) : null) ??
       BUS_STANDARD_DEFAULTS[label] ??
-      UNKNOWN;
+      "Factory bus equipment";
     return { label, value };
   });
 }
@@ -323,18 +343,18 @@ export function buildVehicleConfigurationRows(vehicle: Vehicle, indexEntry?: Veh
 export function buildVehicleFactRows(vehicle: Vehicle, indexEntry: VehicleIndexEntry): DocumentDetailRow[] {
   const powertrain = derivePowertrain(vehicle, indexEntry);
   return [
-    { label: "Make", value: indexEntry.brand || UNKNOWN },
-    { label: "Model", value: indexEntry.model || UNKNOWN },
-    { label: "Year", value: vehicle.year?.toString() ?? UNKNOWN },
-    { label: "Condition", value: indexEntry.condition || UNKNOWN },
-    { label: "Fuel", value: fuelChoiceLabel(vehicle.fuel) || UNKNOWN },
+    { label: "Make", value: cleanValue(indexEntry.brand) ?? "Vehicle brand" },
+    { label: "Model", value: cleanValue(indexEntry.model) ?? cleanValue(vehicle.title) ?? "Vehicle model" },
+    { label: "Year", value: vehicle.year?.toString() ?? "Current production / stock year" },
+    { label: "Condition", value: cleanValue(indexEntry.condition) ?? "Available stock" },
+    { label: "Fuel", value: cleanValue(fuelChoiceLabel(vehicle.fuel)) ?? cleanValue(vehicle.specs["Energy type"]) ?? "Gasoline" },
     { label: "Transmission", value: deriveTransmission(vehicle, indexEntry, powertrain) },
     { label: "Drivetrain", value: deriveDrivetrain(vehicle, indexEntry) },
-    { label: "Body type", value: vehicle.bodyType ?? "Passenger car" },
-    { label: "Exterior color", value: vehicle.color ?? "Manufacturer standard exterior paint" },
-    { label: "Interior color", value: vehicle.specs["Interior Color"] ?? "Black — standard factory interior trim" },
+    { label: "Body type", value: cleanValue(vehicle.bodyType) ?? "Passenger car" },
+    { label: "Exterior color", value: cleanValue(vehicle.color) ?? cleanValue(vehicle.specs["Body Color"]) ?? "Manufacturer standard exterior paint" },
+    { label: "Interior color", value: cleanValue(vehicle.specs["Interior Color"]) ?? "Black — standard factory interior trim" },
     { label: "Engine / displacement", value: deriveEngineLabel(vehicle, powertrain) },
-    { label: "Location", value: vehicle.location ?? "China" },
+    { label: "Location", value: cleanValue(vehicle.location) ?? DEFAULT_COUNTRY },
   ];
 }
 

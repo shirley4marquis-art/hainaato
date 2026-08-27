@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
   try {
     ref = await adminSaveQuote({
       customer: { name, phone, email, city: cityState ?? null, country },
-      destinationPort: destinationPort || "To be confirmed",
+      destinationPort: destinationPort || `${country} main import port`,
       destinationCountry: country,
       incoterm: "CIF",
       inlandTransportCost: 0,
