@@ -22,6 +22,7 @@ import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pric
 import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
+import { buildVehicleConfigurationRows, buildVehicleFactRows, formatRowsForHistory } from "../../../lib/vehicle-document-details";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 60;
@@ -76,8 +77,13 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
     colorLabel,
     `Fuel requested: ${fuelPreference}`,
     indexEntry.transmission,
+    detail.driveType,
+    detail.bodyType,
+    detail.specs.Displacement ? `Displacement: ${detail.specs.Displacement}` : null,
     detail.location ? `Located in ${detail.location}` : null,
   ].filter(Boolean);
+  const configurationRows = buildVehicleConfigurationRows(detail, indexEntry);
+  const factRows = buildVehicleFactRows(detail, indexEntry);
 
   const baseFobUsd = Math.round(convertFromCNY(detail.priceCNY, "USD") * 100) / 100;
   const fobUsd = includeCustomColor ? Math.round((baseFobUsd + CUSTOM_COLOR_SURCHARGE_USD) * 100) / 100 : baseFobUsd;
@@ -89,9 +95,13 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
     condition: indexEntry.condition,
     mileageKm: detail.mileageKm,
     fuelType: fuelPreference,
+    engine: detail.specs.Displacement ?? detail.specs.Engine ?? null,
     transmission: indexEntry.transmission,
     drivetrain: detail.driveType,
     exteriorColor: includeCustomColor ? `Custom color${customColorName ? `: ${customColorName}` : ""}` : detail.color,
+    interiorColor: detail.specs["Interior Color"] ?? null,
+    capacity: Number.parseInt(detail.specs.Capacity ?? detail.specs["Capacity (people/seats)"] ?? "", 10) || null,
+    historyNotes: formatRowsForHistory([...factRows, ...configurationRows]),
     specSummary: specParts.join(" · "),
     qty,
     fobOriginal: fobUsd,
@@ -169,15 +179,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Could not create the quote. Please try again." }, { status: 502 });
   }
 
-  // The quote is saved and already visible in /admin from this point on —
-  // everything below (PDF + email) is best-effort. A failure there shouldn't
-  // erase the customer's successfully-recorded request; staff can regenerate/
-  // resend from the admin quote editor.
   let pdfBuffer: Buffer | null = null;
   try {
     pdfBuffer = await renderQuotePdf(ref, request.url, { kind: "internal-secret" });
   } catch (error) {
     console.error(`[quote-requests] PDF render failed for ${ref}:`, error);
+  }
+  if (!pdfBuffer) {
+    await recordQuoteEmail(ref, {
+      toEmail: email,
+      subject: "Quotation PDF generation failed",
+      html: "",
+      status: "failed",
+      error: "PDF generation failed before customer email could be sent.",
+    });
+    return NextResponse.json({ ok: false, error: "The quotation was created, but the PDF could not be generated for email. Our team has been notified to resend it." }, { status: 502 });
   }
 
   const quote = await adminGetQuote(ref);
@@ -202,32 +218,23 @@ export async function POST(request: NextRequest) {
     vehicleSummary,
   });
 
-  let emailSent = false;
-  if (pdfBuffer) {
-    const sendResult = await sendEmail({
-      to: email,
-      subject,
-      html,
-      attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
-    });
-    emailSent = sendResult.ok;
-    await recordQuoteEmail(ref, {
-      toEmail: email,
-      subject,
-      html,
-      status: sendResult.ok ? "sent" : "failed",
-      error: sendResult.ok ? null : sendResult.error,
-      providerMessageId: sendResult.ok ? sendResult.providerMessageId : null,
-    });
-  } else {
-    await recordQuoteEmail(ref, {
-      toEmail: email,
-      subject,
-      html,
-      status: "failed",
-      error: "PDF generation failed — email not sent.",
-    });
+  const sendResult = await sendEmail({
+    to: email,
+    subject,
+    html,
+    attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
+  });
+  await recordQuoteEmail(ref, {
+    toEmail: email,
+    subject,
+    html,
+    status: sendResult.ok ? "sent" : "failed",
+    error: sendResult.ok ? null : sendResult.error,
+    providerMessageId: sendResult.ok ? sendResult.providerMessageId : null,
+  });
+  if (!sendResult.ok) {
+    return NextResponse.json({ ok: false, error: "The quotation was created, but the email provider did not accept the email. Please check the address or contact us on WhatsApp." }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, ref, documentNumber: quote?.documentNumber ?? null, emailSent });
+  return NextResponse.json({ ok: true, ref, documentNumber: quote?.documentNumber ?? null, emailSent: true });
 }

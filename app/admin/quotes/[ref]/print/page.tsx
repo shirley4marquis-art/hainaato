@@ -11,6 +11,7 @@ import {
   quoteCifTotal,
   quoteNationalizationCifValue,
 } from "../../../../../lib/quote-document";
+import { parseHistoryRows } from "../../../../../lib/vehicle-document-details";
 import styles from "./print.module.css";
 
 const COMPANY = {
@@ -79,8 +80,8 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   ];
 
   const detailLabels = quote.language === "es"
-    ? { details: "DETALLES DEL VEHÍCULO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", engine: "Motor", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
-    : { details: "VEHICLE DETAILS", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", engine: "Engine", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
+    ? { details: "DETALLES DEL VEHÍCULO", configuration: "CONFIGURACIÓN Y EQUIPAMIENTO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", interior: "Color interior", engine: "Motor", capacity: "Capacidad", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
+    : { details: "VEHICLE DETAILS", configuration: "CONFIGURATION & EQUIPMENT", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", interior: "Interior color", engine: "Engine", capacity: "Capacity", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
 
   return (
     <div className={styles.root}>
@@ -296,8 +297,11 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
           [detailLabels.transmission, item.transmission],
           [detailLabels.drivetrain, item.drivetrain],
           [detailLabels.exterior, item.exteriorColor],
+          [detailLabels.interior, item.interiorColor],
           [detailLabels.engine, item.engine],
+          [detailLabels.capacity, item.capacity != null ? String(item.capacity) : null],
         ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+        const configurationRows = parseHistoryRows(item.historyNotes);
         return <div className={styles.page} key={`${item.make}-${item.model}-${itemIndex}`}>
           <div className={styles.topBar} />
           <div className={styles.photoMiniHeader}>
@@ -324,6 +328,12 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
               {details.map(([label, value]) => <div className={styles.vehicleDetail} key={label}><span>{label}</span><b>{value}</b></div>)}
             </div>
             {item.specSummary && <p className={styles.vehicleSpecSummary}>{item.specSummary}</p>}
+            {configurationRows.length > 0 && <div className={styles.vehicleConfigBlock}>
+              <p>{detailLabels.configuration}</p>
+              <div className={styles.vehicleConfigGrid}>
+                {configurationRows.map((row) => <div key={`${row.label}-${row.value}`}><span>{row.label}</span><b>{row.value}</b></div>)}
+              </div>
+            </div>}
             <div className={styles.vehiclePriceGrid}>
               <div><span>{detailLabels.quantity}</span><b>{item.qty}</b></div>
               <div><span>{detailLabels.unitPrice}</span><b>{formatMoney(item.fobFinal, quote.currency)}</b></div>

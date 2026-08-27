@@ -682,6 +682,49 @@
   line-height: 1.5;
 }
 
+.vehicleConfigBlock {
+  margin-top: 12px;
+}
+
+.vehicleConfigBlock > p {
+  margin: 0 0 6px;
+  color: #0b1f3a;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.vehicleConfigGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid #dde2e8;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.vehicleConfigGrid > div {
+  min-height: 38px;
+  padding: 7px 8px;
+  border-right: 1px solid #dde2e8;
+  border-bottom: 1px solid #dde2e8;
+}
+
+.vehicleConfigGrid span {
+  display: block;
+  color: #8b95a3;
+  font-size: 7.8px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.vehicleConfigGrid b {
+  color: #0b1f3a;
+  font-size: 9.3px;
+  line-height: 1.28;
+}
+
 .vehiclePriceGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

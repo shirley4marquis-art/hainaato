@@ -6,6 +6,7 @@ import { imagePath } from "../../../../lib/format";
 import { convertFromCNY } from "../../../../lib/currency";
 import { fuelChoiceLabel } from "../../../../lib/fuel-options";
 import { rankVehicleImages } from "../../../../lib/image-ranking";
+import { buildVehicleConfigurationRows } from "../../../../lib/vehicle-document-details";
 import styles from "./specification.module.css";
 
 const COMPANY = {
@@ -39,6 +40,7 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
   const stockCode = vehicle.specs["Código de inventario"] || indexEntry.stockCode || `${vehicle.site.toUpperCase()}-${vehicle.id}`;
   const photos = rankVehicleImages(vehicle.images).slice(0, 3).map((file) => imagePath(vehicle.site, vehicle.id, file));
   const specEntries = cleanSpecEntries(vehicle.specs);
+  const configurationRows = buildVehicleConfigurationRows(vehicle, indexEntry);
   const fields = [
     ["Stock code", stockCode],
     ["Make", indexEntry.brand],
@@ -120,6 +122,17 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
             <table className={styles.specTable}>
               <tbody>
                 {specEntries.map(([key, value]) => <tr key={key}><th>{key}</th><td>{value}</td></tr>)}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {configurationRows.length > 0 && (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Configuration &amp; Equipment</h2>
+            <table className={styles.specTable}>
+              <tbody>
+                {configurationRows.map(({ label, value }) => <tr key={label}><th>{label}</th><td>{value}</td></tr>)}
               </tbody>
             </table>
           </section>
