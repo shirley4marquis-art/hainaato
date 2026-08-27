@@ -52,6 +52,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
   const [ref,setRef]=useState<string|null>(null);
+  const [quoteRef,setQuoteRef]=useState<string|null>(null);
   const [emailSent,setEmailSent]=useState(false);
   const [submittedEmail,setSubmittedEmail]=useState("");
   const [customColor,setCustomColor]=useState(false);
@@ -65,7 +66,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
     const email=field(data,"email")??"";
     const fuelPreference=field(data,"fuelPreference") ?? "Diesel";
     const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference,customColor:canCustomizeColor&&checked(data,"customColor"),customColorName:field(data,"customColorName")}]});
-    if(result.ok){setRef(result.documentNumber||result.ref);setEmailSent(result.emailSent);setSubmittedEmail(email);setCustomColor(false);setState("sent");form.reset()}
+    if(result.ok){setRef(result.documentNumber||result.ref);setQuoteRef(result.ref);setEmailSent(result.emailSent);setSubmittedEmail(email);setCustomColor(false);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
   }
   return <form id="quote-form" className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
@@ -107,7 +108,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
     </div>
     <button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Generating quotation & PDF…":"Email My Quote & PDF"}</button>
-    <div role="status" aria-live="polite">{state==="sent"&&(emailSent?<p className="success">Your quotation and PDF have been sent to {submittedEmail}{ref?` (reference ${ref})`:""}.</p>:<p className="form-error">Your quotation was created{ref?` (reference ${ref})`:""}, but the email could not be delivered. Our team has the request and will resend it.</p>)}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div>
+    <div role="status" aria-live="polite">{state==="sent"&&(emailSent?<div className="success">Your quotation and PDF have been sent to {submittedEmail}{ref?` (reference ${ref})`:""}. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>:<div className="form-error">Your quotation was created{ref?` (reference ${ref})`:""}, but the email could not be delivered. Our team has the request and will resend it. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>)}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div>
   </form>
 }
 

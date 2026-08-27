@@ -5,6 +5,8 @@ import {
   Calendar,
   Car,
   Compass,
+  Download,
+  FileText,
   Gauge,
   MapPin,
   Palette,
@@ -228,6 +230,9 @@ export default async function VehicleDetail({
             <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}#quote-form`}>
               Get Quote
             </Link>
+            <a className="btn ghost" href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
+              <Download size={16} /> Download Specs
+            </a>
             <a
               className="btn btn-whatsapp"
               href={WHATSAPP_URL}
@@ -300,6 +305,15 @@ export default async function VehicleDetail({
                 <p key="o">
                   {vehicle.overview ||
                     "Contact our team for a full condition report and detailed specification sheet on this vehicle."}
+                </p>,
+              ],
+              [
+                "Specification",
+                <p key="s">
+                  <FileText size={14} />{" "}
+                  <a href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
+                    Download the filled specification PDF for this vehicle.
+                  </a>
                 </p>,
               ],
               [

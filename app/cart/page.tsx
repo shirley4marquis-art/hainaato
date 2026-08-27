@@ -69,6 +69,9 @@ export default function Cart() {
                 Your personalized quotation{submitted.documentNumber ? ` (${submitted.documentNumber})` : ` (${submitted.ref})`} has
                 been generated and emailed to you. Check your inbox, or reply to that email with any questions.
               </p>
+              <a className="btn primary" href={`/api/quote-pdf?ref=${encodeURIComponent(submitted.ref)}`}>
+                Download quotation
+              </a>
               <Link className="btn primary" href="/vehicles">
                 Continue browsing
               </Link>

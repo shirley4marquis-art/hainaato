@@ -16,6 +16,8 @@
 // isn't meant to run outside a Lambda-like environment.
 export type RenderQuotePdfAuth = { kind: "cookie"; cookieHeader: string } | { kind: "internal-secret" };
 
+import { renderPagePdf } from "./render-page-pdf";
+
 export function requireInternalPdfSecret(): string {
   const secret = process.env.INTERNAL_PDF_SECRET;
   if (!secret) throw new Error("INTERNAL_PDF_SECRET is not set.");
@@ -23,47 +25,7 @@ export function requireInternalPdfSecret(): string {
 }
 
 export async function renderQuotePdf(ref: string, baseUrl: string, auth: RenderQuotePdfAuth): Promise<Buffer> {
-  const printUrl = new URL(`/admin/quotes/${encodeURIComponent(ref)}/print`, baseUrl).toString();
-
-  let browser: import("playwright-core").Browser;
-  if (process.env.VERCEL) {
-    const chromium = (await import("@sparticuz/chromium")).default;
-    const { chromium: playwrightChromium } = await import("playwright-core");
-    browser = await playwrightChromium.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    });
-  } else {
-    const { chromium: playwrightChromium } = await import("playwright");
-    browser = await playwrightChromium.launch();
-  }
-
-  try {
-    const context = await browser.newContext();
-    const url = new URL(printUrl);
-    if (auth.kind === "cookie") {
-      // Forward the requester's admin session cookie so the print page's own
-      // auth (proxy.ts) lets this server-side render through — same origin,
-      // same session.
-      await context.addCookies(
-        auth.cookieHeader
-          .split(";")
-          .map((c: string) => c.trim())
-          .filter(Boolean)
-          .map((c: string) => {
-            const eq = c.indexOf("=");
-            return { name: c.slice(0, eq), value: c.slice(eq + 1), domain: url.hostname, path: "/" };
-          })
-      );
-    } else {
-      await context.setExtraHTTPHeaders({ "x-internal-pdf-secret": requireInternalPdfSecret() });
-    }
-    const page = await context.newPage();
-    await page.goto(printUrl, { waitUntil: "networkidle", timeout: 30000 });
-    const pdf = await page.pdf({ format: "A4", printBackground: true });
-    return Buffer.from(pdf);
-  } finally {
-    await browser.close();
-  }
+  const pathname = `/admin/quotes/${encodeURIComponent(ref)}/print`;
+  if (auth.kind === "cookie") return renderPagePdf(pathname, baseUrl, auth);
+  return renderPagePdf(pathname, baseUrl, { kind: "headers", headers: { "x-internal-pdf-secret": requireInternalPdfSecret() } });
 }

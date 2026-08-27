@@ -569,6 +569,7 @@ body{background:#f4f6f9;color:#1a2332}.ah-header{position:sticky;top:0;z-index:1
 
 .request-form label.option-checkbox{flex-direction:row;align-items:flex-start;gap:8px;font-weight:700;color:#233047;cursor:pointer}
 .request-form label.option-checkbox input[type=checkbox]{width:16px;height:16px;flex:none;margin-top:2px;padding:0}
+.quote-download-button{display:flex;width:max-content;margin-top:10px;background:#fff;color:#0b5c44;border-color:#b8cec6}
 .cart-quote-vehicle-row{display:grid;grid-template-columns:minmax(0,1fr) 80px 118px;align-items:center;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid #edf1f4}
 .cart-quote-vehicle-row:last-child{border-bottom:0}
 .cart-quote-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
