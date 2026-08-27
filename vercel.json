@@ -1,5 +1,12 @@
 {
   "framework": "nextjs",
+  "functions": {
+    "app/api/quote-requests/route.ts": { "memory": 3009 },
+    "app/api/vehicle-specification-pdf/route.ts": { "memory": 3009 },
+    "app/api/quote-pdf/route.ts": { "memory": 3009 },
+    "app/api/admin/quotes/*/pdf/route.ts": { "memory": 3009 },
+    "app/api/admin/quotes/*/resend/route.ts": { "memory": 3009 }
+  },
   "crons": [
     {
       "path": "/api/cron/made-in-china-import",
