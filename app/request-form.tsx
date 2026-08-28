@@ -80,33 +80,36 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
       </div>
     </div>
     <h2>Get an Instant Vehicle Quote</h2>
-    <p className="quote-form-subhead">Enter your delivery details and we will create your quotation PDF and email it to you immediately.</p>
+    <p className="quote-form-subhead">Quote for <b>{vehicleTitle}</b> — just your email and destination, and we&apos;ll create your quotation PDF and email it to you immediately.</p>
     <div className="form-grid">
-      <label htmlFor="rv-vehicle">Vehicle</label>
-      <input id="rv-vehicle" name="vehicle" defaultValue={vehicleTitle} readOnly/>
-      <label htmlFor="rv-name">Full name *</label>
-      <input id="rv-name" name="name" required autoComplete="name"/>
       <label htmlFor="rv-email">Email *</label>
       <input id="rv-email" name="email" type="email" required autoComplete="email"/>
-      <label htmlFor="rv-whatsapp">Phone / WhatsApp *</label>
-      <input id="rv-whatsapp" name="whatsapp" type="tel" placeholder="+58..." required autoComplete="tel"/>
       <DestinationPortFields countryName="destination" idPrefix="rv"/>
-      <label htmlFor="rv-cityState">City / State</label>
-      <input id="rv-cityState" name="cityState" autoComplete="address-level2"/>
-      <label htmlFor="rv-quantity">Quantity</label>
-      <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1}/>
-      <label htmlFor="rv-fuelPreference">Preferred fuel</label>
-      <select id="rv-fuelPreference" name="fuelPreference" defaultValue="Diesel">
-        {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
-      </select>
-      {canCustomizeColor&&<>
-        <label className="wide option-checkbox" htmlFor="rv-customColor"><input type="checkbox" name="customColor" id="rv-customColor" checked={customColor} onChange={(event)=>setCustomColor(event.target.checked)}/> {`Custom color request (+$${CUSTOM_COLOR_SURCHARGE_USD} USD)`}</label>
-        {customColor&&<label className="wide" htmlFor="rv-customColorName">Preferred custom color<input id="rv-customColorName" name="customColorName" placeholder="e.g. pearl white, matte black, champagne gold"/></label>}
-      </>}
-      <label className="wide" htmlFor="rv-message">Additional requirements</label>
-      <textarea className="wide" id="rv-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
-      <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
     </div>
+    <details className="quote-form-optional">
+      <summary>Add more details (optional) — name, phone, quantity, color…</summary>
+      <div className="form-grid">
+        <label htmlFor="rv-name">Full name</label>
+        <input id="rv-name" name="name" autoComplete="name"/>
+        <label htmlFor="rv-whatsapp">Phone / WhatsApp</label>
+        <input id="rv-whatsapp" name="whatsapp" type="tel" placeholder="+58..." autoComplete="tel"/>
+        <label htmlFor="rv-cityState">City / State</label>
+        <input id="rv-cityState" name="cityState" autoComplete="address-level2"/>
+        <label htmlFor="rv-quantity">Quantity</label>
+        <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1}/>
+        <label htmlFor="rv-fuelPreference">Preferred fuel</label>
+        <select id="rv-fuelPreference" name="fuelPreference" defaultValue="Diesel">
+          {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+        </select>
+        {canCustomizeColor&&<>
+          <label className="wide option-checkbox" htmlFor="rv-customColor"><input type="checkbox" name="customColor" id="rv-customColor" checked={customColor} onChange={(event)=>setCustomColor(event.target.checked)}/> {`Custom color request (+$${CUSTOM_COLOR_SURCHARGE_USD} USD)`}</label>
+          {customColor&&<label className="wide" htmlFor="rv-customColorName">Preferred custom color<input id="rv-customColorName" name="customColorName" placeholder="e.g. pearl white, matte black, champagne gold"/></label>}
+        </>}
+        <label className="wide" htmlFor="rv-message">Additional requirements</label>
+        <textarea className="wide" id="rv-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
+        <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
+      </div>
+    </details>
     <button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Generating PDF and sending email...":"Email My Quote & PDF"}</button>
     <div role="status" aria-live="polite">{state==="sending"&&<p className="success">Please keep this page open. We are generating the quotation PDF and sending it to your email now.</p>}{state==="sent"&&(emailSent?<div className="success">Your quotation and PDF have been sent to {submittedEmail}{ref?` (reference ${ref})`:""}. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>:<div className="form-error">Your quotation was created{ref?` (reference ${ref})`:""}, but the email could not be delivered. Our team has the request and will resend it. {quoteRef&&<a className="btn ghost quote-download-button" href={`/api/quote-pdf?ref=${encodeURIComponent(quoteRef)}`}>Download quotation</a>}</div>)}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div>
   </form>

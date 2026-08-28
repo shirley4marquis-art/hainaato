@@ -130,16 +130,19 @@ export async function POST(request: NextRequest) {
   const publicConsent = b.publicConsent === true;
   const requestedVehicles = parseVehicles(b.vehicles);
 
-  if (!name) return NextResponse.json({ ok: false, error: "Full name is required." }, { status: 400 });
   if (!email) return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
   if (!isLikelyRealEmail(email)) {
     return NextResponse.json({ ok: false, error: "Please enter a valid email address." }, { status: 400 });
   }
-  if (!phone) return NextResponse.json({ ok: false, error: "Phone / WhatsApp is required." }, { status: 400 });
-  if (!country) return NextResponse.json({ ok: false, error: "Country is required." }, { status: 400 });
+  if (!country) return NextResponse.json({ ok: false, error: "Destination country is required." }, { status: 400 });
   if (requestedVehicles.length === 0) {
     return NextResponse.json({ ok: false, error: "At least one vehicle is required." }, { status: 400 });
   }
+
+  // Name and phone are optional on the quick-quote form (only email +
+  // destination are required) — fall back to the email's local part so the
+  // record still reads as something in the admin panel and sales email.
+  const customerName = name || email.split("@")[0];
 
   const items = requestedVehicles
     .map((requestedVehicle) => buildItemFromListing(requestedVehicle))
@@ -157,7 +160,7 @@ export async function POST(request: NextRequest) {
   let ref: string;
   try {
     ref = await adminSaveQuote({
-      customer: { name, phone, email, city: cityState ?? null, country },
+      customer: { name: customerName, phone: phone ?? null, email, city: cityState ?? null, country },
       destinationPort: destinationPort || `${country} main import port`,
       destinationCountry: country,
       incoterm: "CIF",
@@ -202,9 +205,9 @@ export async function POST(request: NextRequest) {
   await sendQuoteCreatedSalesNotification({
     ref,
     documentNumber: quote?.documentNumber ?? null,
-    customerName: name,
+    customerName,
     customerEmail: email,
-    customerPhone: phone,
+    customerPhone: phone ?? null,
     destinationCountry: country,
     destinationPort: destinationPort || null,
     vehicleSummary,
@@ -212,7 +215,7 @@ export async function POST(request: NextRequest) {
   });
 
   const { subject, html } = customerQuoteEmailHtml({
-    customerName: name,
+    customerName,
     ref,
     documentNumber: quote?.documentNumber ?? null,
     vehicleSummary,
