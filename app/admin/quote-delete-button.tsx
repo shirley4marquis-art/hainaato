@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import styles from "./admin.module.css";
 
-export function QuoteDeleteButton({ ref: quoteRef, label }: { ref: string; label: string }) {
+export function QuoteDeleteButton({ quoteRef, label }: { quoteRef: string; label: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 

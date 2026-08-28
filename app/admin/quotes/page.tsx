@@ -88,7 +88,7 @@ export default async function AdminQuotesList({ searchParams }: { searchParams: 
                   <div className={styles.orderValue}><b>{quote.currency} {quote.cifTotal.toLocaleString()}</b><small>{new Date(quote.createdAt).toLocaleDateString()}</small></div>
                   <ArrowRight className={styles.orderArrow} size={17} />
                 </Link>
-                <QuoteDeleteButton ref={quote.ref} label={quote.documentNumber ?? quote.ref} />
+                <QuoteDeleteButton quoteRef={quote.ref} label={quote.documentNumber ?? quote.ref} />
               </div>
             );
           })}
