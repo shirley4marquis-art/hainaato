@@ -6,7 +6,7 @@
 // navigation with the shared secret the way the customer email flow does.
 import { NextRequest, NextResponse } from "next/server";
 import { getQuoteStatus } from "../../../lib/crm";
-import { renderQuotePdf } from "../../../lib/render-quote-pdf";
+import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const pdf = await renderQuotePdf(ref, request.url, { kind: "internal-secret" });
+    const pdf = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" });
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {

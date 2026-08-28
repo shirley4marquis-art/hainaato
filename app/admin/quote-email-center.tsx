@@ -322,7 +322,7 @@ export function QuoteEmailCenter({
             <tbody>
               {emails.map((email) => (
                 <tr key={email.id}>
-                  <td>{new Date(email.createdAt).toLocaleString()}</td>
+                  <td>{new Date(email.createdAt).toLocaleString("en-US")}</td>
                   <td>{email.toEmail}</td>
                   <td>{email.subject}</td>
                   <td>
