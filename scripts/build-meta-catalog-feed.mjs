@@ -68,9 +68,9 @@ function fullImagesFor(v) {
 // feed, and USD matches DEFAULT_CURRENCY there.
 const USD_PER_CNY = 0.139;
 
-// Feed is capped and curated rather than dumping the full catalogue: heavy
-// machinery/heavy trucks lead the feed, then 4x4 trucks and pickups (every
-// pickup truck, plus SUVs/off-roaders whose title advertises 4WD/AWD/4x4).
+// Feed is capped and curated rather than dumping the full catalogue. The
+// commercial priority is heavy-duty trucks, trucks, then pickups. Remaining
+// capacity is shared across vans/buses, SUVs and passenger cars.
 // Whatever budget is left after those priority groups is split across the
 // remaining body-type buckets
 // in proportion to how much inventory each one has, so a single rare bucket
@@ -80,18 +80,14 @@ const USD_PER_CNY = 0.139;
 const TOTAL_CAP = 2000;
 const FOUR_WHEEL_TITLE_RE = /4wd|4x4|awd|all-wheel|four-wheel/i;
 
-function bodyTypeIs(v, value) {
-  return (v.bodyType ?? "").trim().toLowerCase() === value;
-}
-
-const isPickup = (v) => bodyTypeIs(v, "pickup truck");
-const isSuv = (v) => bodyTypeIs(v, "off-road vehicle/suv");
-const isPassenger = (v) => bodyTypeIs(v, "passenger car");
-const isCommercial = (v) => bodyTypeIs(v, "commercial vehicles/mpvs");
-const isFourByFour = (v) => isPickup(v) || (isSuv(v) && FOUR_WHEEL_TITLE_RE.test(v.title));
+const isPickup = (v) => /^(pickup|pickup truck)$/.test((v.bodyType ?? "").trim().toLowerCase());
+const isSuv = (v) => /^(suv|off-road vehicle\/suv)$/.test((v.bodyType ?? "").trim().toLowerCase());
+const isPassenger = (v) => /^(car|passenger car|sedan|hatchback|station wagon|coupe|convertible|sports car)$/.test((v.bodyType ?? "").trim().toLowerCase());
+const isVanBus = (v) => /^(van|minivan|bus|commercial vehicles\/mpvs)$/.test((v.bodyType ?? "").trim().toLowerCase());
 const HEAVY_TRUCK_BODY_RE = /dump truck|tipper|tractor truck|mixer truck|heavy truck|machinery|equipment/i;
 const HEAVY_TRUCK_TITLE_RE = /dump truck|tipper|tractor truck|truck head|mixer truck|cement mixer|heavy truck|semi[- ]?truck|howo|sinotruk|shacman/i;
 const isHeavyTruck = (v) => !isPickup(v) && (HEAVY_TRUCK_BODY_RE.test(v.bodyType ?? "") || HEAVY_TRUCK_TITLE_RE.test(v.title));
+const isTruck = (v) => !isHeavyTruck(v) && !isPickup(v) && /truck|lorry/i.test(`${v.bodyType ?? ""} ${v.title}`);
 
 // Same buckets curateSelection() sorts into, exposed as the
 // broad-to-narrow category label Meta's product_type field expects
@@ -99,13 +95,24 @@ const isHeavyTruck = (v) => !isPickup(v) && (HEAVY_TRUCK_BODY_RE.test(v.bodyType
 // "4x4 Trucks > Toyota > Hilux". Category comes first so a rule-based
 // Collection in Commerce Manager can filter on "starts with 4x4 Trucks".
 function categoryLabel(v) {
-  if (isFourByFour(v)) return "4x4 Trucks";
+  if (isHeavyTruck(v)) return "Heavy-Duty Trucks";
+  if (isTruck(v)) return "Trucks";
+  if (isPickup(v)) return "Pickup Trucks";
+  if (isVanBus(v)) return "Vans & Buses";
   if (isSuv(v)) return "SUVs & Off-Road";
   if (isPassenger(v)) return "Passenger Cars";
-  if (isCommercial(v)) return "Commercial Vehicles & MPVs";
-  if (isHeavyTruck(v)) return "Heavy Trucks & Machinery";
-  return "Other";
+  return "Specialty Vehicles";
 }
+
+const categoryPriority = {
+  "Heavy-Duty Trucks": "priority_01_heavy_duty_trucks",
+  Trucks: "priority_02_trucks",
+  "Pickup Trucks": "priority_03_pickups",
+  "Vans & Buses": "priority_04_vans_buses",
+  "SUVs & Off-Road": "priority_05_suvs",
+  "Passenger Cars": "priority_06_passenger_cars",
+  "Specialty Vehicles": "priority_07_specialty",
+};
 
 function productType(v, brand) {
   const parts = [categoryLabel(v), brand, v.model].filter(Boolean);
@@ -143,22 +150,24 @@ function sortTrucksToyotaFirst(priorityTrucks) {
 }
 
 function curateSelection(eligible) {
-  const priorityTrucks = sortTrucksToyotaFirst(eligible.filter(isFourByFour));
-  const priorityTruckSlugs = new Set(priorityTrucks.map((v) => v.slug));
-  const heavyTrucks = eligible.filter((v) => isHeavyTruck(v) && !priorityTruckSlugs.has(v.slug));
-  const suvRemainder = eligible.filter((v) => isSuv(v) && !FOUR_WHEEL_TITLE_RE.test(v.title));
-  const passengerCars = eligible.filter(isPassenger);
-  const commercialVehicles = eligible.filter(isCommercial);
-  const claimed = new Set([...priorityTrucks, ...suvRemainder, ...passengerCars, ...commercialVehicles, ...heavyTrucks].map((v) => v.slug));
-  const other = eligible.filter((v) => !claimed.has(v.slug));
+  const heavyTrucks = eligible.filter((v) => categoryLabel(v) === "Heavy-Duty Trucks");
+  const trucks = eligible.filter((v) => categoryLabel(v) === "Trucks");
+  const pickups = sortTrucksToyotaFirst(eligible.filter((v) => categoryLabel(v) === "Pickup Trucks"));
+  const suvs = eligible.filter((v) => categoryLabel(v) === "SUVs & Off-Road");
+  const fourByFourSuvs = suvs.filter((v) => FOUR_WHEEL_TITLE_RE.test(v.title));
+  const suvRemainder = suvs.filter((v) => !FOUR_WHEEL_TITLE_RE.test(v.title));
+  const passengerCars = eligible.filter((v) => categoryLabel(v) === "Passenger Cars");
+  const vansAndBuses = eligible.filter((v) => categoryLabel(v) === "Vans & Buses");
+  const other = eligible.filter((v) => categoryLabel(v) === "Specialty Vehicles");
 
   const remainderBuckets = [
+    ["4x4 SUVs", fourByFourSuvs],
+    ["Vans & buses", vansAndBuses],
     ["SUVs & off-road (non-4x4)", suvRemainder],
     ["Passenger cars", passengerCars],
-    ["Commercial vehicles & MPVs", commercialVehicles],
-    ["Other", other],
+    ["Specialty vehicles", other],
   ];
-  const remainingBudget = Math.max(0, TOTAL_CAP - priorityTrucks.length - heavyTrucks.length);
+  const remainingBudget = Math.max(0, TOTAL_CAP - heavyTrucks.length - trucks.length - pickups.length);
   const remainderPoolSize = remainderBuckets.reduce((sum, [, list]) => sum + list.length, 0);
   const quotas = remainderBuckets.map(([, list]) =>
     remainderPoolSize > 0 ? Math.round((remainingBudget * list.length) / remainderPoolSize) : 0
@@ -169,13 +178,15 @@ function curateSelection(eligible) {
   const largest = quotas.indexOf(Math.max(...quotas));
   if (largest >= 0) quotas[largest] += drift;
 
-  console.log(`4x4 trucks (priority, all included): ${priorityTrucks.length}`);
-  console.log(`Heavy trucks & machinery (priority, all included): ${heavyTrucks.length}`);
+  console.log(`Heavy-duty trucks (priority 1, all included): ${heavyTrucks.length}`);
+  console.log(`Trucks (priority 2, all included): ${trucks.length}`);
+  console.log(`Pickups (priority 3, all included): ${pickups.length}`);
   remainderBuckets.forEach(([label, list], i) => console.log(`${label}: ${quotas[i]} of ${list.length}`));
 
   return [
     ...heavyTrucks,
-    ...priorityTrucks,
+    ...trucks,
+    ...pickups,
     ...remainderBuckets.flatMap(([, list], i) => evenSample(list, quotas[i])),
   ];
 }
@@ -208,10 +219,14 @@ const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
 // Required fields per Meta's product feed spec are price and image_link, so
 // anything missing either can't be listed. All rows in the current index are
 // already availability: "available", but the filter stays in case that changes.
-const eligible = index.filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb != null);
+const eligible = [...new Map(
+  index
+    .filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb != null)
+    .map((v) => [v.slug, v])
+).values()];
 const selected = curateSelection(eligible);
 
-const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0"];
+const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1"];
 const lines = [header.join(",")];
 
 let totalAdditionalImages = 0;
@@ -235,6 +250,7 @@ for (const v of selected) {
     additionalImages,
     productType(v, brand),
     customLabel0(v),
+    categoryPriority[categoryLabel(v)],
   ];
   lines.push(row.map(csvField).join(","));
 }

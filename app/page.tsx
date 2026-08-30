@@ -5,7 +5,7 @@ import {Camera,Car,Clock,CreditCard,FileText,Globe2,Landmark,MessageSquare,Packa
 import {Fragment} from "react";
 import {NewsSpotlight,SiteShell,VehicleCard} from "./ui";
 import {HomeRequestForm} from "./request-form";
-import {getBrandAggregates,getFilterOptions,getLatestNewVehicles,getTotalVehicleCount,isHomepagePreviewEligible,searchVehicles} from "../lib/vehicles";
+import {CATALOGUE_COLLECTIONS,getBrandAggregates,getFilterOptions,getLatestNewVehicles,getTotalVehicleCount,isHomepagePreviewEligible,searchVehicles} from "../lib/vehicles";
 import {imagePath} from "../lib/format";
 import {ResilientVehicleImage} from "./vehicle-image";
 import {Price} from "./price";
@@ -16,12 +16,6 @@ const trustCountries=[["ve","Venezuela"],["pe","Peru"],["ae","UAE"],["sa","Saudi
 const years=Array.from({length:16},(_,i)=>2026-i);
 const prices=[20000,50000,80000,120000,180000,250000,350000,500000];
 const arrivalTabs=[["Latest new","/vehicles?condition=new&sort=latest"],["New EV","/vehicles?condition=new&fuel=Electric"],["New hybrid","/vehicles?condition=new&fuel=Hybrid"],["All new cars","/new-cars"]] as const;
-const homeVehicleCategories=[
-  {title:"SUVs & off-road",type:"Off-road vehicle/SUV",copy:"Versatile family, city and all-terrain vehicles."},
-  {title:"Passenger cars",type:"Passenger car",copy:"Comfortable sedans and everyday passenger vehicles."},
-  {title:"Commercial vehicles & MPVs",type:"Commercial vehicles/MPVs",copy:"Practical people movers and business-ready vehicles."},
-  {title:"Pickup trucks",type:"Pickup truck",copy:"Capable pickups for work, transport and recreation."},
-] as const;
 const newsSpotlightArticles=[
   {title:"China's monthly vehicle exports exceed 1 million for the first time, with NEVs claiming over half",source:"CarNewsChina",date:"Jul 10, 2026",url:"https://carnewschina.com/2026/07/10/chinas-monthly-vehicle-exports-exceed-1-million-for-the-first-time-with-nevs-claiming-over-half/",image:"https://carnewschina.com/wp-content/uploads/2026/07/e59bbee78987-56-800x450.png"},
   {title:"Chinese automakers overtake Japanese rivals in Europe despite EV tariffs",source:"Nikkei Asia",date:"Jul 2, 2026",url:"https://asia.nikkei.com/business/automobiles/chinese-automakers-overtake-japanese-rivals-in-europe-despite-ev-tariffs",image:"https://images.ft.com/v3/image/raw/https%3A%2F%2Fcms-image-bucket-productionv3-ap-northeast-1-a7d2.s3.ap-northeast-1.amazonaws.com%2Fimages%2F2%2F0%2F4%2F6%2F12676402-1-eng-GB%2F2cc24b0af00b-20260701N-BYD-Thailand.jpg"},
@@ -83,7 +77,7 @@ export default function Home(){
   const brands=getBrandAggregates(12);
   const options=getFilterOptions();
   const totalVehicles=getTotalVehicleCount();
-  const categoryRows=homeVehicleCategories.map(category=>({...category,vehicles:searchVehicles({type:category.type,availability:"available",pageSize:8}).vehicles.filter(isHomepagePreviewEligible).slice(0,4)}));
+  const categoryRows=CATALOGUE_COLLECTIONS.map(category=>({...category,vehicles:searchVehicles({collection:category.id,availability:"available",pageSize:12}).vehicles.filter(isHomepagePreviewEligible).slice(0,4)}));
 
   return <SiteShell>
     <section className="ref-hero">
@@ -146,9 +140,9 @@ export default function Home(){
     </div></section>
 
     <section className="section vehicle-categories"><div className="container">
-      <div className="section-head"><span className="eyebrow">SHOP BY VEHICLE TYPE</span><h2>Explore four popular categories</h2><p>Browse export-ready inventory organized by the vehicle style that fits your needs.</p></div>
-      <div className="vehicle-category-rows">{categoryRows.map(category=><section className="vehicle-category-row" key={category.type}>
-        <header><div><h3>{category.title}</h3><p>{category.copy}</p></div><Link href={`/vehicles?type=${encodeURIComponent(category.type)}`}>View all {category.title.toLowerCase()} →</Link></header>
+      <div className="section-head"><span className="eyebrow">PURPOSE-BUILT COLLECTIONS</span><h2>Commercial vehicles lead the catalogue</h2><p>Start with heavy-duty trucks, then explore trucks, pickups and the rest of our export-ready inventory.</p></div>
+      <div className="vehicle-category-rows">{categoryRows.map(category=><section className="vehicle-category-row" key={category.id}>
+        <header><div><h3>{category.title}</h3><p>{category.copy}</p></div><Link href={`/vehicles?collection=${encodeURIComponent(category.id)}`}>View collection →</Link></header>
         <div className="vehicle-category-grid">{category.vehicles.map(vehicle=><VehicleCard key={vehicle.slug} v={vehicle}/>)}</div>
       </section>)}</div>
     </div></section>

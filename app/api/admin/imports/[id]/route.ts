@@ -15,7 +15,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!listing) return NextResponse.json({ ok: false, error: "Listing not found." }, { status: 404 });
     return NextResponse.json({ ok: true, listing });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports/:id] PATCH failed:", error);
+    return NextResponse.json({ ok: false, error: "Could not update the listing." }, { status: 500 });
   }
 }
 

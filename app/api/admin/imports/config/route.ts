@@ -7,7 +7,8 @@ export async function GET() {
   try {
     return NextResponse.json({ ok: true, config: await getImportConfig() });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports/config] request failed:", error);
+    return NextResponse.json({ ok: false, error: "Could not process the import configuration." }, { status: 500 });
   }
 }
 
@@ -18,7 +19,8 @@ export async function PATCH(request: Request) {
     const config = await saveImportConfig({ ...current, ...body, source: "made-in-china" });
     return NextResponse.json({ ok: true, config });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports/config] request failed:", error);
+    return NextResponse.json({ ok: false, error: "Could not process the import configuration." }, { status: 500 });
   }
 }
 

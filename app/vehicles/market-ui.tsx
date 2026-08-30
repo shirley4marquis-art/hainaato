@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Car, Copy, FileText, MapPin, ShoppingCart } from "lucide-react";
+import { BusFront, Car, CarFront, Copy, FileText, MapPin, ShoppingCart, Truck } from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,TelegramIcon,WeChatIcon} from "../contact-links";
 import {
   buildListUrl,
@@ -349,6 +349,7 @@ export function FilterDrawer({
               </button>
             </div>
             <form method="get" className="mobile-filter-form">
+              {sp.collection && <input type="hidden" name="collection" value={sp.collection} />}
               <FilterFields sp={sp} options={options} idPrefix="mobile" lockCondition={lockCondition} />
               <div className="mobile-filter-footer">
                 <Link href={pathname}>Clear all</Link>
@@ -388,6 +389,42 @@ export function MarketHero({
   );
 }
 
+const collectionIcons = {
+  "heavy-duty-trucks": Truck,
+  trucks: Truck,
+  pickups: Truck,
+  "vans-buses": BusFront,
+  suvs: CarFront,
+  "passenger-cars": Car,
+} as const;
+
+export function CatalogueCollections({ collections, activeCollection, sp }: {
+  collections: ReadonlyArray<{ id: string; shortTitle: string; copy: string; count: number }>;
+  activeCollection?: string;
+  sp: SP;
+}) {
+  return (
+    <nav className="catalogue-collections" aria-label="Catalogue collections">
+      <div className="catalogue-collections-head">
+        <div><span>Browse collections</span><h2>Commercial vehicles first</h2></div>
+        {activeCollection && <Link href={buildVehiclesUrl(sp, { collection: undefined, page: undefined })}>View all stock</Link>}
+      </div>
+      <div className="catalogue-collection-grid">
+        {collections.map((collection, index) => {
+          const Icon = collectionIcons[collection.id as keyof typeof collectionIcons] ?? Car;
+          const active = collection.id === activeCollection;
+          return <Link className={`catalogue-collection${active ? " active" : ""}`} href={buildVehiclesUrl(sp, { collection: active ? undefined : collection.id, type: undefined, page: undefined })} key={collection.id}>
+            <span className="catalogue-collection-icon"><Icon aria-hidden="true" /></span>
+            <span className="catalogue-collection-copy"><b>{collection.shortTitle}</b><small>{collection.copy}</small></span>
+            <span className="catalogue-collection-count">{collection.count.toLocaleString()}<small> in stock</small></span>
+            {index === 0 && <span className="catalogue-priority">Priority</span>}
+          </Link>;
+        })}
+      </div>
+    </nav>
+  );
+}
+
 const MILEAGE_PILLS: [string, string, string | undefined, string | undefined][] = [
   ["All", "", undefined, undefined],
   ["0~20,000km", "0-20", "0", "20000"],
@@ -420,6 +457,7 @@ export function QuickFilterBar({
   return (
     <div className="quick-filter-bar">
       <form method="get" id="quick-filter-form">
+        {sp.collection && <input type="hidden" name="collection" value={sp.collection} />}
         <div className="quick-filter-row">
           <input name="q" placeholder="Search by title, brand, keywords…" defaultValue={sp.q ?? ""} />
           <select name="brand" defaultValue={sp.brand ?? ""}>

@@ -7,10 +7,8 @@ const API_URL = "https://websites-search.api.carscommerce.inc/api/v1/listings/97
 const API_KEY = "OQa8l7SzMctJyr5bhSG9jYvlGnZUQfgl";
 const TARGET_COUNT = 400;
 const USD_PER_CNY = 0.139;
-// Recently listed Hendrick vehicles are offered at 30% below the previously
-// displayed HainaAuto price (50% of source price * 70% = 35% of source price).
-const HENDRICK_PRICE_FACTOR = 0.35;
-const HENDRICK_LOCATION = "Ningde, Fujian, China";
+// 25% below the previously published 35%-of-source sale-price rule.
+const HENDRICK_PRICE_FACTOR = 0.2625;
 const root = process.cwd();
 
 function numericId(vin) {
@@ -144,7 +142,7 @@ for (const { listing, id, images } of usable) {
 
   importedIndex.push({
     slug, site: "hendrick", id, title, year: listing.year || null, priceCNY,
-    mileageKm, fuel, bodyType: body, location: HENDRICK_LOCATION,
+    mileageKm, fuel, bodyType: body, location: "Concord, North Carolina, USA",
     thumb: images[0] || null, thumbs: images.slice(0, 3), imageCount: images.length,
     color, brand: "Toyota", model: listing.model, condition: "new",
     availability: "available", transmission: "Automatic", stockCode, listedAt: importedAt,
@@ -152,7 +150,7 @@ for (const { listing, id, images } of usable) {
   currentDetails[slug] = {
     slug, site: "hendrick", id, url: null, title, year: listing.year || null,
     priceCNY, msrpCNY, mileageKm, fuel, bodyType: body, gearbox: "Automatic",
-    color, location: HENDRICK_LOCATION, driveType: null,
+    color, location: "Concord, North Carolina, USA", driveType: null,
     overview: "Vehículo Toyota nuevo disponible a través de HainaAuto. Precio publicado conservado en USD; inspección, documentación de exportación y logística internacional disponibles bajo solicitud.",
     specs: {
       VIN: listing.vin,
@@ -165,7 +163,7 @@ for (const { listing, id, images } of usable) {
       Kilometraje: `${mileageKm ?? 0} km`,
       Combustible: fuel,
       Color: color || "Consultar",
-      Ubicación: HENDRICK_LOCATION,
+      Ubicación: "Concord, Carolina del Norte, EE. UU.",
     },
     images,
     otherColorPhotos: [],

@@ -35,7 +35,13 @@ For Venezuelan buyers, generate the smaller Spanish-language feed with:
 npm run data:catalog-feed:venezuela
 ```
 
-This writes `public/meta-catalog-venezuela.csv`, capped at 1,000 available listings and organized primarily by vehicle trim/model. Brand remains available as supporting metadata, while category labels cover pickups, SUVs, passenger cars, superautos/deportivos, motorcycles, and machinery/trucks. Motorcycle records will appear automatically when motorcycle inventory is available. Point Meta Commerce Manager at `https://hainautocn.com/meta-catalog-venezuela.csv` and regenerate it after inventory data changes.
+For the new WhatsApp catalogue upload, generate the dedicated feed with:
+
+```bash
+npm run data:catalog-feed:whatsapp
+```
+
+This writes `public/meta-catalog-venezuela.csv` and the WhatsApp export `public/whatsapp-catalog-venezuela.csv`, both capped at 1,000 available listings and organized by Meta-ready vehicle collections: heavy-duty trucks first, followed by trucks, pickups, vans and buses, SUVs, passenger cars, and specialty vehicles. `custom_label_0` contains the customer-facing Spanish category and `custom_label_1` contains the stable priority value used to create product sets. Point Meta Commerce Manager at `https://www.hainaautochina.com/meta-catalog-venezuela.csv` and regenerate it after inventory data changes.
 
 For the exact taxonomy, custom-label definitions, Commerce Manager product sets, campaign structure, and release checklist, follow [`docs/venezuela-meta-catalog-setup.md`](docs/venezuela-meta-catalog-setup.md).
 

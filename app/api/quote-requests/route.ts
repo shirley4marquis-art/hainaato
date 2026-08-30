@@ -8,6 +8,7 @@
 // the entered unit price already includes vehicle, ocean freight and marine
 // insurance to the agreed destination port.
 import { NextRequest, NextResponse } from "next/server";
+import { guardRequest } from "../../../lib/security/http";
 import { getVehicleIndexEntryBySlug } from "../../../lib/vehicles";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 import { rankVehicleImages } from "../../../lib/image-ranking";
@@ -113,6 +114,9 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
 }
 
 export async function POST(request: NextRequest) {
+  const limited = await guardRequest(request, { name: "quote-requests", limit: 6, windowSec: 10 * 60 });
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();

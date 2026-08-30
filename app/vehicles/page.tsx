@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteShell, SortSelect } from "../ui";
-import { getFilterOptions, searchVehicles } from "../../lib/vehicles";
+import { CATALOGUE_COLLECTIONS, getFilterOptions, searchVehicles } from "../../lib/vehicles";
 import { buildVehiclesUrl, type SP } from "../../lib/format";
-import { AvailabilityToggle, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
+import { AvailabilityToggle, CatalogueCollections, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
 
 const VEHICLES_SHARE_IMAGE = "/images/hainaauto-vehicles-hero-full-hd.jpg";
 
@@ -38,6 +38,7 @@ export const metadata: Metadata = {
 
 type SearchParams = {
   q?: string;
+  collection?: string;
   brand?: string;
   model?: string;
   type?: string;
@@ -63,6 +64,7 @@ export default async function Vehicles({ searchParams }: { searchParams: Promise
   const sort = sp.sort === "price-asc" || sp.sort === "price-desc" ? sp.sort : "latest";
   const result = searchVehicles({
     q: sp.q,
+    collection: sp.collection,
     brand: sp.brand,
     model: sp.model,
     type: sp.type,
@@ -87,11 +89,16 @@ export default async function Vehicles({ searchParams }: { searchParams: Promise
   const sortHidden = Object.fromEntries(
     Object.entries(sp).filter(([key]) => key !== "sort" && key !== "page")
   ) as SP;
+  const collections = CATALOGUE_COLLECTIONS.map((collection) => ({
+    ...collection,
+    count: searchVehicles({ collection: collection.id, availability: "available", pageSize: 1 }).total,
+  }));
 
   return (
     <SiteShell>
       <MarketHero total={result.total} />
       <div className="container market-shell">
+        <CatalogueCollections collections={collections} activeCollection={sp.collection} sp={spGeneric} />
         <QuickFilterBar sp={spGeneric} options={options} />
         <section className="market-results" aria-live="polite">
           <div className="list-header">

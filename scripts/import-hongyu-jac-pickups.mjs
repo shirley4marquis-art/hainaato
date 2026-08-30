@@ -5,7 +5,8 @@ import sharp from "sharp";
 const root = process.cwd();
 const site = "hongyu";
 const USD_PER_CNY = 0.139;
-const RECENT_LISTING_PRICE_FACTOR = 0.7;
+// 25% below the previously published 70% sale-price rule.
+const RECENT_LISTING_PRICE_FACTOR = 0.525;
 const products = [
   {
     id: "jac-t9-hunter",
@@ -119,7 +120,9 @@ for (const product of products) {
     images.push(file);
   }
 
-  const discountedPriceUsd = product.finalPriceUsd ?? product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
+  const discountedPriceUsd = product.finalPriceUsd != null
+    ? product.finalPriceUsd * 0.75
+    : product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
   const priceCNY = discountedPriceUsd / USD_PER_CNY;
   imported.push({
     slug, site, id: product.id, title: product.title, year: product.year, priceCNY,

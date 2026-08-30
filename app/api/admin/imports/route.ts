@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     const listings = await listImportedListings(filters);
     return NextResponse.json({ ok: true, listings });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports] GET failed:", error);
+    return NextResponse.json({ ok: false, error: "Could not load imported listings." }, { status: 500 });
   }
 }
 
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
     const log = await runMadeInChinaImport(body ?? {});
     return NextResponse.json({ ok: true, log });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports] POST failed:", error);
+    return NextResponse.json({ ok: false, error: "Import run failed." }, { status: 500 });
   }
 }
 

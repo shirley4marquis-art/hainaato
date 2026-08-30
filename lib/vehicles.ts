@@ -10,6 +10,15 @@ import {
 export type { Vehicle, VehicleIndexEntry, VehicleSite } from "./format";
 export { formatCNY, formatKm, imagePath } from "./format";
 
+export const CATALOGUE_COLLECTIONS = [
+  { id: "heavy-duty-trucks", title: "Heavy-duty trucks", shortTitle: "Heavy duty", copy: "Tractor heads, dump trucks and high-capacity workhorses.", bodyTypes: ["heavy truck", "tractor truck", "dump truck"] },
+  { id: "trucks", title: "Trucks", shortTitle: "Trucks", copy: "Commercial trucks for haulage, delivery and daily operations.", bodyTypes: ["truck"] },
+  { id: "pickups", title: "Pickup trucks", shortTitle: "Pickups", copy: "Double-cab and utility pickups ready for work or recreation.", bodyTypes: ["pickup", "pickup truck"] },
+  { id: "vans-buses", title: "Vans & buses", shortTitle: "Vans & buses", copy: "Passenger transport, crew vans and practical cargo carriers.", bodyTypes: ["van", "minivan", "bus", "commercial vehicles/mpvs"] },
+  { id: "suvs", title: "SUVs & off-road", shortTitle: "SUVs", copy: "Versatile family, city and all-terrain vehicles.", bodyTypes: ["suv", "off-road vehicle/suv"] },
+  { id: "passenger-cars", title: "Passenger cars", shortTitle: "Cars", copy: "Sedans, hatchbacks, wagons and coupes for everyday driving.", bodyTypes: ["car", "passenger car", "sedan", "hatchback", "station wagon", "coupe", "convertible", "sports car"] },
+] as const;
+
 const dataDir = path.join(process.cwd(), "data");
 
 let indexCache: VehicleIndexEntry[] | null = null;
@@ -88,6 +97,7 @@ export function getFilterOptions(scope?: { condition?: "new" | "used" }) {
 
 export type VehicleSearchParams = {
   q?: string;
+  collection?: string;
   type?: string;
   fuel?: string;
   color?: string;
@@ -110,6 +120,7 @@ export function searchVehicles(params: VehicleSearchParams) {
   const index = loadIndex();
   const {
     q,
+    collection,
     type,
     fuel,
     color,
@@ -133,6 +144,13 @@ export function searchVehicles(params: VehicleSearchParams) {
   if (q) {
     const needle = q.trim().toLowerCase();
     if (needle) results = results.filter((v) => `${v.title} ${v.stockCode}`.toLowerCase().includes(needle));
+  }
+  if (collection) {
+    const selected = CATALOGUE_COLLECTIONS.find((item) => item.id === collection);
+    if (selected) {
+      const bodyTypes = new Set<string>(selected.bodyTypes);
+      results = results.filter((v) => v.bodyType && bodyTypes.has(normalizeBodyType(v.bodyType).toLowerCase()));
+    }
   }
   if (brand) results = results.filter((v)=>v.brand.toLowerCase()===brand.toLowerCase());
   if (model) results = results.filter((v)=>v.model.toLowerCase().includes(model.toLowerCase()));

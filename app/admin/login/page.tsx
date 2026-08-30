@@ -1,8 +1,9 @@
 "use client";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Mail, Lock } from "lucide-react";
 import styles from "../admin.module.css";
+import { TurnstileWidget, turnstileEnabled } from "./turnstile";
 
 function safeAdminRedirect(value: string | null): string {
   if (!value) return "/admin";
@@ -17,17 +18,23 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const onToken = useCallback((token: string) => setTurnstileToken(token), []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy) return;
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -81,6 +88,7 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <TurnstileWidget onToken={onToken} />
           {error && <p className={styles.loginError}>{error}</p>}
           <button type="submit" disabled={busy}>
             {busy ? "Signing in…" : "Sign in"}

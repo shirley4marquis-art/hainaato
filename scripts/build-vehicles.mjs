@@ -20,11 +20,13 @@ function toNumber(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-// Our real sale price is 60% of the scraped upstream price — applied here so
+// Our real sale price is 45% of the scraped upstream price — applied here so
 // it survives every future data:build rather than being a one-off patch.
 // MSRP is left untouched: it's a separate real reference figure (factory
 // suggested price), not "our" price.
-const SALE_PRICE_MULTIPLIER = 0.6;
+// 25% below the previous 60% sale-price rule (0.60 * 0.75 = 0.45).
+const SALE_PRICE_MULTIPLIER = 0.45;
+const CURRENT_PRICE_REDUCTION = 0.75;
 
 // Hand-maintained, per-listing price corrections keyed by slug (site-id) —
 // this file is never written by this script, only read, so business-owner
@@ -93,7 +95,7 @@ function normalize(raw, site) {
     url: raw.url ?? null,
     title: raw.title ?? "Untitled vehicle",
     year: raw.year ?? null,
-    priceCNY: override ? override.priceCNY : formulaPriceCNY,
+    priceCNY: override ? Math.round(override.priceCNY * CURRENT_PRICE_REDUCTION) : formulaPriceCNY,
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
     mileageKm: rawMileageKm == null ? null : Math.round(rawMileageKm / MILEAGE_DIVISOR),
     condition,

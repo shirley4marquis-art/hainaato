@@ -7,7 +7,8 @@ export async function GET() {
   try {
     return NextResponse.json({ ok: true, runs: await listImportLogs() });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[admin/imports/runs] GET failed:", error);
+    return NextResponse.json({ ok: false, error: "Could not load import runs." }, { status: 500 });
   }
 }
 

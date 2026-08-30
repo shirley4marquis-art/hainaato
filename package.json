@@ -11,10 +11,14 @@
     "data:compact": "node scripts/compact-vehicle-data.mjs && node scripts/shard-vehicle-data.mjs",
     "data:catalog-feed": "node scripts/build-meta-catalog-feed.mjs",
     "data:catalog-feed:venezuela": "node scripts/build-venezuela-meta-catalog.mjs",
+    "data:catalog-feed:whatsapp": "node scripts/build-venezuela-meta-catalog.mjs whatsapp-catalog-venezuela.csv whatsapp_venezuela",
     "data:hendrick-toyota": "node scripts/import-hendrick-toyota.mjs && node scripts/shard-vehicle-data.mjs",
     "data:carfromjapan-hiluxes": "node scripts/import-carfromjapan-hiluxes.mjs",
     "data:made-in-china:publish": "node scripts/publish-made-in-china-listings.mjs",
     "audit:routes": "node scripts/debug-static-routes.mjs",
+    "security:check-secrets": "node scripts/check-secrets.mjs",
+    "security:test-geo": "node --test lib/security/geo-policy.test.mjs",
+    "test:i18n": "node --test lib/i18n/regions.test.mjs",
     "supabase": "supabase"
   },
   "dependencies": {

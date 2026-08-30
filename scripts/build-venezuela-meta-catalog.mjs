@@ -7,8 +7,10 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const indexPath = path.join(root, "data", "vehicles-index.json");
-const outPath = path.join(root, "public", "meta-catalog-venezuela.csv");
-const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
+const outputName = process.argv[2] ?? process.env.META_CATALOG_OUTPUT ?? "meta-catalog-venezuela.csv";
+const campaignName = process.argv[3] ?? process.env.META_CATALOG_CAMPAIGN ?? "venezuela";
+const outPath = path.join(root, "public", outputName);
+const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://www.hainaautochina.com";
 const USD_PER_CNY = 0.139;
 const TOTAL_CAP = 1000;
 const PER_TRIM_CAP = 24;
@@ -51,21 +53,32 @@ const wantedTrimRules = [
   /t8|t9/i,
 ];
 const categoryNames = {
-  pickup: "Camionetas y pickups",
+  heavy_duty: "Camiones pesados",
   truck: "Camiones",
+  pickup: "Camionetas y pickups",
+  commercial: "Vans y autobuses",
   suv: "SUVs y todoterrenos",
   passenger: "Sedanes y hatchbacks",
-  commercial: "Vehículos comerciales y familiares",
   supercar: "Supercarros y deportivos",
   motorcycle: "Motocicletas",
-  machinery: "Maquinaria pesada",
   other: "Otros vehículos",
+};
+const categoryPriority = {
+  heavy_duty: "priority_01_heavy_duty_trucks",
+  truck: "priority_02_trucks",
+  pickup: "priority_03_pickups",
+  commercial: "priority_04_vans_buses",
+  suv: "priority_05_suvs",
+  passenger: "priority_06_passenger_cars",
+  supercar: "priority_07_specialty",
+  motorcycle: "priority_07_specialty",
+  other: "priority_07_specialty",
 };
 
 function bodyType(v) {
   const value = (v.bodyType ?? "").toLowerCase();
   const title = v.title ?? "";
-  if (/dump truck|heavy truck|tractor truck|mixer truck|machinery|equipment/.test(value) || /excavat|loader|crane|dump truck|tipper|tractor truck|semi[- ]?truck|heavy machinery|mixer truck|cement mixer|\bhowo\b|sinotruk|shacman/i.test(title)) return "machinery";
+  if (/dump truck|heavy truck|tractor truck|mixer truck|machinery|equipment/.test(value) || /excavat|loader|crane|dump truck|tipper|tractor truck|semi[- ]?truck|heavy machinery|mixer truck|cement mixer|\bhowo\b|sinotruk|shacman/i.test(title)) return "heavy_duty";
   if (/motorcycle|motorbike|scooter/.test(value) || /\bmotorcycle\b|\bmotorbike\b|\bscooter\b/i.test(title)) return "motorcycle";
   if (/sports car|coupe|convertible/.test(value) || /supercar|hypercar|\bgt[ -]?r\b|\b911\b|\br8\b|\b718\b/i.test(title)) return "supercar";
   if (value.includes("pickup") || /\bhilux\b|\branger\b|\bfrontier\b|\bnavara\b|\bsilverado\b|\bf-?150\b|\bmaverick\b|\bd-max\b|\bpickup\b/i.test(title)) return "pickup";
@@ -104,7 +117,7 @@ function catalogBrand(v) {
   if (brandRules.some(([brand]) => raw.toLowerCase() === brand.toLowerCase())) return null;
   const normalized = brandAliases.get(raw.toLowerCase()) ?? raw;
   const type = bodyType(v);
-  const eligibleType = type === "supercar" || type === "motorcycle" || type === "machinery" || type === "truck";
+  const eligibleType = type === "supercar" || type === "motorcycle" || type === "heavy_duty" || type === "truck";
   return eligibleType && approvedFallbackBrands.has(normalized) ? normalized : null;
 }
 
@@ -146,13 +159,68 @@ function trimRank(v) {
   return index >= 0 ? index : wantedTrimRules.length;
 }
 
+function demandRank(v) {
+  const t = `${v.title ?? ""} ${v.model ?? ""}`.toLowerCase();
+  const brand = (v.brand ?? "").toLowerCase();
+
+  // Explicit top-demand vehicle ordering for the WhatsApp/Venezuela catalogue.
+  if (/hilux/i.test(t) || /toyota.*hilux/i.test(t)) return 0;
+  if (/ranger/i.test(t) || /ford.*ranger/i.test(t)) return 1;
+  if (/frontier|navara/i.test(t) || /nissan.*(frontier|navara)/i.test(t)) return 2;
+  if (/silverado|tahoe|trailblazer/i.test(t) || /chevrolet.*(silverado|tahoe|trailblazer)/i.test(t)) return 3;
+  if (/f-?150|maverick/i.test(t) || /ford.*(f-?150|maverick)/i.test(t)) return 4;
+  if (/(t8|t9|hunter|pickup)/i.test(t) && /jac/i.test(brand)) return 5;
+  if (/fortuner|land cruiser|prado|rav4|corolla|cr-v|sportage|tiggo|x70|x90|song|seal|dolphin|coolray/i.test(t)) return 6;
+  if (/jmc|maxus|isuzu|mitsubishi|mazda|d-max|foton|dongfeng|howo|sinotruk|shacman/i.test(t)) return 7;
+  if (/pickup|truck|heavy/i.test(t)) return 8;
+  return 99;
+}
+
+function brandDemandRank(v) {
+  const brand = (v.brand ?? "").toLowerCase();
+  const text = `${v.title ?? ""} ${v.model ?? ""}`.toLowerCase();
+  const brandOrder = [
+    "toyota",
+    "ford",
+    "nissan",
+    "chevrolet",
+    "jac",
+    "isuzu",
+    "mitsubishi",
+    "mazda",
+    "sinotruk",
+    "howo",
+    "foton",
+    "dongfeng",
+    "jmc",
+    "maxus",
+    "haval",
+    "chery",
+    "jetour",
+    "geely",
+    "byd",
+    "hyundai",
+    "kia",
+  ];
+
+  if (/hilux/.test(text)) return 0;
+  if (/ranger/.test(text)) return 1;
+  if (/frontier|navara/.test(text)) return 2;
+  if (/silverado|tahoe|trailblazer/.test(text)) return 3;
+  if (/t8|t9|hunter/.test(text) && /jac/.test(brand)) return 4;
+  if (/f-?150|maverick/.test(text)) return 5;
+  const index = brandOrder.indexOf(brand);
+  return index >= 0 ? index + 10 : 1000;
+}
+
 function priority(v) {
   const rank = trimRank(v);
   const type = bodyType(v);
-  const typeOrder = ["machinery", "pickup", "truck", "suv", "passenger", "commercial", "supercar", "motorcycle", "other"];
+  const typeOrder = ["heavy_duty", "truck", "pickup", "commercial", "suv", "passenger", "supercar", "motorcycle", "other"];
   const typeRank = typeOrder.includes(type) ? typeOrder.indexOf(type) : typeOrder.length;
   const conditionRank = v.condition === "new" ? 0 : 1;
-  return [typeRank, rank, conditionRank, -(v.year ?? 0), v.priceCNY ?? Number.MAX_SAFE_INTEGER, v.slug];
+  const requestedOrder = type === "pickup" || type === "truck" || type === "machinery" ? [brandDemandRank(v), demandRank(v), rank] : [rank, brandDemandRank(v), demandRank(v)];
+  return [typeRank, ...requestedOrder, conditionRank, -(v.year ?? 0), v.priceCNY ?? Number.MAX_SAFE_INTEGER, v.slug];
 }
 
 function comparePriority(a, b) {
@@ -262,13 +330,13 @@ for (const v of [...selected].sort(comparePriority)) {
     "in stock",
     v.condition,
     `${priceUsd.toFixed(2)} USD`,
-    `${SITE_URL}/vehicles/${v.slug}?lang=es-VE&utm_source=meta&utm_medium=catalog&utm_campaign=venezuela`,
+    `${SITE_URL}/vehicles/${v.slug}?lang=es-VE&utm_source=meta&utm_medium=catalog&utm_campaign=${campaignName}`,
     imagePath(v, v.thumb),
     brand,
     additionalImages,
     productTypeFor(v, brand, category),
-    "market_venezuela",
-    `category_${type}`,
+    category,
+    categoryPriority[type],
     `condition_${v.condition}`,
     yearBand(v.year),
     priceBand(priceUsd),

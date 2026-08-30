@@ -25,6 +25,7 @@
 *.pem
 
 # debug
+dev-server.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # raw scraped source data (huge — see next.config.ts outputFileTracingExcludes)
 /Auto-Shop/
@@ -50,6 +52,10 @@ yarn-error.log*
 # Move these to a private location; never commit/deploy them from here.
 /public/Commercial_Invoice_*
 /public/table.csv
+# Business-verification PDF and raw upscaled-image zips — not meant to be
+# world-readable from public/. Serve verification docs from a gated route.
+/public/HAINA_AUTO_Verificacion_Empresarial_*
+/public/vehicle-images/*.zip
 
 # vercel
 .vercel

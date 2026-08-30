@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { AUTO_TRANSLATE_LANGUAGES, normalizeLangParam } from "../lib/i18n/regions";
 
 declare global {
   interface Window {
@@ -11,31 +12,60 @@ declare global {
   }
 }
 
-function setTranslationCookie(value: string) {
-  document.cookie = `googtrans=${value};path=/;max-age=31536000;SameSite=Lax`;
-  document.cookie = `googtrans=${value};path=/;domain=.${window.location.hostname};max-age=31536000;SameSite=Lax`;
+const LOCALE_COOKIE = "haina_locale";
+const INCLUDED_LANGUAGES = AUTO_TRANSLATE_LANGUAGES.join(",");
+
+function readCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function writeCookie(name: string, value: string, maxAge = 31_536_000) {
+  const attrs = `path=/;max-age=${maxAge};SameSite=Lax`;
+  document.cookie = `${name}=${value};${attrs}`;
+  // Google Translate also looks for the cookie on the registrable domain.
+  document.cookie = `${name}=${value};domain=.${window.location.hostname};${attrs}`;
+}
+
+// `/en/<target>` is what Google Translate reads to auto-translate on load.
+function applyTranslation(lang: string) {
+  if (lang && lang !== "en") {
+    writeCookie("googtrans", `/en/${lang}`);
+    document.documentElement.lang = lang;
+  } else {
+    writeCookie("googtrans", "", 0);
+    document.documentElement.lang = "en";
+  }
 }
 
 export function AutoTranslate() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const requested = searchParams.get("lang")?.toLowerCase();
-    if (requested === "es" || requested === "es-ve") {
-      document.cookie = "haina_locale=es-VE;path=/;max-age=31536000;SameSite=Lax";
-      setTranslationCookie("/en/es");
+    const override = normalizeLangParam(searchParams.get("lang"));
+    const current = readCookie(LOCALE_COOKIE);
+
+    // Explicit ?lang= switch: persist it and reload once (without the param) so
+    // the widget re-initialises against the new googtrans cookie.
+    if (override && override !== current) {
+      writeCookie(LOCALE_COOKIE, override);
+      applyTranslation(override);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("lang");
+      window.location.replace(url.toString());
+      return;
     }
-    if (document.cookie.includes("haina_locale=es-VE")) {
-      document.documentElement.lang = "es-VE";
-      setTranslationCookie("/en/es");
-    }
+
+    // Otherwise honour whatever proxy.ts resolved (geo / prior choice).
+    const active = override || current;
+    if (active) applyTranslation(active);
   }, [searchParams]);
 
   useEffect(() => {
     window.hainaAutoTranslateInit = () => {
       if (!window.google?.translate || document.querySelector(".goog-te-combo")) return;
       new window.google.translate.TranslateElement(
-        { pageLanguage: "en", includedLanguages: "en,es", autoDisplay: false },
+        { pageLanguage: "en", includedLanguages: INCLUDED_LANGUAGES, autoDisplay: false },
         "google_translate_element",
       );
     };

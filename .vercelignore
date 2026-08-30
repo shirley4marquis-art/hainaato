@@ -7,3 +7,9 @@ data/vehicle-details.json
 # Retired per-vehicle scrape archive and raw source dump (298k+ files,
 # includes a 37GB backup zip). Not used at runtime; see next.config.ts.
 Auto-Shop
+
+# Never deploy these to the public static folder (spec §11, §12):
+#  - raw upscaled-image zips (large, internal working files)
+#  - the business-verification PDF (serve from a gated route instead)
+public/vehicle-images/*.zip
+public/HAINA_AUTO_Verificacion_Empresarial_*.pdf

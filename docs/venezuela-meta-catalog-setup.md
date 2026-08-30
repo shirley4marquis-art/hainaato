@@ -12,7 +12,8 @@ This guide is the operating procedure for HainaAuto's Venezuelan Meta catalogue.
 - Current size: 1,000 available vehicles
 - Language: Venezuelan Spanish (`es-VE`)
 - Currency: USD
-- Market label: `market_venezuela`
+- Category field: `custom_label_0`
+- Priority field: `custom_label_1`
 
 This is a standard product feed designed for an Ecommerce/Product catalogue. Do not upload it into a property, hotel, flight, or other vertical catalogue. If Meta offers a dedicated automotive inventory catalogue in the account, do not switch to it without first creating a separate vehicle-specific feed with Meta's required automotive fields. The current feed deliberately uses the stable product fields `id`, `title`, `description`, `availability`, `condition`, `price`, `link`, `image_link`, `brand`, `product_type`, and `custom_label_0` through `custom_label_4`.
 
@@ -22,30 +23,29 @@ Meta notes that catalogue/shop availability and interfaces vary by account and c
 
 The generator classifies each record in a fixed order so ambiguous vehicles receive only one primary category:
 
-1. Motorcycle or scooter
-2. Supercar, sports car, coupe, or convertible
+1. Heavy-duty truck or machinery
+2. Truck
 3. Pickup, including known pickup models such as Hilux, Ranger, Frontier, Navara, Silverado, F-150, Maverick, and D-Max
 4. Commercial passenger vehicle, MPV, van, or bus
-5. Truck or heavy machinery
-6. SUV or off-road vehicle
-7. Passenger sedan or hatchback
-8. Other
+5. SUV or off-road vehicle
+6. Passenger sedan or hatchback
+7. Supercar, sports car, coupe, convertible, motorcycle, or other specialty vehicle
 
 The order matters. For example, a Ford Ranger whose source body type says “SUV” is still categorized as a pickup, while a passenger van is commercial rather than machinery.
 
-The published CSV is ordered for campaign priority, with every category kept separate: maquinaria pesada first, then camionetas/pickups, camiones, SUVs y todoterrenos, sedanes/hatchbacks, vehículos comerciales, supercarros/deportivos, motocicletas, and other vehicles.
+The published CSV is ordered for campaign priority, with every category kept separate: camiones pesados first, then camiones, camionetas/pickups, vans/autobuses, SUVs/todoterrenos, sedanes/hatchbacks, and specialty vehicles.
 
 ### Published category counts
 
 | Product set | `custom_label_1` | Total | New | Used |
 |---|---|---:|---:|---:|
-| Maquinaria pesada | `category_machinery` | 20 | 5 | 15 |
-| Camionetas y pickups | `category_pickup` | 17 | 5 | 12 |
-| Camiones | `category_truck` | 73 | 5 | 68 |
-| SUVs y todoterrenos | `category_suv` | 545 | 101 | 444 |
-| Sedanes y hatchbacks | `category_passenger` | 224 | 56 | 168 |
-| Vehículos comerciales y familiares | `category_commercial` | 14 | 0 | 14 |
-| Supercarros y deportivos | `category_supercar` | 107 | 6 | 101 |
+| Camiones pesados | `priority_01_heavy_duty_trucks` | 20 | 5 | 15 |
+| Camiones | `priority_02_trucks` | 73 | 5 | 68 |
+| Camionetas y pickups | `priority_03_pickups` | 17 | 5 | 12 |
+| Vans y autobuses | `priority_04_vans_buses` | 17 | 0 | 17 |
+| SUVs y todoterrenos | `priority_05_suvs` | 542 | 100 | 442 |
+| Sedanes y hatchbacks | `priority_06_passenger_cars` | 224 | 56 | 168 |
+| Supercarros y deportivos | `priority_07_specialty` | 107 | 6 | 101 |
 
 There are currently no approved motorcycle records in the selected 1,000-item feed. Do not create an empty motorcycle set. It will appear automatically as `category_motorcycle` when eligible inventory is available.
 
@@ -66,23 +66,23 @@ Use `product_type` for browsing and collection presentation. Use custom labels f
 
 | Field | Purpose | Values |
 |---|---|---|
-| `custom_label_0` | Market | `market_venezuela` |
-| `custom_label_1` | Primary vehicle category | `category_machinery`, `category_pickup`, `category_truck`, `category_suv`, `category_passenger`, `category_commercial`, `category_supercar`, `category_motorcycle`, `category_other` |
+| `custom_label_0` | Customer-facing vehicle category | `Camiones pesados`, `Camiones`, `Camionetas y pickups`, `Vans y autobuses`, `SUVs y todoterrenos`, `Sedanes y hatchbacks`, `Supercarros y deportivos` |
+| `custom_label_1` | Stable category priority | `priority_01_heavy_duty_trucks` through `priority_07_specialty` |
 | `custom_label_2` | Condition | `condition_new`, `condition_used` |
 | `custom_label_3` | Model-year band | `year_2025_plus`, `year_2023_2024`, `year_pre_2023`, `year_unknown` |
 | `custom_label_4` | USD price band | `price_under_15000`, `price_15000_24999`, `price_25000_39999`, `price_40000_plus` |
 
 Current year distribution:
 
-- `year_2025_plus`: 394
-- `year_2023_2024`: 584
+- `year_2025_plus`: 393
+- `year_2023_2024`: 585
 - `year_pre_2023`: 8
 - `year_unknown`: 14
 
 Current price distribution:
 
-- `price_under_15000`: 641
-- `price_15000_24999`: 232
+- `price_under_15000`: 637
+- `price_15000_24999`: 236
 - `price_25000_39999`: 54
 - `price_40000_plus`: 73
 
@@ -114,33 +114,33 @@ Create these sets in **Catalogue → Sets**. Use the exact names and filters so 
 
 | Set name | Filter |
 |---|---|
-| `VE — All inventory` | `custom_label_0 = market_venezuela` |
-| `VE — New vehicles` | market label + `custom_label_2 = condition_new` |
-| `VE — Used vehicles` | market label + `custom_label_2 = condition_used` |
-| `VE — Maquinaria pesada` | market label + `custom_label_1 = category_machinery` |
-| `VE — Camionetas y pickups` | market label + `custom_label_1 = category_pickup` |
-| `VE — Camiones` | market label + `custom_label_1 = category_truck` |
-| `VE — SUVs y todoterrenos` | market label + `custom_label_1 = category_suv` |
-| `VE — Sedanes y hatchbacks` | market label + `custom_label_1 = category_passenger` |
-| `VE — Vehículos comerciales` | market label + `custom_label_1 = category_commercial` |
-| `VE — Supercarros y deportivos` | market label + `custom_label_1 = category_supercar` |
+| `VE — All inventory` | No filter; this feed contains Venezuela inventory only |
+| `VE — New vehicles` | `custom_label_2 = condition_new` |
+| `VE — Used vehicles` | `custom_label_2 = condition_used` |
+| `VE — 01 Camiones pesados` | `custom_label_1 = priority_01_heavy_duty_trucks` |
+| `VE — 02 Camiones` | `custom_label_1 = priority_02_trucks` |
+| `VE — 03 Camionetas y pickups` | `custom_label_1 = priority_03_pickups` |
+| `VE — 04 Vans y autobuses` | `custom_label_1 = priority_04_vans_buses` |
+| `VE — 05 SUVs y todoterrenos` | `custom_label_1 = priority_05_suvs` |
+| `VE — 06 Sedanes y hatchbacks` | `custom_label_1 = priority_06_passenger_cars` |
+| `VE — 07 Especiales y deportivos` | `custom_label_1 = priority_07_specialty` |
 
 ### Recommended campaign sets
 
 | Set name | Filters |
 |---|---|
-| `VE — Prioridad maquinaria pesada` | market + machinery |
-| `VE — Prioridad camionetas y pickups` | market + pickups |
-| `VE — Prioridad camiones` | market + trucks |
-| `VE — SUVs nuevos` | market + SUV + new |
-| `VE — SUVs usados` | market + SUV + used |
-| `VE — Sedanes nuevos` | market + passenger + new |
-| `VE — Sedanes usados` | market + passenger + used |
-| `VE — Under $15k` | market + `price_under_15000` |
-| `VE — $15k–$24,999` | market + `price_15000_24999` |
-| `VE — $25k–$39,999` | market + `price_25000_39999` |
-| `VE — $40k+` | market + `price_40000_plus` |
-| `VE — 2025+ models` | market + `year_2025_plus` |
+| `VE — Prioridad camiones pesados` | `custom_label_1 = priority_01_heavy_duty_trucks` |
+| `VE — Prioridad camiones` | `custom_label_1 = priority_02_trucks` |
+| `VE — Prioridad pickups` | `custom_label_1 = priority_03_pickups` |
+| `VE — SUVs nuevos` | `custom_label_1 = priority_05_suvs` + `custom_label_2 = condition_new` |
+| `VE — SUVs usados` | `custom_label_1 = priority_05_suvs` + `custom_label_2 = condition_used` |
+| `VE — Sedanes nuevos` | `custom_label_1 = priority_06_passenger_cars` + `custom_label_2 = condition_new` |
+| `VE — Sedanes usados` | `custom_label_1 = priority_06_passenger_cars` + `custom_label_2 = condition_used` |
+| `VE — Under $15k` | `custom_label_4 = price_under_15000` |
+| `VE — $15k–$24,999` | `custom_label_4 = price_15000_24999` |
+| `VE — $25k–$39,999` | `custom_label_4 = price_25000_39999` |
+| `VE — $40k+` | `custom_label_4 = price_40000_plus` |
+| `VE — 2025+ models` | `custom_label_3 = year_2025_plus` |
 
 Create brand sets only for brands receiving dedicated budget or creative. Filter the native `brand` field; do not create 37–40 brand sets merely because the feed contains those brands. Start with Toyota, Chery, BYD, Honda, Jetour, Geely, Nissan, Ford, Wuling, and Changan.
 
@@ -152,14 +152,14 @@ Use a simple structure first:
 
 ```text
 Campaign: VE | Catalogue | Leads or Sales
-├── Ad set: Maquinaria pesada
-│   └── Product set: VE — Maquinaria pesada
-├── Ad set: Camionetas y pickups
-│   └── Product set: VE — Camionetas y pickups
+├── Ad set: Camiones pesados
+│   └── Product set: VE — 01 Camiones pesados
 ├── Ad set: Camiones
-│   └── Product set: VE — Camiones
+│   └── Product set: VE — 02 Camiones
+├── Ad set: Camionetas y pickups
+│   └── Product set: VE — 03 Camionetas y pickups
 ├── Ad set: SUVs
-│   └── Product set: VE — SUVs y todoterrenos
+│   └── Product set: VE — 05 SUVs y todoterrenos
 ├── Ad set: Supercarros
 │   └── Product set: VE — Supercarros y deportivos
 └── Ad set: Value inventory
@@ -168,7 +168,7 @@ Campaign: VE | Catalogue | Leads or Sales
 
 At campaign level select the objective appropriate to the actual funnel. At ad-set level select Venezuela as the location and the intended product set. At ad level verify the Spanish title, USD price, image crop, destination link, and call to action. Meta describes the campaign/ad-set/ad responsibility split in its official [Ads Manager setup guide](https://www.facebook.com/help/messenger-app/621956575422138/).
 
-Do not mix machinery with passenger vehicles in the same ad set. Their audiences, pricing, imagery, and lead qualification are materially different. Keep supercars separate from value inventory for the same reason.
+Do not mix heavy-duty trucks with passenger vehicles in the same ad set. Their audiences, pricing, imagery, and lead qualification are materially different. Keep supercars separate from value inventory for the same reason.
 
 ## 7. Spanish landing-page verification
 
