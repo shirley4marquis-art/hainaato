@@ -5,25 +5,34 @@ import { getFilterOptions, searchVehicles } from "../../lib/vehicles";
 import { buildVehiclesUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
 
-const vehiclesDescription = "中国汽车出口库存：浏览海纳汽车在中国可出口的新车、二手车、SUV、皮卡和商用车，支持验车、报价、海运和出口文件。También disponible para compradores en Venezuela y América Latina.";
-const vehiclesHeroImage = "/images/Herohainamain.png";
+const VEHICLES_SHARE_IMAGE = "/images/hainaauto-vehicles-hero-full-hd.jpg";
 
-export const metadata:Metadata={
-  title:"中国汽车出口库存 | Vehículos de China",
-  description:vehiclesDescription,
-  alternates:{canonical:"/vehicles"},
-  openGraph:{
-    title:"中国汽车出口库存 | HainaAuto",
-    description:vehiclesDescription,
-    url:"/vehicles",
-    type:"website",
-    images:[{url:vehiclesHeroImage,width:1672,height:941,alt:"HainaAuto China vehicle export yard"}],
+export const metadata: Metadata = {
+  title: "Vehículos nuevos y usados de China",
+  description:
+    "Explora miles de carros, SUV, camionetas y vehículos comerciales disponibles para importar desde China a Venezuela. Fotos reales, precios y soporte de exportación.",
+  alternates: { canonical: "/vehicles" },
+  openGraph: {
+    title: "Vehículos nuevos y usados de China",
+    description:
+      "Explora miles de carros, SUV, camionetas y vehículos comerciales disponibles para importar desde China a Venezuela.",
+    url: "/vehicles",
+    type: "website",
+    images: [
+      {
+        url: VEHICLES_SHARE_IMAGE,
+        width: 1920,
+        height: 1080,
+        alt: "Vehículos preparados para exportación internacional con HainaAuto",
+      },
+    ],
   },
-  twitter:{
-    card:"summary_large_image",
-    title:"中国汽车出口库存 | HainaAuto",
-    description:vehiclesDescription,
-    images:[vehiclesHeroImage],
+  twitter: {
+    card: "summary_large_image",
+    title: "Vehículos nuevos y usados de China",
+    description:
+      "Explora miles de carros, SUV, camionetas y vehículos comerciales disponibles para importar desde China a Venezuela.",
+    images: [VEHICLES_SHARE_IMAGE],
   },
 };
 
