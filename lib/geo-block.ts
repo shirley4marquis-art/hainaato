@@ -85,5 +85,8 @@ export function handleGeoBlock(request: NextRequest): NextResponse | null {
 
   // Appear not to exist. Rewrite to a path no route matches so Next renders its
   // stock not-found page with a 404 status — identical to any dead URL.
-  return NextResponse.rewrite(new URL("/_geo-unavailable", request.url));
+  const dead = request.nextUrl.clone();
+  dead.pathname = "/_geo-unavailable";
+  dead.search = "";
+  return NextResponse.rewrite(dead);
 }
