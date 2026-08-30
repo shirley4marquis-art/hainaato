@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
 import { isAdminUser } from "./lib/supabase/roles";
+import { handleGeoBlock } from "./lib/geo-block";
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/api/admin/login"]);
 const CANONICAL_HOST = "hainautocn.com";
@@ -28,6 +29,9 @@ function hasValidInternalSecret(request: NextRequest): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  const geoBlocked = handleGeoBlock(request);
+  if (geoBlocked) return geoBlocked;
+
   const host = request.headers.get("host")?.split(":")[0]?.toLowerCase();
   if (host && REDIRECT_HOSTS.has(host)) {
     const url = request.nextUrl.clone();
