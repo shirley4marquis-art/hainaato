@@ -34,7 +34,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <header className={styles.nav}>
-        <Link className={styles.navBrand} href="/admin">
+        <Link className={styles.navBrand} href="/admin" aria-label="HainaAuto admin dashboard">
           <Image src="/hainaauto-logo.webp" alt="" width={31} height={31} className={styles.navBrandMark} />
           <span className={styles.navBrandText}>
             <b>HainaAuto</b>
@@ -53,7 +53,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <div className={styles.body}>{children}</div>
-      <div className={styles.bottomNav} role="navigation" aria-label="Admin navigation">
+      <nav className={styles.bottomNav} aria-label="Admin navigation">
         <div className={styles.bottomNavInner}>
           {LINKS.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href);
@@ -68,7 +68,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <Plus size={28} />
           </Link>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

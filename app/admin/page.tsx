@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, FileText, Truck, Wallet, Inbox } from "lucide-react";
+import { ArrowRight, DatabaseZap, FileText, Inbox, Plus, Truck, Users, Wallet } from "lucide-react";
 import { AdminShell } from "./admin-shell";
 import { adminListQuotes } from "../../lib/crm";
 import { ACTIVE_ORDER_STATUSES, STATUS_META, STATUS_ORDER, quoteStatusMeta } from "./status";
@@ -26,7 +26,11 @@ export default async function AdminDashboard() {
   return (
     <AdminShell>
       <div className={styles.pageHeading}>
-        <h1>Dashboard</h1>
+        <div>
+          <span className={styles.eyebrow}>Operations center</span>
+          <h1>Good to see you</h1>
+          <p>Keep quotes, orders, clients, and inventory moving from one place.</p>
+        </div>
         <Link className={styles.btn} href="/admin/quotes/new">
           <Plus size={14} /> New quote
         </Link>
@@ -62,9 +66,32 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
+      <section className={styles.quickActions} aria-label="Quick actions">
+        <Link href="/admin/quotes/new">
+          <span className={`${styles.quickActionIcon} ${styles.statIconBlue}`}><FileText size={17} /></span>
+          <span><b>Create a quote</b><small>Start a new customer proposal</small></span>
+          <ArrowRight size={16} />
+        </Link>
+        <Link href="/admin/quotes">
+          <span className={`${styles.quickActionIcon} ${styles.statIconGreen}`}><Truck size={17} /></span>
+          <span><b>Manage orders</b><small>{activeOrders} active order{activeOrders === 1 ? "" : "s"} in progress</small></span>
+          <ArrowRight size={16} />
+        </Link>
+        <Link href="/admin/clients">
+          <span className={`${styles.quickActionIcon} ${styles.statIconAmber}`}><Users size={17} /></span>
+          <span><b>Review clients</b><small>Open your customer records</small></span>
+          <ArrowRight size={16} />
+        </Link>
+        <Link href="/admin/imports">
+          <span className={styles.quickActionIcon}><DatabaseZap size={17} /></span>
+          <span><b>Review imports</b><small>Approve inventory candidates</small></span>
+          <ArrowRight size={16} />
+        </Link>
+      </section>
+
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>By status</h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <h2 className={styles.sectionTitle}>Pipeline by status</h2>
+        <div className={styles.statusSummary}>
           {STATUS_ORDER.map((key) => {
             const meta = STATUS_META[key];
             const Icon = meta.icon;
@@ -78,8 +105,8 @@ export default async function AdminDashboard() {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.pageHeading} style={{ marginBottom: 12 }}>
-          <h2 style={{ fontSize: 15, margin: 0 }}>Recent orders</h2>
+        <div className={styles.sectionHeading}>
+          <div><span className={styles.eyebrow}>Latest activity</span><h2>Recent orders</h2></div>
           <Link className={styles.btnGhost} href="/admin/quotes">View all</Link>
         </div>
         {recent.length === 0 ? (
@@ -88,6 +115,7 @@ export default async function AdminDashboard() {
             <p style={{ margin: 0 }}>No orders yet.</p>
           </div>
         ) : (
+          <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr><th>Ref</th><th>Customer</th><th>Vehicle(s)</th><th>Status</th><th>Created</th></tr>
@@ -112,6 +140,7 @@ export default async function AdminDashboard() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </AdminShell>
