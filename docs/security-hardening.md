@@ -43,17 +43,16 @@ Generate secrets: `openssl rand -hex 32`.
 
 ## 1. Cloudflare onboarding & DNS cutover
 
-1. Create a Cloudflare account; **Add a site** → `hainaautochina.com`. Choose a
+1. Create a Cloudflare account; **Add a site** → `hainautocn.com`. Choose a
    plan (Pro or above unlocks the full managed WAF + Bot Management).
 2. In Cloudflare DNS, recreate the records that currently point at Vercel:
    - `CNAME  www   → cname.vercel-dns.com`  — **Proxied (orange cloud)**
    - `CNAME  @     → cname.vercel-dns.com`  (or Cloudflare flattening) — Proxied
 3. At the registrar, change the nameservers to the two Cloudflare assigns.
-4. In **Vercel → Domains**, keep both `hainaautochina.com` and
-   `www.hainaautochina.com` attached. Set the redirect to the `www` (or apex)
-   canonical host — match what `app/layout.tsx` / `sitemap.ts` use
-   (`https://www.hainaautochina.com`).
-5. Wait for `dig www.hainaautochina.com` to show Cloudflare IPs.
+4. In **Vercel → Domains**, keep `hainautocn.com` attached as the canonical
+   host — match what `app/layout.tsx` / `sitemap.ts` use
+   (`https://hainautocn.com`).
+5. Wait for `dig hainautocn.com` to show Cloudflare IPs.
 
 ---
 
@@ -167,7 +166,7 @@ Cloudflare → **Security**:
 
 ## 6. Turnstile (spec §4, §5)
 
-1. Cloudflare → **Turnstile** → *Add site* → hostname `hainaautochina.com`,
+1. Cloudflare → **Turnstile** → *Add site* → hostname `hainautocn.com`,
    widget mode *Managed*. Copy the **Site Key** and **Secret Key**.
 2. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` in Vercel,
    redeploy. The admin login form (`app/admin/login/turnstile.tsx`) then renders
@@ -254,15 +253,15 @@ Run against a Preview/staging deployment that is already behind Cloudflare.
 - [ ] `npm run build` succeeds; `npm run security:test-geo` passes.
 - [ ] `npm run build && npm run security:check-secrets` → no secrets in
       `.next/static`.
-- [ ] From a Mainland-China VPN: `https://www.hainaautochina.com/` → `403`.
-- [ ] Same VPN: `curl https://www.hainaautochina.com/api/quote-status?ref=EST0001`
+- [ ] From a Mainland-China VPN: `https://hainautocn.com/` → `403`.
+- [ ] Same VPN: `curl https://hainautocn.com/api/quote-status?ref=EST0001`
       → `403` (direct API blocked).
 - [ ] `curl https://<deployment>.vercel.app/` (no `x-edge-auth`) → `403`.
 - [ ] Add your office IP to `trusted_cn_ips` + `GEO_IP_ALLOWLIST`, retest from
       VPN with that IP → reachable. Remove afterwards.
 - [ ] HK / TW / a normal country → site loads normally, no challenge for a
       plain browser.
-- [ ] `curl -sI https://www.hainaautochina.com/` shows: `strict-transport-security`,
+- [ ] `curl -sI https://hainautocn.com/` shows: `strict-transport-security`,
       `content-security-policy` (or `-report-only`), `x-content-type-options: nosniff`,
       `referrer-policy`, `permissions-policy`, no `x-powered-by`.
 - [ ] `POST /api/admin/login` 6× with a bad password → `429` with `Retry-After`;

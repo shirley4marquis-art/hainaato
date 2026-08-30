@@ -32,8 +32,8 @@ import {
 import { convertFromCNY } from "../../../lib/currency";
 import { imagePath } from "../../../lib/format";
 import { fuelChoiceLabel } from "../../../lib/fuel-options";
-import { rankVehicleImages } from "../../../lib/image-ranking";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
+import { rankVehicleImages } from "../../../lib/image-ranking";
 
 // Was fully dynamic (re-rendered server-side on every single view, of
 // 15,000+ listings) despite depending on nothing per-visitor — currency
@@ -44,6 +44,8 @@ import { getVehicleBySlug } from "../../../lib/vehicle-details";
 // is run manually, not continuously) rather than the default of never
 // caching at all.
 export const revalidate = 3600;
+const SITE_URL = "https://hainautocn.com";
+const VEHICLE_FALLBACK_SHARE_IMAGE = `${SITE_URL}/images/hainaauto-vehicles-hero-full-hd.jpg`;
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -95,13 +97,12 @@ export async function generateMetadata({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
   const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
-  const shareDescription = `${vehicle.title} - ${usdCifPrice}. CIF includes vehicle, international ocean freight and marine insurance to the agreed destination port. Local destination charges not included.`;
-  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Vehículo disponible para importar desde China a Venezuela con inspección, documentación y logística de HainaAuto.`;
-  const primaryImage = rankVehicleImages(vehicle.images)[0];
-  const previewImage = primaryImage
-    ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://hainautocn.com").toString()
-    : "https://hainautocn.com/hainaauto-logo.webp";
-  const canonicalUrl = `https://hainautocn.com/vehicles/${encodeURIComponent(vehicle.slug)}`;
+  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. 中国汽车出口，车辆可从中国进口到委内瑞拉；HainaAuto ofrece inspección, documentación y logística.`;
+  const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
+  const heroFile = rankVehicleImages(vehicle.images)[0];
+  const shareImage = heroFile
+    ? new URL(imagePath(vehicle.site, vehicle.id, heroFile), SITE_URL).toString()
+    : VEHICLE_FALLBACK_SHARE_IMAGE;
   return {
     title: vehicle.title,
     description,
@@ -110,16 +111,17 @@ export async function generateMetadata({
       type: "website",
       siteName: "HainaAuto",
       locale: "zh_CN",
+      alternateLocale: ["es_VE"],
       url: canonicalUrl,
       title: vehicle.title,
-      description: shareDescription,
-      images: [{ url: previewImage, alt: vehicle.title }],
+      description,
+      images: [{ url: shareImage, alt: `${vehicle.title} — vehículo para exportación desde China` }],
     },
     twitter: {
       card: "summary_large_image",
       title: vehicle.title,
-      description: shareDescription,
-      images: [previewImage],
+      description,
+      images: [shareImage],
     },
     other: vehicle.priceCNY == null ? undefined : {
       "product:price:amount": String(Math.round(convertFromCNY(vehicle.priceCNY, "USD"))),

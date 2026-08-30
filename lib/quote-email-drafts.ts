@@ -83,6 +83,7 @@ function brandedEmail(params: {
   heading: string;
   preheader: string;
   paragraphs: string[];
+  steps?: { title: string; detail: string }[];
   facts?: { label: string; value: string | null | undefined }[];
   ctaLabel?: string;
   ctaUrl?: string;
@@ -98,6 +99,9 @@ function brandedEmail(params: {
     .join("");
   const cta = params.ctaLabel && params.ctaUrl
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px"><tr><td bgcolor="${CORAL}" style="background:${CORAL};border-radius:8px"><a href="${escapeHtml(params.ctaUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(params.ctaLabel)}</a></td><td width="10"></td><td style="border:1px solid #CBD5E1;border-radius:8px"><a href="${WHATSAPP_URL}" style="display:inline-block;padding:12px 18px;color:${NAVY};text-decoration:none;font-size:13px;font-weight:800">WhatsApp</a></td></tr></table>`
+    : "";
+  const steps = params.steps?.length
+    ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 0"><tr><td style="padding:0 0 10px;color:${NAVY};font-size:16px;font-weight:800">Your next steps</td></tr>${params.steps.map((step, index) => `<tr><td style="padding:0 0 10px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:10px"><tr><td width="44" valign="top" style="padding:14px 0 14px 14px"><span style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;background:${CORAL};color:#fff;font-size:12px;font-weight:800">${index + 1}</span></td><td valign="top" style="padding:13px 14px 13px 8px"><div style="color:${NAVY};font-size:14px;font-weight:800;line-height:1.4">${escapeHtml(step.title)}</div><div style="margin-top:3px;color:#5E6B7E;font-size:13px;line-height:1.55">${escapeHtml(step.detail)}</div></td></tr></table></td></tr>`).join("")}</table>`
     : "";
 
   return `<!doctype html>
@@ -122,6 +126,7 @@ function brandedEmail(params: {
           <h1 style="margin:18px 0 10px;font-size:25px;line-height:1.25;color:${NAVY};letter-spacing:-.02em">${escapeHtml(params.heading)}</h1>
           <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#44536A">Hello ${escapeHtml(params.customerName)},</p>
           ${params.paragraphs.map(paragraph).join("")}
+          ${steps}
           ${factRows ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:12px;margin-top:20px"><tr><td style="padding:16px 20px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${factRows}</table></td></tr></table>` : ""}
           ${cta}
           <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:${NAVY}">HainaAuto Sales Team</b></p>
@@ -180,22 +185,29 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
       type,
       label: "Quotation follow-up",
       eyebrow: "After quote",
-      subject: `Following up on your HainaAuto quotation ${ref}`,
+      subject: `Your next steps for HainaAuto quotation ${ref}`,
       html: brandedEmail({
         customerName,
         docRef: ref,
         eyebrow: "Quotation follow-up",
-        heading: "Do you have any questions about your quotation?",
-        preheader: `Following up on Haina Auto quotation ${ref}.`,
+        heading: "Ready to move forward with your vehicle?",
+        preheader: `Review and complete the next steps for Haina Auto quotation ${ref}.`,
         paragraphs: [
-          "I wanted to follow up and make sure you received the quotation we prepared for you.",
-          "Please review the vehicle details, CIF price, destination port and payment terms. If you would like any adjustment, such as quantity, color, configuration or destination port, reply to this email and our team will revise the quotation for you.",
+          "We hope you received the quotation prepared for you. To secure your selected vehicle and keep the export process moving, please follow the steps below.",
+        ],
+        steps: [
+          { title: "Review and confirm the quotation", detail: "Check the vehicle, quantity, CIF price, destination port and payment terms. Reply with approval or the changes you need." },
+          { title: "Send your buyer details", detail: "Provide the buyer name, address, telephone number and identification or company information needed for the sales contract." },
+          { title: "Review and sign the sales contract", detail: "We prepare the contract from your confirmed quotation. Check the details, sign it and return a copy to our sales team." },
+          { title: `Complete the ${quote.depositPct}% initial payment`, detail: "The deposit confirms the order so we can secure the unit and begin inspection, preparation and export documentation." },
+          { title: "Approve inspection and shipping updates", detail: "Review the condition report and shipping documents we send, then confirm that we may proceed with the agreed booking." },
+          { title: `Complete the remaining ${100 - quote.depositPct}% balance`, detail: "Pay the balance after shipment and before vehicle release, then work with your customs broker on destination clearance, registration and local charges." },
         ],
         facts: quoteFacts,
-        ctaLabel: "Reply to sales team",
-        ctaUrl: `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(`Quotation ${ref}`)}`,
+        ctaLabel: "Approve or request changes",
+        ctaUrl: `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(`Approve or revise quotation ${ref}`)}`,
       }),
-      summary: "Friendly follow-up after the quotation has been sent.",
+      summary: "Action-led follow-up covering approval through final vehicle release.",
     };
   }
 

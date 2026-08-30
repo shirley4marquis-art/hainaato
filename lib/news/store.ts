@@ -72,21 +72,31 @@ async function writeJson(file: string, value: unknown): Promise<void> {
 }
 
 export async function listLatestNews(limit = 40): Promise<NewsArticle[]> {
-  await ensureDb();
   if (hasDatabase()) {
-    const { rows } = await getPool().query(
-      "SELECT id, source, title, link, image, published_at, fetched_at FROM news_articles ORDER BY published_at DESC LIMIT $1",
-      [limit]
-    );
-    return rows.map((row) => ({
-      id: row.id,
-      source: row.source,
-      title: row.title,
-      link: row.link,
-      image: row.image,
-      published_at: new Date(row.published_at).toISOString(),
-      fetched_at: new Date(row.fetched_at).toISOString(),
-    }));
+    try {
+      await ensureDb();
+      const { rows } = await getPool().query(
+        "SELECT id, source, title, link, image, published_at, fetched_at FROM news_articles ORDER BY published_at DESC LIMIT $1",
+        [limit]
+      );
+      return rows.map((row) => ({
+        id: row.id,
+        source: row.source,
+        title: row.title,
+        link: row.link,
+        image: row.image,
+        published_at: new Date(row.published_at).toISOString(),
+        fetched_at: new Date(row.fetched_at).toISOString(),
+      }));
+    } catch (error) {
+      // Public news should remain available during local credential issues or
+      // a temporary database outage. Mutation paths intentionally still fail
+      // loudly so refresh jobs cannot appear successful when persistence fails.
+      console.warn(
+        "News database read failed; using the local news fallback.",
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   }
   const current = await readJson<NewsArticle[]>(articlesPath, []);
   return [...current].sort((a, b) => Date.parse(b.published_at) - Date.parse(a.published_at)).slice(0, limit);
