@@ -6,7 +6,7 @@ This guide is the operating procedure for HainaAuto's Venezuelan Meta catalogue.
 
 ## 1. Use the correct feed
 
-- Public feed URL: `https://www.hainaautochina.com/meta-catalog-venezuela.csv`
+- Public feed URL: `https://hainautocn.com/meta-catalog-venezuela.csv`
 - Generator: `scripts/build-venezuela-meta-catalog.mjs`
 - Build command: `npm run data:catalog-feed:venezuela`
 - Current size: 1,000 available vehicles
@@ -96,7 +96,7 @@ Meta changes menu wording periodically, but the workflow remains Catalogue → D
 2. Confirm the catalogue belongs to the correct business portfolio and that the operator has full control.
 3. Open **Data sources** or **Data sources → Data feeds**.
 4. Choose **Add items**, **Data feed**, and **Use a URL** or **Scheduled feed**.
-5. Enter `https://www.hainaautochina.com/meta-catalog-venezuela.csv`.
+5. Enter `https://hainautocn.com/meta-catalog-venezuela.csv`.
 6. No username or password is required.
 7. Choose a daily schedule after the site's inventory deployment window. Recommended: 04:00 Venezuela time.
 8. Set the default currency to USD if Meta asks. Do not convert the feed to VES; vehicle pricing and campaigns use USD.

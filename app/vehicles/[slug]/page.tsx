@@ -99,9 +99,9 @@ export async function generateMetadata({
   const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Vehículo disponible para importar desde China a Venezuela con inspección, documentación y logística de HainaAuto.`;
   const primaryImage = rankVehicleImages(vehicle.images)[0];
   const previewImage = primaryImage
-    ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://www.hainaautochina.com").toString()
-    : "https://www.hainaautochina.com/hainaauto-logo.webp";
-  const canonicalUrl = `https://www.hainaautochina.com/vehicles/${encodeURIComponent(vehicle.slug)}`;
+    ? new URL(imagePath(vehicle.site, vehicle.id, primaryImage), "https://hainautocn.com").toString()
+    : "https://hainautocn.com/hainaauto-logo.webp";
+  const canonicalUrl = `https://hainautocn.com/vehicles/${encodeURIComponent(vehicle.slug)}`;
   return {
     title: vehicle.title,
     description,
@@ -347,7 +347,7 @@ export default async function VehicleDetail({
             </span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-            <a href="mailto:sales@hainaautochina.com">sales@hainaautochina.com</a>
+            <a href="mailto:sales@hainautocn.com">sales@hainautocn.com</a>
             <p>We typically respond within 24 hours.</p>
           </div>
           <div className="side-card">

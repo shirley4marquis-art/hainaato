@@ -6,6 +6,7 @@ import styles from "./admin.module.css";
 import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } from "../../lib/crm";
 import { FUEL_OPTIONS } from "../../lib/fuel-options";
 import { CUSTOM_COLOR_SURCHARGE_USD } from "../../lib/vehicle-customization";
+import { QUOTE_LANGUAGE_OPTIONS, type QuoteLanguage } from "../../lib/quote-language";
 import { STATUS_ORDER, quoteStatusMeta, quoteStatusProgress } from "./status";
 
 type ItemDraft = AdminQuoteItemInput & { key: string };
@@ -75,7 +76,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     depositPct: initial?.depositPct ?? 40,
     dutyPct: initial?.dutyPct ?? ("" as number | ""),
     currency: initial?.currency ?? "USD",
-    language: initial?.language ?? "en",
+    language: initial?.language ?? "en" as QuoteLanguage,
     status: initial?.status ?? "quoted",
     notes: initial?.notes ?? "",
     publicConsent: initial?.publicConsent ?? false,
@@ -265,7 +266,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     <div className={styles.form}>
       {!initial && <div className={styles.intakePanel}>
         <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste client inquiry</h2><p>Paste an email, WhatsApp message, or enquiry containing client details and HainaAuto vehicle links.</p></div></div>
-        <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://www.hainaautochina.com/vehicles/vehicle-slug"}/>
+        <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://hainautocn.com/vehicles/vehicle-slug"}/>
         <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={detectPastedInquiry} disabled={detecting || !pasteText.trim()}><WandSparkles size={14}/>{detecting ? "Detecting details…" : "Detect and fill quotation"}</button><small>Nothing is saved until you review and click Create quote.</small></div>
         {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
       </div>}
@@ -275,6 +276,11 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
           <label>Full name *<input value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} /></label>
           <label>Phone / WhatsApp<input value={customer.phone ?? ""} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} /></label>
           <label>Email<input type="email" value={customer.email ?? ""} onChange={(e) => setCustomer({ ...customer, email: e.target.value })} /></label>
+          <label>Client language *
+            <select value={quote.language} onChange={(e) => setQuote({ ...quote, language: e.target.value as QuoteLanguage })}>
+              {QUOTE_LANGUAGE_OPTIONS.map(({value,label}) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
           <label className={styles.wide}>Address<input value={customer.address ?? ""} onChange={(e) => setCustomer({ ...customer, address: e.target.value })} /></label>
           <label>City<input value={customer.city ?? ""} onChange={(e) => setCustomer({ ...customer, city: e.target.value })} /></label>
           <label>Country<input value={customer.country ?? ""} onChange={(e) => setCustomer({ ...customer, country: e.target.value })} /></label>
@@ -329,11 +335,6 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <option value="USD">USD</option><option value="CNY">CNY</option><option value="EUR">EUR</option>
             </select>
           </label>
-          <label>Document language
-            <select value={quote.language} onChange={(e) => setQuote({ ...quote, language: e.target.value as "en" | "es" })}>
-              <option value="en">English</option><option value="es">Español</option>
-            </select>
-          </label>
           <label>Inland transport<input type="number" step="0.01" value={quote.inlandTransportCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, inlandTransportCost: num(e.target.value) })} /></label>
           <label>Export documentation<input type="number" step="0.01" value={quote.exportDocumentationCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, exportDocumentationCost: num(e.target.value) })} /></label>
           <label>Freight<input type="number" step="0.01" value={quote.freightCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, freightCost: num(e.target.value) })} /></label>
@@ -362,7 +363,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
         <h2 className={styles.sectionTitle}><Car size={14} /> Vehicles</h2>
         {initial && <div className={styles.intakePanel}>
           <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste vehicle link</h2><p>Add another catalogue vehicle to this existing quote. Details, photos, fuel and USD price fill automatically.</p></div></div>
-          <textarea rows={3} value={vehiclePasteText} onChange={(event) => setVehiclePasteText(event.target.value)} placeholder="https://www.hainaautochina.com/vehicles/vehicle-slug"/>
+          <textarea rows={3} value={vehiclePasteText} onChange={(event) => setVehiclePasteText(event.target.value)} placeholder="https://hainautocn.com/vehicles/vehicle-slug"/>
           <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={appendPastedVehicles} disabled={detecting || !vehiclePasteText.trim()}><ClipboardPaste size={14}/>{detecting ? "Adding vehicle…" : "Add pasted vehicle"}</button><small>Nothing is saved until you click Save changes.</small></div>
           {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
         </div>}
@@ -402,7 +403,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>Original unit price *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>
               <label>Discount<input type="number" step="0.01" value={item.discount ?? 0} onChange={(e) => updateItem(item.key, { discount: num(e.target.value) })} /></label>
               <label>Final unit price ({isCif ? "CIF" : "FOB"} used) *<input type="number" step="0.01" value={item.fobFinal} onChange={(e) => updateItem(item.key, { fobFinal: num(e.target.value) })} /></label>
-              <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://www.hainaautochina.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
+              <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://hainautocn.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
               <label className={styles.wide}>Spec summary (shown on the printed quote)
                 <textarea rows={2} placeholder="e.g. SUV grande de chasis independiente · V6 híbrido biturbo 3.4L…" value={item.specSummary ?? ""} onChange={(e) => updateItem(item.key, { specSummary: e.target.value })} />
               </label>

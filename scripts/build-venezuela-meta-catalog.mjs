@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const indexPath = path.join(root, "data", "vehicles-index.json");
 const outPath = path.join(root, "public", "meta-catalog-venezuela.csv");
-const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://www.hainaautochina.com";
+const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
 const USD_PER_CNY = 0.139;
 const TOTAL_CAP = 1000;
 const PER_TRIM_CAP = 24;

@@ -108,7 +108,7 @@ async function downloadImages(listing, id) {
     const file = `${String(index + 1).padStart(2, "0")}.webp`;
     const output = path.join(imageDir, file);
     if (!fs.existsSync(output)) {
-      const response = await fetch(url, { headers: { "user-agent": "HainaAutoImporter/1.0 (+https://www.hainaautochina.com)" } });
+      const response = await fetch(url, { headers: { "user-agent": "HainaAutoImporter/1.0 (+https://hainautocn.com)" } });
       if (!response.ok) continue;
       const buffer = Buffer.from(await response.arrayBuffer());
       await sharp(buffer).rotate().resize({ width: 1400, height: 1050, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 }).toFile(output);

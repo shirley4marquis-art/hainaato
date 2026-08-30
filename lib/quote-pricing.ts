@@ -1,6 +1,8 @@
 // Optional fallback figures for explicitly FOB quotes only. HAINA AUTO's
 // normal website/admin quotations default to CIF, where the entered unit price
 // already includes vehicle, international ocean freight and marine insurance.
+import type { QuoteLanguage } from "./quote-language";
+
 export const DEFAULT_RATES_PER_UNIT = {
   inlandTransportCost: 120,
   exportDocumentationCost: 180,
@@ -23,6 +25,6 @@ const SPANISH_SPEAKING_COUNTRIES = new Set(
   ].map((c) => c.toLowerCase())
 );
 
-export function languageForCountry(country: string): "en" | "es" {
+export function languageForCountry(country: string): QuoteLanguage {
   return SPANISH_SPEAKING_COUNTRIES.has(country.trim().toLowerCase()) ? "es" : "en";
 }

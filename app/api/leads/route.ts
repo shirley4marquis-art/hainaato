@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveLead, type WebLead } from "../../../lib/crm";
 import { sendLeadNotification } from "../../../lib/email";
+import { normalizeQuoteLanguage } from "../../../lib/quote-language";
 
 function str(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
     destination: str(b.destination) ?? null,
     quantity: num(b.quantity) ?? null,
     message: str(b.message) ?? null,
+    language: b.language == null ? undefined : normalizeQuoteLanguage(b.language),
     // Explicit boolean check — anything other than a literal true (missing,
     // undefined, "true" as a string, etc.) is treated as no consent given.
     publicConsent: b.publicConsent === true,

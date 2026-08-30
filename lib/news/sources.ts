@@ -6,4 +6,4 @@ export const NEWS_SOURCES = [
   { name: "CnEVPost", feedUrl: "https://cnevpost.com/feed/" },
 ] as const;
 
-export const NEWS_USER_AGENT = "HainaAutoNewsBot/1.0 (+https://www.hainaautochina.com; news-syndication)";
+export const NEWS_USER_AGENT = "HainaAutoNewsBot/1.0 (+https://hainautocn.com; news-syndication)";

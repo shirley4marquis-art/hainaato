@@ -22,11 +22,11 @@ const shardsDir = path.join(root, "data", "vehicle-detail-shards");
 const outPath = path.join(root, "public", "meta-catalog-feed.csv");
 
 // Must be the exact host that returns 200 directly — no redirect. The bare
-// domain (hainaautochina.com, no "www") 308-redirects to the www subdomain,
+// domain (hainautocn.com, no "www") 308-redirects to the www subdomain,
 // and Meta's catalog crawler doesn't follow redirects on image_link/
 // additional_image_link, so every image URL built from the bare domain
 // silently fails ingestion. Confirmed by curl: bare domain -> 308, www -> 200.
-const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://www.hainaautochina.com";
+const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
 // Meta's product feed spec caps additional_image_link at 10 URLs (11 photos
 // total per listing including image_link) — this is that ceiling, not an
 // arbitrary trim.

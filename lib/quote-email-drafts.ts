@@ -44,7 +44,7 @@ export type QuoteEmailDraft = {
 };
 
 const EMAIL_LOGO_CID = "hainaauto-logo";
-const SALES_EMAIL = "sales@hainaautochina.com";
+const SALES_EMAIL = "sales@hainautocn.com";
 const WHATSAPP_URL = "https://wa.me/8615032178759";
 
 function escapeHtml(value: string): string {
@@ -130,7 +130,7 @@ function brandedEmail(params: {
       <tr>
         <td style="padding:20px 30px 28px"><div style="height:1px;background:#E3E8EF;margin-bottom:18px"></div><div style="font-size:11px;color:#7B879A;line-height:1.7">
           <b style="color:${NAVY}">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
-          <a href="mailto:${SALES_EMAIL}" style="color:${NAVY}">${SALES_EMAIL}</a> · <a href="https://www.hainaautochina.com" style="color:${NAVY}">hainaautochina.com</a>
+          <a href="mailto:${SALES_EMAIL}" style="color:${NAVY}">${SALES_EMAIL}</a> · <a href="https://hainautocn.com" style="color:${NAVY}">hainautocn.com</a>
         </div></td>
       </tr>
     </table>
@@ -161,6 +161,7 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
       ref: quote.ref,
       documentNumber: quote.documentNumber,
       vehicleSummary: vehicles,
+      language: quote.language,
     });
     return {
       type,

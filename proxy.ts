@@ -11,6 +11,8 @@ import { updateSession } from "./lib/supabase/middleware";
 import { isAdminUser } from "./lib/supabase/roles";
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/api/admin/login"]);
+const CANONICAL_HOST = "hainautocn.com";
+const REDIRECT_HOSTS = new Set(["www.hainautocn.com", "hainaautochina.com", "www.hainaautochina.com"]);
 
 // One quote's print page, reached with no staff session by
 // lib/render-quote-pdf.ts's "internal-secret" mode — the automated
@@ -26,6 +28,14 @@ function hasValidInternalSecret(request: NextRequest): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  const host = request.headers.get("host")?.split(":")[0]?.toLowerCase();
+  if (host && REDIRECT_HOSTS.has(host)) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.hostname = CANONICAL_HOST;
+    return NextResponse.redirect(url, 308);
+  }
+
   const { pathname } = request.nextUrl;
   const requestedLocale = request.nextUrl.searchParams.get("lang")?.toLowerCase();
   const isVenezuelanVisit = request.headers.get("x-vercel-ip-country") === "VE";

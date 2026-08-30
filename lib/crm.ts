@@ -6,6 +6,7 @@
 // one database. See supabase/crm-schema.sql for the schema this talks to.
 import { Pool, type PoolClient, types } from "pg";
 import { quoteNationalizationCifValue, quotePriceType } from "./quote-document";
+import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
 
 // pg's default DATE parser builds a JS Date at local-timezone midnight, then
 // call sites convert back to a "YYYY-MM-DD" string via toISOString() — for
@@ -88,15 +89,16 @@ async function recalc(client: PoolClient, ref: string): Promise<void> {
 
 async function createQuote(
   client: PoolClient,
-  q: { customerId: number; destinationPort: string; destinationCountry: string; notes?: string | null; status?: string; publicConsent?: boolean }
+  q: { customerId: number; destinationPort: string; destinationCountry: string; language?: QuoteLanguage; notes?: string | null; status?: string; publicConsent?: boolean }
 ): Promise<string> {
   const ref = await nextRef(client);
+  const language = normalizeQuoteLanguage(q.language);
   await client.query(
     `INSERT INTO quotes
       (ref, customer_id, destination_port, destination_country, shipping_mode,
        container_note, freight_cost, insurance_cost, deposit_pct, duty_pct, duty_estimate_override,
-       currency, status, notes, public_consent)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+       currency, language, status, notes, public_consent)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
     [
       ref,
       q.customerId,
@@ -110,6 +112,7 @@ async function createQuote(
       null,
       null,
       "USD",
+      language,
       q.status ?? "quoted",
       q.notes ?? null,
       q.publicConsent === true,
@@ -152,6 +155,7 @@ export type WebLead = {
   destination?: string | null;
   quantity?: number | null;
   message?: string | null;
+  language?: QuoteLanguage;
   source: string;
   // Explicit opt-in only — never inferred, never defaulted to true. Controls
   // whether this specific quote's anonymized status can appear in
@@ -178,7 +182,7 @@ export async function saveLead(lead: WebLead): Promise<string> {
       notes: lead.company ? `Company: ${lead.company}` : null,
     });
     const summaryLines = [
-      `Web lead via ${lead.source} (hainaautochina.com)`,
+      `Web lead via ${lead.source} (hainautocn.com)`,
       lead.vehicle ? `Vehicle: ${lead.vehicle}` : null,
       lead.budget ? `Budget: ${lead.budget}` : null,
       lead.quantity ? `Quantity: ${lead.quantity}` : null,
@@ -187,6 +191,7 @@ export async function saveLead(lead: WebLead): Promise<string> {
       customerId: customer.id as number,
       destinationPort: lead.destination || "Not specified",
       destinationCountry: lead.destination || "Not specified",
+      language: lead.language,
       notes: summaryLines.join(" · "),
       status: "quoted",
       publicConsent: lead.publicConsent === true,
@@ -314,7 +319,7 @@ export type AdminQuoteInput = {
   dutyPct?: number | null;
   dutyEstimateOverride?: number | null;
   currency?: string;
-  language?: "en" | "es";
+  language?: QuoteLanguage;
   status?: string;
   notes?: string | null;
   publicConsent?: boolean;
@@ -379,6 +384,8 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
     const freightCost = isFob ? input.freightCost ?? 0 : 0;
     const insuranceCost = isFob ? input.insuranceCost ?? 0 : 0;
 
+    const language = normalizeQuoteLanguage(input.language);
+
     if (isNew) {
       await client.query(
         `INSERT INTO quotes
@@ -405,7 +412,7 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           input.dutyPct ?? null,
           input.dutyEstimateOverride ?? null,
           input.currency ?? "USD",
-          input.language ?? "en",
+          language,
           input.status ?? "quoted",
           input.notes ?? null,
           input.publicConsent === true,
@@ -438,7 +445,7 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
           input.dutyPct ?? null,
           input.dutyEstimateOverride ?? null,
           input.currency ?? "USD",
-          input.language ?? "en",
+          language,
           input.status ?? "quoted",
           input.notes ?? null,
           input.publicConsent === true,

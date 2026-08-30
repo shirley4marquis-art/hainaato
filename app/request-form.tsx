@@ -6,11 +6,13 @@ import {clearCart} from "./cart-store";
 import {DestinationPortFields} from "./destination-port-fields";
 import {FUEL_OPTIONS} from "../lib/fuel-options";
 import {CUSTOM_COLOR_SURCHARGE_USD,supportsCustomColor} from "../lib/vehicle-customization";
+import {QUOTE_LANGUAGE_OPTIONS,normalizeQuoteLanguage} from "../lib/quote-language";
 
 type Status="idle"|"sending"|"sent"|"error";
 
 function field(data:FormData,key:string):string|undefined{const v=data.get(key);return typeof v==="string"&&v.trim()?v.trim():undefined}
 function checked(data:FormData,key:string):boolean{return data.get(key)==="on"}
+function quoteLanguage(data:FormData){return normalizeQuoteLanguage(field(data,"language"))}
 
 const CONSENT_LABEL="Allow an anonymized status update (reference, destination and status only — never your name or contact details) to appear in the shipment updates ticker on this site.";
 export function RequestForm({kind}:{kind:"quote"|"contact"|"dealer"}){
@@ -23,12 +25,12 @@ export function RequestForm({kind}:{kind:"quote"|"contact"|"dealer"}){
     const form=event.currentTarget;
     const data=new FormData(form);
     setState("sending");setError(null);
-    const result=await submitLead({name:field(data,"name"),email:field(data,"email"),phone:field(data,"phone"),company:field(data,"company"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),source:`request-form:${kind}`});
+    const result=await submitLead({name:field(data,"name"),email:field(data,"email"),phone:field(data,"phone"),company:field(data,"company"),language:kind==="quote"?quoteLanguage(data):undefined,message:field(data,"message"),publicConsent:checked(data,"publicConsent"),source:`request-form:${kind}`});
     if(result.ok){setRef(result.ref);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
   }
   const labels={quote:"Request a vehicle quotation",contact:"Send a message",dealer:"Apply for the dealer programme"};
-  return <form className="request-form" onSubmit={submit} aria-busy={state==="sending"}><h2>{labels[kind]}</h2><div className="form-grid"><label htmlFor={`${kind}-name`}>Full name *</label><input id={`${kind}-name`} name="name" required autoComplete="name"/><label htmlFor={`${kind}-email`}>Email *</label><input id={`${kind}-email`} name="email" type="email" required autoComplete="email"/><label htmlFor={`${kind}-phone`}>Phone / WhatsApp *</label><input id={`${kind}-phone`} name="phone" required autoComplete="tel"/><label htmlFor={`${kind}-company`}>Company</label><input id={`${kind}-company`} name="company" autoComplete="organization"/><label className="wide" htmlFor={`${kind}-message`}>{kind==="quote"?"Vehicle, stock code and destination":"How can we help?"} *</label><textarea className="wide" id={`${kind}-message`} name="message" required rows={6}/><label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id={`${kind}-consent`}/> {CONSENT_LABEL}</label></div><button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Sending…":"Submit request"}</button><div role="status" aria-live="polite">{state==="sent"&&<p className="success">Thank you. Your request has been recorded for follow-up{ref?` (reference ${ref})`:""}.</p>}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div></form>
+  return <form className="request-form" onSubmit={submit} aria-busy={state==="sending"}><h2>{labels[kind]}</h2><div className="form-grid"><label htmlFor={`${kind}-name`}>Full name *</label><input id={`${kind}-name`} name="name" required autoComplete="name"/><label htmlFor={`${kind}-email`}>Email *</label><input id={`${kind}-email`} name="email" type="email" required autoComplete="email"/>{kind==="quote"&&<><label htmlFor={`${kind}-language`}>Preferred quotation language *</label><select id={`${kind}-language`} name="language" defaultValue="" required><option value="" disabled>Select language</option>{QUOTE_LANGUAGE_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}</select></>}<label htmlFor={`${kind}-phone`}>Phone / WhatsApp *</label><input id={`${kind}-phone`} name="phone" required autoComplete="tel"/><label htmlFor={`${kind}-company`}>Company</label><input id={`${kind}-company`} name="company" autoComplete="organization"/><label className="wide" htmlFor={`${kind}-message`}>{kind==="quote"?"Vehicle, stock code and destination":"How can we help?"} *</label><textarea className="wide" id={`${kind}-message`} name="message" required rows={6}/><label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id={`${kind}-consent`}/> {CONSENT_LABEL}</label></div><button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Sending…":"Submit request"}</button><div role="status" aria-live="polite">{state==="sent"&&<p className="success">Thank you. Your request has been recorded for follow-up{ref?` (reference ${ref})`:""}.</p>}{state==="error"&&<p className="form-error" role="alert">{error}</p>}</div></form>
 }
 
 export function HomeRequestForm(){
@@ -65,7 +67,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
     setState("sending");setError(null);
     const email=field(data,"email")??"";
     const fuelPreference=field(data,"fuelPreference") ?? "Diesel";
-    const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference,customColor:canCustomizeColor&&checked(data,"customColor"),customColorName:field(data,"customColorName")}]});
+    const result=await submitQuoteRequest({name:field(data,"name"),email,phone:field(data,"whatsapp"),country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),language:quoteLanguage(data),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference,customColor:canCustomizeColor&&checked(data,"customColor"),customColorName:field(data,"customColorName")}]});
     if(result.ok){setRef(result.documentNumber||result.ref);setQuoteRef(result.ref);setEmailSent(result.emailSent);setSubmittedEmail(email);setCustomColor(false);setState("sent");form.reset()}
     else{setError(result.error);setState("error")}
   }
@@ -84,6 +86,11 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,bodyType}:{vehicleS
     <div className="form-grid">
       <label htmlFor="rv-email">Email *</label>
       <input id="rv-email" name="email" type="email" required autoComplete="email"/>
+      <label htmlFor="rv-language">Preferred quotation language *</label>
+      <select id="rv-language" name="language" defaultValue="" required>
+        <option value="" disabled>Select language</option>
+        {QUOTE_LANGUAGE_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+      </select>
       <DestinationPortFields countryName="destination" idPrefix="rv"/>
     </div>
     <details className="quote-form-optional">
@@ -149,6 +156,7 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
       country:field(data,"country"),
       cityState:field(data,"cityState"),
       destinationPort:field(data,"destinationPort"),
+      language:quoteLanguage(data),
       message:field(data,"message"),
       publicConsent:checked(data,"publicConsent"),
       vehicles:vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug),fuelPreference:fuelFor(v.slug),customColor:supportsCustomColor(v.bodyType)&&customColorFor(v.slug),customColorName:customColorNames[v.slug]})),
@@ -188,6 +196,11 @@ export function CartRequestForm({vehicles,onSubmitted}:{vehicles:{slug:string;ti
       </div>
       <label htmlFor="cr-name">Full name *</label><input id="cr-name" name="name" required autoComplete="name"/>
       <label htmlFor="cr-email">Email *</label><input id="cr-email" name="email" type="email" required autoComplete="email"/>
+      <label htmlFor="cr-language">Preferred quotation language *</label>
+      <select id="cr-language" name="language" defaultValue="" required>
+        <option value="" disabled>Select language</option>
+        {QUOTE_LANGUAGE_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+      </select>
       <label htmlFor="cr-whatsapp">Phone / WhatsApp *</label><input id="cr-whatsapp" name="whatsapp" type="tel" placeholder="+..." required autoComplete="tel"/>
       <DestinationPortFields idPrefix="cr"/>
       <label htmlFor="cr-cityState">City / State</label><input id="cr-cityState" name="cityState" autoComplete="address-level2"/>

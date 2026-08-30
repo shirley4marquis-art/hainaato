@@ -19,6 +19,7 @@ import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
 import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
 import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
+import { normalizeQuoteLanguage } from "../../../lib/quote-language";
 import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
@@ -126,6 +127,7 @@ export async function POST(request: NextRequest) {
   const country = str(b.country);
   const cityState = str(b.cityState);
   const destinationPort = str(b.destinationPort);
+  const selectedLanguage = b.language;
   const message = str(b.message);
   const publicConsent = b.publicConsent === true;
   const requestedVehicles = parseVehicles(b.vehicles);
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const language = languageForCountry(country);
+  const language = normalizeQuoteLanguage(selectedLanguage, languageForCountry(country));
 
   let ref: string;
   try {
@@ -219,6 +221,7 @@ export async function POST(request: NextRequest) {
     ref,
     documentNumber: quote?.documentNumber ?? null,
     vehicleSummary,
+    language,
   });
 
   const sendResult = await sendEmail({
