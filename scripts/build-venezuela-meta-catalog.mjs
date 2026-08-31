@@ -299,7 +299,7 @@ function descriptionFor(v, brand) {
 
 function productTypeFor(v, brand, category) {
   const type = bodyType(v);
-  return `Vehículos > ${category} > ${specificSegment(v, type)} > ${brand} > ${cleanTrimLabel(v, brand)} > ${fuelClass(v)} > ${driveClass(v)}`;
+  return `Vehículos > ${category} > ${specificSegment(v, type)} > ${brand} > ${cleanTrimLabel(v, brand)} > ${fuelClass(v)} > ${driveClass(v)} > ${transmissionClass(v)}`.toLocaleUpperCase("es-VE");
 }
 
 function validateSelection(vehicles) {
@@ -374,11 +374,11 @@ for (const v of [...selected].sort(comparePriority)) {
     brand,
     additionalImages,
     productTypeFor(v, brand, category),
-    category,
-    specificSegment(v, type),
-    demandTier(v),
-    `${v.condition === "new" ? "Nuevo" : "Usado"} · Año ${v.year}`,
-    priceBand(priceUsd),
+    category.toLocaleUpperCase("es-VE"),
+    specificSegment(v, type).toLocaleUpperCase("es-VE"),
+    demandTier(v).toLocaleUpperCase("es-VE"),
+    `${v.condition === "new" ? "NUEVO" : "USADO"} · AÑO ${v.year}`,
+    priceBand(priceUsd).toLocaleUpperCase("es-VE"),
   ];
   validateRow(row);
   lines.push(row.map(csvField).join(","));
