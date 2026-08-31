@@ -12,10 +12,13 @@ const campaignName = process.argv[3] ?? process.env.META_CATALOG_CAMPAIGN ?? "ve
 const outPath = path.join(root, "public", outputName);
 const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
 const USD_PER_CNY = 0.139;
-const TOTAL_CAP = 1000;
 const PER_TRIM_CAP = 24;
+const YEAR_MIN = 2024;
+const YEAR_MAX = 2026;
+const CATEGORY_TARGETS = {pickup:180,suv:130,passenger:100,commercial:75,truck:60,heavy_duty:50,supercar:25,motorcycle:5,other:10};
 
 const brandAliases = new Map([
+  ["great", "Great Wall"],
   ["jietu", "Jetour"], ["remote", "Farizon"], ["nezha", "Neta"], ["nata", "Neta"],
   ["jike", "Zeekr"], ["jikrypton", "Zeekr"], ["extreme", "Zeekr"],
   ["panamera", "Porsche"], ["continental", "Bentley"], ["transit", "Ford"],
@@ -29,7 +32,7 @@ const approvedFallbackBrands = new Set([
 ]);
 
 const brandRules = [
-  ["Toyota", /hilux|fortuner|land cruiser|landcruiser|prado|corolla|yaris|rav4|highlander/i],
+  ["Toyota", /hilux|tundra|tacoma|fortuner|land cruiser|landcruiser|prado|corolla|yaris|rav4|highlander/i],
   ["Chevrolet", /silverado|tahoe|trailblazer|equinox|cruze|aveo|captiva/i],
   ["Ford", /ranger|explorer|edge|bronco|territory|f-150|maverick|everest/i],
   ["Hyundai", /tucson|santa fe|elantra|accent|creta|kona|palisade/i],
@@ -63,17 +66,6 @@ const categoryNames = {
   motorcycle: "Motocicletas",
   other: "Otros vehículos",
 };
-const categoryPriority = {
-  heavy_duty: "priority_01_heavy_duty_trucks",
-  truck: "priority_02_trucks",
-  pickup: "priority_03_pickups",
-  commercial: "priority_04_vans_buses",
-  suv: "priority_05_suvs",
-  passenger: "priority_06_passenger_cars",
-  supercar: "priority_07_specialty",
-  motorcycle: "priority_07_specialty",
-  other: "priority_07_specialty",
-};
 
 function bodyType(v) {
   const value = (v.bodyType ?? "").toLowerCase();
@@ -89,18 +81,59 @@ function bodyType(v) {
   return "other";
 }
 
-function yearBand(year) {
-  if (!year) return "year_unknown";
-  if (year >= 2025) return "year_2025_plus";
-  if (year >= 2023) return "year_2023_2024";
-  return "year_pre_2023";
+function priceBand(priceUsd) {
+  if (priceUsd < 6_000) return "Precio USD: menos de 6.000";
+  if (priceUsd < 9_000) return "Precio USD: 6.000 a 8.999";
+  if (priceUsd < 15_000) return "Precio USD: 9.000 a 14.999";
+  if (priceUsd < 25_000) return "Precio USD: 15.000 a 24.999";
+  if (priceUsd < 40_000) return "Precio USD: 25.000 a 39.999";
+  return "Precio USD: 40.000 o más";
 }
 
-function priceBand(priceUsd) {
-  if (priceUsd < 15_000) return "price_under_15000";
-  if (priceUsd < 25_000) return "price_15000_24999";
-  if (priceUsd < 40_000) return "price_25000_39999";
-  return "price_40000_plus";
+function fuelClass(v) {
+  const value = `${v.fuel ?? ""} ${v.title ?? ""}`.toLowerCase();
+  if (/plug-in|phev/.test(value)) return "Híbrido enchufable";
+  if (/hybrid|hibrid|range[- ]extended|range extender/.test(value)) return "Híbrido";
+  if (/electric|\bev\b/.test(value)) return "Eléctrico";
+  if (/diesel/.test(value)) return "Diésel";
+  if (/gasoline|petrol|gasolina/.test(value)) return "Gasolina";
+  if (/natural gas|\blng\b|\bcng\b/.test(value)) return "Gas natural";
+  return "Combustible por confirmar";
+}
+
+function transmissionClass(v) {
+  const value = `${v.transmission ?? ""} ${v.title ?? ""}`.toLowerCase();
+  if (/manual/.test(value) && !/automatic/.test(value)) return "Transmisión manual";
+  if (/automatic|automatica|cvt|dct|dual-clutch|single-speed/.test(value)) return "Transmisión automática";
+  return "Transmisión por confirmar";
+}
+
+function driveClass(v) {
+  const value = `${v.title ?? ""} ${v.model ?? ""}`.toLowerCase();
+  if (/4\s*[x×]\s*4|\b4wd\b/.test(value)) return "Tracción 4x4";
+  if (/\bawd\b/.test(value)) return "Tracción integral AWD";
+  if (/4\s*[x×]\s*2|\b2wd\b/.test(value)) return "Tracción 4x2";
+  return "Tracción por confirmar";
+}
+
+function specificSegment(v, type) {
+  const value = `${v.bodyType ?? ""} ${v.title ?? ""}`.toLowerCase();
+  if (type === "pickup") return /hilux|ranger|frontier|navara|t8|t9|hunter|d-max/.test(value) ? "Pickup mediana" : /f-?150|silverado|ram 1500/.test(value) ? "Pickup grande" : "Pickup utilitaria";
+  if (type === "suv") return /land cruiser|prado|fortuner|patrol|tahoe|palisade/.test(value) ? "SUV 4x4 grande" : /rav4|cr-v|tucson|sportage|tiggo 7|coolray|x70/.test(value) ? "SUV familiar" : "SUV compacta o mediana";
+  if (type === "passenger") return /hatchback/.test(value) ? "Hatchback económico" : /sedan|corolla|civic|sentra|sylphy|elantra|emgrand/.test(value) ? "Sedán familiar" : "Automóvil económico";
+  if (type === "commercial") return /bus|minibus|passenger|people carrier/.test(value) ? "Van o autobús de pasajeros" : /cargo|panel/.test(value) ? "Van de carga" : "Vehículo comercial";
+  if (type === "heavy_duty") return /dump|tipper|volteo/.test(value) ? "Camión de volteo" : /tractor|prime mover/.test(value) ? "Tractocamión" : "Camión pesado";
+  if (type === "truck") return "Camión liviano o mediano";
+  if (type === "supercar") return "Deportivo o vehículo de lujo";
+  if (type === "motorcycle") return "Motocicleta";
+  return "Vehículo especial";
+}
+
+function demandTier(v) {
+  const rank = demandRank(v);
+  if (rank <= 6) return "Demanda alta en Venezuela";
+  if (rank <= 8) return "Demanda media en Venezuela";
+  return "Demanda selectiva en Venezuela";
 }
 
 function matchingBrand(v) {
@@ -113,11 +146,14 @@ function catalogBrand(v) {
   const matched = matchingBrand(v);
   if (matched) return matched;
   const raw = (v.brand ?? "").trim();
+  const type = bodyType(v);
+  // Pickups are deliberately broad for Venezuela: the catalogue includes
+  // legitimate Chinese work-truck marques beyond the passenger-car allowlist.
+  if (type === "pickup" && raw) return brandAliases.get(raw.toLowerCase()) ?? raw;
   // A primary brand with a non-matching model is outside this Venezuela-focused feed.
   if (brandRules.some(([brand]) => raw.toLowerCase() === brand.toLowerCase())) return null;
   const normalized = brandAliases.get(raw.toLowerCase()) ?? raw;
-  const type = bodyType(v);
-  const eligibleType = type === "supercar" || type === "motorcycle" || type === "heavy_duty" || type === "truck";
+  const eligibleType = ["supercar","motorcycle","heavy_duty","truck","pickup","commercial","suv","passenger"].includes(type);
   return eligibleType && approvedFallbackBrands.has(normalized) ? normalized : null;
 }
 
@@ -245,7 +281,8 @@ function imagePath(v, file) {
 
 function titleFor(v, brand) {
   const trim = cleanTrimLabel(v, brand);
-  return `${brand} ${trim}${v.year ? ` ${v.year}` : ""} - Importación desde China a Venezuela`;
+  const configuration = [fuelClass(v), driveClass(v) === "Tracción por confirmar" ? null : driveClass(v), transmissionClass(v) === "Transmisión por confirmar" ? null : transmissionClass(v)].filter(Boolean).join(" · ");
+  return `${brand} ${trim} ${v.year} - ${configuration} - Importación a Venezuela`;
 }
 
 function descriptionFor(v, brand) {
@@ -261,7 +298,8 @@ function descriptionFor(v, brand) {
 }
 
 function productTypeFor(v, brand, category) {
-  return `${category} > ${brand} > ${cleanTrimLabel(v, brand)}`;
+  const type = bodyType(v);
+  return `Vehículos > ${category} > ${specificSegment(v, type)} > ${brand} > ${cleanTrimLabel(v, brand)} > ${fuelClass(v)} > ${driveClass(v)}`;
 }
 
 function validateSelection(vehicles) {
@@ -286,33 +324,34 @@ function validateRow(row) {
 
 const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
 const eligible = index
-  .filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb != null && catalogBrand(v))
+  .filter((v) => v.availability === "available" && v.priceCNY != null && v.thumb != null && v.year >= YEAR_MIN && v.year <= YEAR_MAX && catalogBrand(v))
   .sort(comparePriority);
 
 const selected = [];
-const trimCounts = new Map();
-const trimBuckets = new Map();
-for (const vehicle of eligible) {
-  const key = trimKey(vehicle);
-  if (!trimBuckets.has(key)) trimBuckets.set(key, []);
-  trimBuckets.get(key).push(vehicle);
-}
-const orderedTrimBuckets = [...trimBuckets.entries()].sort(([, left], [, right]) => comparePriority(left[0], right[0]));
-
-// Take one vehicle per trim per pass so common trims do not consume the feed
-// before less common Venezuelan trims are represented.
-while (selected.length < TOTAL_CAP) {
-  let addedThisPass = false;
-  for (const [trim, bucket] of orderedTrimBuckets) {
-    if (selected.length >= TOTAL_CAP || (trimCounts.get(trim) ?? 0) >= PER_TRIM_CAP) continue;
-    const vehicle = bucket[selected.filter((candidate) => trimKey(candidate) === trim).length];
-    if (!vehicle) continue;
-    selected.push(vehicle);
-    trimCounts.set(trim, (trimCounts.get(trim) ?? 0) + 1);
-    addedThisPass = true;
+const selectedIds = new Set();
+function takeBalanced(type, limit) {
+  const buckets = new Map();
+  for (const vehicle of eligible.filter((candidate) => bodyType(candidate) === type)) {
+    const key = trimKey(vehicle);
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(vehicle);
   }
-  if (!addedThisPass) break;
+  const ordered = [...buckets.values()].sort((left, right) => comparePriority(left[0], right[0]));
+  let added = 0;
+  for (let pass = 0; added < limit && pass < PER_TRIM_CAP; pass += 1) {
+    let changed = false;
+    for (const bucket of ordered) {
+      const vehicle = bucket[pass];
+      if (!vehicle || selectedIds.has(vehicle.slug) || added >= limit) continue;
+      selected.push(vehicle);
+      selectedIds.add(vehicle.slug);
+      added += 1;
+      changed = true;
+    }
+    if (!changed) break;
+  }
 }
+for (const [type, limit] of Object.entries(CATEGORY_TARGETS)) takeBalanced(type, limit);
 
 const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"];
 validateSelection(selected);
@@ -336,9 +375,9 @@ for (const v of [...selected].sort(comparePriority)) {
     additionalImages,
     productTypeFor(v, brand, category),
     category,
-    categoryPriority[type],
-    `condition_${v.condition}`,
-    yearBand(v.year),
+    specificSegment(v, type),
+    demandTier(v),
+    `${v.condition === "new" ? "Nuevo" : "Usado"} · Año ${v.year}`,
     priceBand(priceUsd),
   ];
   validateRow(row);
