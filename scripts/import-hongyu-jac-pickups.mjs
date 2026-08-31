@@ -120,8 +120,10 @@ for (const product of products) {
     images.push(file);
   }
 
+  // finalPriceUsd is an approved final CIF selling price and must not receive
+  // the general catalogue reduction a second time.
   const discountedPriceUsd = product.finalPriceUsd != null
-    ? product.finalPriceUsd * 0.75
+    ? product.finalPriceUsd
     : product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
   const priceCNY = discountedPriceUsd / USD_PER_CNY;
   imported.push({
@@ -147,6 +149,17 @@ for (const product of products) {
     },
     images, otherColorPhotos: [],
   };
+}
+
+// The white T9 is a colour-specific clone maintained by the companion import
+// script. Keep its price synchronized with the red base listing whenever this
+// importer is rerun.
+const t9Base = imported.find((vehicle) => vehicle.slug === "hongyu-jac-t9-hunter");
+const t9WhiteSlug = "hongyu-jac-t9-hunter-white";
+const t9WhiteIndex = index.find((vehicle) => vehicle.slug === t9WhiteSlug);
+if (t9Base && t9WhiteIndex && details[t9WhiteSlug]) {
+  t9WhiteIndex.priceCNY = t9Base.priceCNY;
+  details[t9WhiteSlug].priceCNY = t9Base.priceCNY;
 }
 
 fs.writeFileSync(indexPath, JSON.stringify([...imported, ...index]));

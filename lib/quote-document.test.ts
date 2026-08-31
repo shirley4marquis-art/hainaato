@@ -6,6 +6,18 @@ import {
   quoteCifTotal,
   quotePriceType,
 } from "./quote-document";
+import {
+  isCataloguePromotionEligible,
+  qualifiesForCataloguePromotion,
+} from "./quote-pricing";
+
+test("catalogue promotion requires three distinct eligible listing prices", () => {
+  assert.equal(qualifiesForCataloguePromotion([6000, 5200]), false);
+  assert.equal(qualifiesForCataloguePromotion([6000, 5200, 3000]), true);
+  assert.equal(qualifiesForCataloguePromotion([6000, 5200, 6000.01, 12000]), false);
+  assert.equal(isCataloguePromotionEligible(6000), true);
+  assert.equal(isCataloguePromotionEligible(6000.01), false);
+});
 
 test("Venezuela nationalization estimate uses CIF plus duty, VAT and luxury preview", () => {
   const preview = estimateVenezuelaNationalization({

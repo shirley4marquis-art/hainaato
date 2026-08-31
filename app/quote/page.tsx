@@ -8,7 +8,7 @@ export default async function Quote({searchParams}:{searchParams:Promise<{vehicl
   return <SiteShell>
     {!vehicle&&<PageHero kicker="PERSONAL EXPORT QUOTATION" title="Request a Quote" copy="Send the stock code or describe the vehicle you need and your destination."/>}
     <section className="section"><div className="container form-page">
-      {vehicle?<VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title}/>:<RequestForm kind="quote"/>}
+      {vehicle?<VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel}/>:<RequestForm kind="quote"/>}
     </div></section>
   </SiteShell>
 }

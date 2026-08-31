@@ -4,7 +4,7 @@
 // needs to pull real listing data and generate a PDF, rather than a single
 // free-text message.
 export type QuoteRequestResult =
-  | { ok: true; ref: string; documentNumber: string | null; emailSent: boolean }
+  | { ok: true; ref: string; documentNumber: string | null; accessToken: string; deliveryStatus: "processing" | "whatsapp-only" }
   | { ok: false; error: string };
 
 const GENERIC_ERROR = "Something went wrong. Please try again or contact us on WhatsApp.";
@@ -25,5 +25,11 @@ export async function submitQuoteRequest(payload: Record<string, unknown>): Prom
   if (!response.ok || !data?.ok) {
     return { ok: false, error: (data && typeof data.error === "string" && data.error) || GENERIC_ERROR };
   }
-  return { ok: true, ref: data.ref as string, documentNumber: (data.documentNumber as string) ?? null, emailSent: data.emailSent === true };
+  return {
+    ok: true,
+    ref: data.ref as string,
+    documentNumber: (data.documentNumber as string) ?? null,
+    accessToken: data.accessToken as string,
+    deliveryStatus: data.deliveryStatus === "whatsapp-only" ? "whatsapp-only" : "processing",
+  };
 }

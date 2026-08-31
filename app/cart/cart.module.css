@@ -7,6 +7,29 @@
   gap: 10px;
 }
 
+.promotion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #f5b77c;
+  border-radius: 10px;
+  background: #fff8ef;
+  color: #7c3b00;
+}
+
+.promotion span {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.promotionUnlocked {
+  border-color: #86d3a3;
+  background: #effaf3;
+  color: #135b2d;
+}
+
 .item {
   display: flex;
   align-items: center;
@@ -52,6 +75,14 @@
   flex: none;
   font-weight: 700;
   color: var(--ink);
+}
+
+.itemPrice small {
+  display: block;
+  margin-top: 3px;
+  color: #16803d;
+  font-size: 11px;
+  text-align: right;
 }
 
 .remove {

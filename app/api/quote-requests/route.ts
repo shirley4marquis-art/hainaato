@@ -7,7 +7,7 @@
 // succeeded or definitively failed. HAINA AUTO website quotes default to CIF:
 // the entered unit price already includes vehicle, ocean freight and marine
 // insurance to the agreed destination port.
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { guardRequest } from "../../../lib/security/http";
 import { getVehicleIndexEntryBySlug } from "../../../lib/vehicles";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
@@ -19,12 +19,19 @@ import { adminSaveQuote, adminGetQuote, recordQuoteEmail, type AdminQuoteItemInp
 import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
 import { customerQuoteEmailHtml, sendEmail, sendQuoteCreatedSalesNotification } from "../../../lib/email";
 import { itemTitle } from "../../../lib/quote-document";
-import { DEFAULT_DEPOSIT_PCT, languageForCountry } from "../../../lib/quote-pricing";
+import {
+  CATALOGUE_PROMOTION,
+  DEFAULT_DEPOSIT_PCT,
+  isCataloguePromotionEligible,
+  languageForCountry,
+  qualifiesForCataloguePromotion,
+} from "../../../lib/quote-pricing";
 import { normalizeQuoteLanguage } from "../../../lib/quote-language";
 import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
 import { buildVehicleConfigurationRows, buildVehicleFactRows, formatRowsForHistory } from "../../../lib/vehicle-document-details";
+import { createQuoteAccessToken } from "../../../lib/quote-access";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 300;
@@ -57,7 +64,9 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
 // the whole point being staff/the customer never hand-type specs. Returns
 // null for a slug that no longer resolves (delisted between add-to-cart and
 // submit) so the caller can skip it rather than fail the whole request.
-function buildItemFromListing({ slug, qty, fuelPreference, customColor, customColorName }: RequestedVehicle): AdminQuoteItemInput | null {
+type BuiltListingItem = { item: AdminQuoteItemInput; cataloguePriceUsd: number };
+
+function buildItemFromListing({ slug, qty, fuelPreference, customColor, customColorName }: RequestedVehicle): BuiltListingItem | null {
   const indexEntry = getVehicleIndexEntryBySlug(slug);
   const detail = getVehicleBySlug(slug);
   if (!indexEntry || !detail || detail.priceCNY == null) return null;
@@ -90,7 +99,7 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
   const baseFobUsd = Math.round(convertFromCNY(detail.priceCNY, "USD") * 100) / 100;
   const fobUsd = includeCustomColor ? Math.round((baseFobUsd + CUSTOM_COLOR_SURCHARGE_USD) * 100) / 100 : baseFobUsd;
 
-  return {
+  return { item: {
     make: indexEntry.brand,
     model: indexEntry.model,
     year: detail.year,
@@ -110,7 +119,7 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
     discount: 0,
     fobFinal: fobUsd,
     photos: images.map((url) => ({ url, caption: null })),
-  };
+  }, cataloguePriceUsd: baseFobUsd };
 }
 
 export async function POST(request: NextRequest) {
@@ -136,8 +145,8 @@ export async function POST(request: NextRequest) {
   const publicConsent = b.publicConsent === true;
   const requestedVehicles = parseVehicles(b.vehicles);
 
-  if (!email) return NextResponse.json({ ok: false, error: "Email is required." }, { status: 400 });
-  if (!isLikelyRealEmail(email)) {
+  if (!email && !phone) return NextResponse.json({ ok: false, error: "Enter an email address or WhatsApp number." }, { status: 400 });
+  if (email && !isLikelyRealEmail(email)) {
     return NextResponse.json({ ok: false, error: "Please enter a valid email address." }, { status: 400 });
   }
   if (!country) return NextResponse.json({ ok: false, error: "Destination country is required." }, { status: 400 });
@@ -148,25 +157,37 @@ export async function POST(request: NextRequest) {
   // Name and phone are optional on the quick-quote form (only email +
   // destination are required) — fall back to the email's local part so the
   // record still reads as something in the admin panel and sales email.
-  const customerName = name || email.split("@")[0];
+  const customerName = name || email?.split("@")[0] || "WhatsApp customer";
 
-  const items = requestedVehicles
+  const builtItems = requestedVehicles
     .map((requestedVehicle) => buildItemFromListing(requestedVehicle))
-    .filter((item): item is AdminQuoteItemInput => item !== null);
+    .filter((item): item is BuiltListingItem => item !== null);
 
-  if (items.length === 0) {
+  if (builtItems.length === 0) {
     return NextResponse.json(
       { ok: false, error: "None of the selected vehicles are available anymore. Please refresh your cart." },
       { status: 400 }
     );
   }
 
+  const promotionApplies = qualifiesForCataloguePromotion(builtItems.map(({ cataloguePriceUsd }) => cataloguePriceUsd));
+  const items = builtItems.map(({ item, cataloguePriceUsd }) => {
+    if (!promotionApplies || !isCataloguePromotionEligible(cataloguePriceUsd)) return item;
+    const promotionalPrice = Math.min(item.fobFinal, CATALOGUE_PROMOTION.promotionalUnitPriceUsd);
+    return {
+      ...item,
+      discount: Math.max(0, Math.round((item.fobOriginal - promotionalPrice) * 100) / 100),
+      fobFinal: promotionalPrice,
+      specSummary: `${item.specSummary ?? ""} · Catalogue promotion: USD ${promotionalPrice.toLocaleString("en-US")} per vehicle`.replace(/^ · /, ""),
+    };
+  });
+
   const language = normalizeQuoteLanguage(selectedLanguage, languageForCountry(country));
 
   let ref: string;
   try {
     ref = await adminSaveQuote({
-      customer: { name: customerName, phone: phone ?? null, email, city: cityState ?? null, country },
+      customer: { name: customerName, phone: phone ?? null, email: email ?? null, city: cityState ?? null, country },
       destinationPort: destinationPort || `${country} main import port`,
       destinationCountry: country,
       incoterm: "CIF",
@@ -178,7 +199,13 @@ export async function POST(request: NextRequest) {
       currency: "USD",
       language,
       status: "quoted",
-      notes: message ? `Website quote request (cart checkout):\n${message}` : "Website quote request (cart checkout).",
+      notes: [
+        "Website quote request (cart checkout).",
+        promotionApplies
+          ? `Catalogue promotion applied: at least ${CATALOGUE_PROMOTION.minimumEligibleListings} eligible listings priced at or below USD ${CATALOGUE_PROMOTION.maximumCataloguePriceUsd.toLocaleString("en-US")}; eligible units capped at USD ${CATALOGUE_PROMOTION.promotionalUnitPriceUsd.toLocaleString("en-US")} each.`
+          : null,
+        message || null,
+      ].filter(Boolean).join("\n"),
       publicConsent,
       source: "cart-checkout",
       items,
@@ -188,63 +215,68 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "Could not create the quote. Please try again." }, { status: 502 });
   }
 
-  let pdfBuffer: Buffer | null = null;
-  try {
-    pdfBuffer = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" });
-  } catch (error) {
-    console.error(`[quote-requests] PDF render failed for ${ref}:`, error);
-  }
-  if (!pdfBuffer) {
-    await recordQuoteEmail(ref, {
-      toEmail: email,
-      subject: "Quotation PDF generation failed",
-      html: "",
-      status: "failed",
-      error: "PDF generation failed before customer email could be sent.",
-    });
-    return NextResponse.json({ ok: false, error: "The quotation was created, but the PDF could not be generated for email. Our team has been notified to resend it." }, { status: 502 });
-  }
-
   const quote = await adminGetQuote(ref);
   const vehicleSummary = quote ? quote.items.map((item) => itemTitle(item)).join("; ") : items.map((item) => `${item.make} ${item.model}`).join("; ");
+  const requestUrl = request.url;
+  after(async () => {
+    await sendQuoteCreatedSalesNotification({
+      ref,
+      documentNumber: quote?.documentNumber ?? null,
+      customerName,
+      customerEmail: email ?? "Not supplied — use WhatsApp",
+      customerPhone: phone ?? null,
+      destinationCountry: country,
+      destinationPort: destinationPort || null,
+      vehicleSummary,
+      message,
+    });
 
-  await sendQuoteCreatedSalesNotification({
+    if (!email) return;
+    let pdfBuffer: Buffer | null = null;
+    try {
+      pdfBuffer = await renderQuotePdfWithRetry(ref, requestUrl, { kind: "internal-secret" });
+    } catch (error) {
+      console.error(`[quote-requests] background PDF render failed for ${ref}:`, error);
+    }
+    if (!pdfBuffer) {
+      await recordQuoteEmail(ref, {
+        toEmail: email,
+        subject: "Quotation PDF generation failed",
+        html: "",
+        status: "failed",
+        error: "PDF generation failed before customer email could be sent.",
+      });
+      return;
+    }
+
+    const { subject, html } = customerQuoteEmailHtml({
+      customerName,
+      ref,
+      documentNumber: quote?.documentNumber ?? null,
+      vehicleSummary,
+      language,
+    });
+    const sendResult = await sendEmail({
+      to: email,
+      subject,
+      html,
+      attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
+    });
+    await recordQuoteEmail(ref, {
+      toEmail: email,
+      subject,
+      html,
+      status: sendResult.ok ? "sent" : "failed",
+      error: sendResult.ok ? null : sendResult.error,
+      providerMessageId: sendResult.ok ? sendResult.providerMessageId : null,
+    });
+  });
+
+  return NextResponse.json({
+    ok: true,
     ref,
     documentNumber: quote?.documentNumber ?? null,
-    customerName,
-    customerEmail: email,
-    customerPhone: phone ?? null,
-    destinationCountry: country,
-    destinationPort: destinationPort || null,
-    vehicleSummary,
-    message,
+    accessToken: createQuoteAccessToken(ref),
+    deliveryStatus: email ? "processing" : "whatsapp-only",
   });
-
-  const { subject, html } = customerQuoteEmailHtml({
-    customerName,
-    ref,
-    documentNumber: quote?.documentNumber ?? null,
-    vehicleSummary,
-    language,
-  });
-
-  const sendResult = await sendEmail({
-    to: email,
-    subject,
-    html,
-    attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
-  });
-  await recordQuoteEmail(ref, {
-    toEmail: email,
-    subject,
-    html,
-    status: sendResult.ok ? "sent" : "failed",
-    error: sendResult.ok ? null : sendResult.error,
-    providerMessageId: sendResult.ok ? sendResult.providerMessageId : null,
-  });
-  if (!sendResult.ok) {
-    return NextResponse.json({ ok: false, error: "The quotation was created, but the email provider did not accept the email. Please check the address or contact us on WhatsApp." }, { status: 502 });
-  }
-
-  return NextResponse.json({ ok: true, ref, documentNumber: quote?.documentNumber ?? null, emailSent: true });
 }

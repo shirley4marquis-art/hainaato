@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       title: v.title,
       priceCNY: v.priceCNY,
       bodyType: v.bodyType,
+      fuel: v.fuel,
       stockCode: v.specs["Código de inventario"] || `${v.site === "hainaauto" ? "HA" : v.site === "cntransit" ? "CN" : v.site === "hongyu" ? "HA-CN" : "HA-US"}-${v.id}`,
       image: rankVehicleImages(v.images).slice(0, 1).map((file) => imagePath(v.site, v.id, file))[0] ?? null,
     }));

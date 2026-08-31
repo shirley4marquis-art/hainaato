@@ -12,6 +12,20 @@ export const DEFAULT_RATES_PER_UNIT = {
 
 export const DEFAULT_DEPOSIT_PCT = 40;
 
+export const CATALOGUE_PROMOTION = {
+  minimumEligibleListings: 3,
+  maximumCataloguePriceUsd: 6000,
+  promotionalUnitPriceUsd: 3000,
+} as const;
+
+export function isCataloguePromotionEligible(cataloguePriceUsd: number): boolean {
+  return cataloguePriceUsd > 0 && cataloguePriceUsd <= CATALOGUE_PROMOTION.maximumCataloguePriceUsd;
+}
+
+export function qualifiesForCataloguePromotion(cataloguePricesUsd: number[]): boolean {
+  return cataloguePricesUsd.filter(isCataloguePromotionEligible).length >= CATALOGUE_PROMOTION.minimumEligibleListings;
+}
+
 // Nudges the auto-quote's document language toward Spanish for the regions
 // this business's Latin American buyers are concentrated in (matching the
 // real sample quote, which was in Spanish for a Colombian buyer) — staff can

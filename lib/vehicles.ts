@@ -184,7 +184,7 @@ export function searchVehicles(params: VehicleSearchParams) {
       ? [...results].sort((a, b) => (a.priceCNY ?? Infinity) - (b.priceCNY ?? Infinity))
       : sort === "price-desc"
         ? [...results].sort((a, b) => (b.priceCNY ?? 0) - (a.priceCNY ?? 0))
-        : results;
+        : prioritizeToyotaSources(results);
 
   const total = results.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -219,10 +219,53 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
   return loadIndex().filter(v=>v.imageCount>0&&v.availability==="available").slice(0,count);
 }
 
+function isToyotaTruck(vehicle: VehicleIndexEntry): boolean {
+  return /pickup|truck/i.test(vehicle.bodyType ?? "") || /hilux|tundra|tacoma|land cruiser|pickup|truck/i.test(vehicle.title);
+}
+
+// Keep the catalogue's overall brand mix and arrival positions stable, but
+// reorder the Toyota entries occupying those positions. China/Japan-sourced
+// trucks lead, other non-Hendrick Toyotas follow, and Hendrick inventory is
+// moved to the end of the Toyota sequence. Explicit price sorts remain exact.
+function prioritizeToyotaSources(vehicles: VehicleIndexEntry[]): VehicleIndexEntry[] {
+  const toyotaPositions: number[] = [];
+  const toyotas: VehicleIndexEntry[] = [];
+  vehicles.forEach((vehicle, index) => {
+    if (vehicle.brand.trim().toLowerCase() !== "toyota") return;
+    toyotaPositions.push(index);
+    toyotas.push(vehicle);
+  });
+  if (toyotas.length < 2) return vehicles;
+
+  const prioritized = [...toyotas].sort((a, b) => {
+    const rank = (vehicle: VehicleIndexEntry) => {
+      if (vehicle.site === "hendrick") return 2;
+      return isToyotaTruck(vehicle) ? 0 : 1;
+    };
+    return rank(a) - rank(b);
+  });
+  const result = [...vehicles];
+  toyotaPositions.forEach((position, index) => {
+    result[position] = prioritized[index];
+  });
+  return result;
+}
+
 // Models pinned to the front of the homepage's "Latest new-car arrivals" list
 // (both the desktop grid and the mobile rail, which just shows this list's
 // first few) so they show up regardless of scrape order.
 const FEATURED_LATEST_MODELS = ["2025 ford ranger", "tesla 2026 model y", "highlander", "rav4", "corolla"];
+
+// Stable, image-checked pickup mix for the homepage. The red JAC T9 is the
+// lead arrival, followed by distinct export-ready pickup brands rather than
+// multiple near-identical listings of one model.
+const HOMEPAGE_PICKUP_FEATURE_SLUGS = [
+  "hongyu-jac-t9-hunter",
+  "hainaauto-396625194", // 2025 Ford Ranger
+  "hainaauto-322521604", // 2025 Great Wall Mountain & Sea Cannon
+  "hainaauto-606715558", // 2025 Jiangling Baodian
+  "hainaauto-794915700", // 2025 Qiyuan Hunter K50
+];
 
 // Keep the final homepage positions varied across the brands customers ask
 // about most. Exact slugs make the selection stable when inventory is rebuilt.
@@ -255,6 +298,19 @@ export function isHomepagePreviewEligible(vehicle: VehicleIndexEntry): boolean {
 
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
   const index = loadIndex();
+  const pickupFeatureSlugs = new Set(HOMEPAGE_PICKUP_FEATURE_SLUGS);
+  const pickupFeatures = HOMEPAGE_PICKUP_FEATURE_SLUGS
+    .map((slug) => index.find((vehicle) => vehicle.slug === slug))
+    .filter(
+      (vehicle): vehicle is VehicleIndexEntry =>
+        Boolean(
+          vehicle &&
+            vehicle.imageCount > 0 &&
+            vehicle.availability === "available" &&
+            vehicle.condition === "new" &&
+            isHomepagePreviewEligible(vehicle)
+        )
+    );
   const backfillSlugs = new Set(HOMEPAGE_BRAND_BACKFILL_SLUGS);
   const brandBackfills = HOMEPAGE_BRAND_BACKFILL_SLUGS
     .map((slug) => index.find((vehicle) => vehicle.slug === slug))
@@ -274,6 +330,7 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
       v.availability === "available" &&
       ((v.condition === "new" && v.year === 2026) || titleForHomepage(v).includes("2025 ford ranger")) &&
       isHomepagePreviewEligible(v) &&
+      !pickupFeatureSlugs.has(v.slug) &&
       !backfillSlugs.has(v.slug)
   );
   const featured: VehicleIndexEntry[] = [];
@@ -297,8 +354,11 @@ export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{
     const bOrder = FEATURED_LATEST_MODELS.find((model) => bTitle.includes(model));
     return (featuredOrder.get(aOrder ?? "") ?? Number.MAX_SAFE_INTEGER) - (featuredOrder.get(bOrder ?? "") ?? Number.MAX_SAFE_INTEGER);
   });
-  const arrivals = [...featured, ...rest].slice(0, Math.max(0, count - brandBackfills.length));
-  return [...arrivals, ...brandBackfills].slice(0, count);
+  const arrivals = [...featured, ...rest].slice(
+    0,
+    Math.max(0, count - pickupFeatures.length - brandBackfills.length)
+  );
+  return [...pickupFeatures, ...arrivals, ...brandBackfills].slice(0, count);
 }
 
 function titleForHomepage(vehicle: VehicleIndexEntry): string {

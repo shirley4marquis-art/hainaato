@@ -229,7 +229,7 @@ export default async function VehicleDetail({
           </ul>
 
           <div className="detail-actions">
-            <Link className="btn primary" href={`/quote?vehicle=${encodeURIComponent(vehicle.slug)}#quote-form`}>
+            <Link className="btn primary" href="#request">
               Get Quote
             </Link>
             <a className="btn ghost" href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
@@ -342,7 +342,7 @@ export default async function VehicleDetail({
         </div>
 
         <div id="request">
-          <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} />
+          <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel} />
           <div className="side-card specialist-card">
             <span className="avatar" aria-label="HainaAuto export team">
               <img src="/hainaauto-logo.webp" alt="HainaAuto logo" />
