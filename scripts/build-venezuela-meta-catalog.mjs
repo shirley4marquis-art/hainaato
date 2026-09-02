@@ -8,9 +8,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const indexPath = path.join(root, "data", "vehicles-index.json");
 const outputName = process.argv[2] ?? process.env.META_CATALOG_OUTPUT ?? "meta-catalog-venezuela.csv";
-const campaignName = process.argv[3] ?? process.env.META_CATALOG_CAMPAIGN ?? "venezuela";
 const outPath = path.join(root, "public", outputName);
-const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
+const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://www.nindgeauto.com";
 const USD_PER_CNY = 0.139;
 const PER_TRIM_CAP = 24;
 const YEAR_MIN = 2024;
@@ -314,12 +313,12 @@ function validateSelection(vehicles) {
 }
 
 function validateRow(row) {
-  const [id, title, description, availability, condition, price, link, imageLink, brand] = row;
-  if (![id, title, description, availability, condition, price, link, imageLink, brand].every(Boolean)) throw new Error(`Campo obligatorio vacío: ${id}`);
+  const [id, title, description, availability, condition, price, imageLink, brand] = row;
+  if (![id, title, description, availability, condition, price, imageLink, brand].every(Boolean)) throw new Error(`Campo obligatorio vacío: ${id}`);
   if (title.length > 200 || description.length > 9_999) throw new Error(`Texto supera el límite de Meta: ${id}`);
   if (!new Set(["new", "used"]).has(condition)) throw new Error(`Condición inválida: ${id}`);
   if (!/^\d+\.\d{2} USD$/.test(price)) throw new Error(`Precio inválido: ${id}`);
-  if (!link.startsWith("https://") || !imageLink.startsWith("https://")) throw new Error(`URL insegura o inválida: ${id}`);
+  if (!imageLink.startsWith("https://")) throw new Error(`URL de imagen insegura o inválida: ${id}`);
 }
 
 const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
@@ -353,7 +352,7 @@ function takeBalanced(type, limit) {
 }
 for (const [type, limit] of Object.entries(CATEGORY_TARGETS)) takeBalanced(type, limit);
 
-const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"];
+const header = ["id", "title", "description", "availability", "condition", "price", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1", "custom_label_2", "custom_label_3", "custom_label_4"];
 validateSelection(selected);
 const lines = [header.join(",")];
 for (const v of [...selected].sort(comparePriority)) {
@@ -369,7 +368,6 @@ for (const v of [...selected].sort(comparePriority)) {
     "in stock",
     v.condition,
     `${priceUsd.toFixed(2)} USD`,
-    `${SITE_URL}/vehicles/${v.slug}?lang=es-VE&utm_source=meta&utm_medium=catalog&utm_campaign=${campaignName}`,
     imagePath(v, v.thumb),
     brand,
     additionalImages,

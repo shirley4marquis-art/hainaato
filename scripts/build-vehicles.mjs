@@ -87,7 +87,10 @@ function normalize(raw, site) {
   const override = priceOverrides[slug];
   if (override) appliedPriceOverrides.add(slug);
   const rawMileageKm = toNumber(raw.mileage ?? specs["Mileage"]);
-  const condition = rawMileageKm != null && rawMileageKm <= 100 ? "new" : "used";
+  const isManualListing = raw.dataSource === "manual";
+  const condition = raw.condition === "new" || raw.condition === "used"
+    ? raw.condition
+    : rawMileageKm != null && rawMileageKm <= 100 ? "new" : "used";
   return {
     slug,
     site,
@@ -97,7 +100,7 @@ function normalize(raw, site) {
     year: raw.year ?? null,
     priceCNY: override ? Math.round(override.priceCNY * CURRENT_PRICE_REDUCTION) : formulaPriceCNY,
     msrpCNY: toNumber(raw.price?.msrpCNY ?? specs["MSRP"]),
-    mileageKm: rawMileageKm == null ? null : Math.round(rawMileageKm / MILEAGE_DIVISOR),
+    mileageKm: rawMileageKm == null ? null : Math.round(rawMileageKm / (isManualListing ? 1 : MILEAGE_DIVISOR)),
     condition,
     fuel: inferFuel(raw, specs),
     bodyType: specs["Body Type"] ?? null,
@@ -178,6 +181,28 @@ async function loadHainaauto() {
   console.log(`hainaauto: ${count} vehicles`);
 }
 
+// --- manual: hand-curated HainaAuto stock with locally hosted photography ---
+async function loadManualListings() {
+  const manifestPath = path.join(autoShop, "manual", "manifest.jsonl");
+  if (!fs.existsSync(manifestPath)) return;
+  const rl = readline.createInterface({
+    input: fs.createReadStream(manifestPath, "utf-8"),
+    crlfDelay: Infinity,
+  });
+  let count = 0;
+  for await (const line of rl) {
+    if (!line.trim()) continue;
+    const raw = JSON.parse(line);
+    if (!raw.images?.length) continue;
+    const v = normalize({ ...raw, dataSource: "manual" }, "hainaauto");
+    writeVehicle(v);
+    details[v.slug] = v;
+    index.push(indexEntry(v));
+    count++;
+  }
+  console.log(`manual: ${count} vehicles`);
+}
+
 // --- cntransit: full record lives in images/<id>/.meta.json ---
 function loadCntransit() {
   const imagesDir = path.join(autoShop, "cntransit", "images");
@@ -198,6 +223,7 @@ function loadCntransit() {
 }
 
 await loadHainaauto();
+await loadManualListings();
 loadCntransit();
 
 // Images are addressed by filename only (see lib/format.ts imagePath); the

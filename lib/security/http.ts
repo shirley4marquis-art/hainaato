@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkRateLimit } from "./rate-limit";
 import { logSecurityEvent } from "./log";
-import { clientIp, resolveCountry } from "./geo-policy";
+import { clientIp } from "./client-ip";
 
 export type GuardOptions = {
   /** Stable name for the limiter bucket, e.g. "leads". */
@@ -17,7 +17,6 @@ export type GuardOptions = {
  */
 export async function guardRequest(request: NextRequest, opts: GuardOptions): Promise<NextResponse | null> {
   const ip = clientIp(request.headers);
-  const country = resolveCountry(request.headers);
   const key = `api:${opts.name}:ip:${ip ?? "unknown"}`;
   const result = await checkRateLimit({ key, limit: opts.limit, windowSec: opts.windowSec });
   if (result.ok) return null;
@@ -25,7 +24,6 @@ export async function guardRequest(request: NextRequest, opts: GuardOptions): Pr
   await logSecurityEvent({
     type: "rate_limited",
     ip,
-    country,
     path: request.nextUrl.pathname,
     detail: { bucket: opts.name, retryAfter: result.retryAfter, blocked: result.blocked },
   });

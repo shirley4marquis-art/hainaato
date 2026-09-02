@@ -26,7 +26,7 @@ const outPath = path.join(root, "public", "meta-catalog-feed.csv");
 // and Meta's catalog crawler doesn't follow redirects on image_link/
 // additional_image_link, so every image URL built from the bare domain
 // silently fails ingestion. Confirmed by curl: bare domain -> 308, www -> 200.
-const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://hainautocn.com";
+const SITE_URL = process.env.META_CATALOG_SITE_URL ?? "https://www.nindgeauto.com";
 // Meta's product feed spec caps additional_image_link at 10 URLs (11 photos
 // total per listing including image_link) — this is that ceiling, not an
 // arbitrary trim.
@@ -226,7 +226,7 @@ const eligible = [...new Map(
 ).values()];
 const selected = curateSelection(eligible);
 
-const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1"];
+const header = ["id", "title", "description", "availability", "condition", "price", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1"];
 const lines = [header.join(",")];
 
 let totalAdditionalImages = 0;
@@ -244,7 +244,6 @@ for (const v of selected) {
     "in stock",
     v.condition,
     `${(v.priceCNY * USD_PER_CNY).toFixed(2)} USD`,
-    `${SITE_URL}/vehicles/${v.slug}`,
     imagePath(v.site, v.id, v.thumb),
     brand,
     additionalImages,

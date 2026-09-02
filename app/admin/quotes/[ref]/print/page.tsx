@@ -19,8 +19,8 @@ const COMPANY = {
   tag: "CHINA AUTO EXPORT",
   address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China",
   phone: "+86 150 3217 8759",
-  email: "sales@hainautocn.com",
-  website: "hainautocn.com",
+  email: "sales@nindgeauto.com",
+  website: "nindgeauto.com",
   // Local asset, not hotlinked — img.hainaauto.com changed its content mid-
   // session once already, which would silently change past PDFs' letterhead.
   // Relative path resolves correctly regardless of deploy domain, since

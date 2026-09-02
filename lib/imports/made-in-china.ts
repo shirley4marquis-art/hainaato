@@ -5,7 +5,7 @@ import { getImportConfig, saveImportLog, upsertImportedListings } from "./store"
 
 const SOURCE_HOST = "www.made-in-china.com";
 const SOURCE_ORIGIN = `https://${SOURCE_HOST}`;
-const USER_AGENT = "HainaAutoImporter/1.0 (+https://hainautocn.com; supplier-discovery)";
+const USER_AGENT = "HainaAutoImporter/1.0 (+https://www.nindgeauto.com; supplier-discovery)";
 
 type DiscoveredLink = {
   url: string;

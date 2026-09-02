@@ -182,7 +182,7 @@ export async function saveLead(lead: WebLead): Promise<string> {
       notes: lead.company ? `Company: ${lead.company}` : null,
     });
     const summaryLines = [
-      `Web lead via ${lead.source} (hainautocn.com)`,
+      `Web lead via ${lead.source} (nindgeauto.com)`,
       lead.vehicle ? `Vehicle: ${lead.vehicle}` : null,
       lead.budget ? `Budget: ${lead.budget}` : null,
       lead.quantity ? `Quantity: ${lead.quantity}` : null,

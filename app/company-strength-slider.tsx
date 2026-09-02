@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
+import Image from "next/image";
 
 export function CompanyStrengthSlider({images}:{images:readonly string[]}){
   const [active,setActive]=useState(0);
@@ -12,7 +13,7 @@ export function CompanyStrengthSlider({images}:{images:readonly string[]}){
   if(!images.length) return null;
   return <div className="strength-slider" aria-label="HainaAuto company strength photos">
     <div className="strength-slider-frame">
-      {images.map((src,index)=><img key={src} className={index===active?"active":""} src={src} alt={`HainaAuto facility ${index+1}`} aria-hidden={index!==active}/>) }
+      {images.map((src,index)=><Image key={src} className={index===active?"active":""} src={src} alt={`HainaAuto facility ${index+1}`} aria-hidden={index!==active} fill sizes="(max-width: 640px) 100vw, 620px"/>) }
     </div>
     <div className="strength-slider-controls" role="tablist" aria-label="Company photos">
       {images.map((src,index)=><button key={src} type="button" role="tab" aria-selected={index===active} aria-label={`Show company photo ${index+1}`} className={index===active?"active":""} onClick={()=>setActive(index)}/>) }

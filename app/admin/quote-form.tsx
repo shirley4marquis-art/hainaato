@@ -266,7 +266,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     <div className={styles.form}>
       {!initial && <div className={styles.intakePanel}>
         <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste client inquiry</h2><p>Paste an email, WhatsApp message, or enquiry containing client details and HainaAuto vehicle links.</p></div></div>
-        <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://hainautocn.com/vehicles/vehicle-slug"}/>
+        <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://www.nindgeauto.com/vehicles/vehicle-slug"}/>
         <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={detectPastedInquiry} disabled={detecting || !pasteText.trim()}><WandSparkles size={14}/>{detecting ? "Detecting details…" : "Detect and fill quotation"}</button><small>Nothing is saved until you review and click Create quote.</small></div>
         {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
       </div>}
@@ -363,7 +363,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
         <h2 className={styles.sectionTitle}><Car size={14} /> Vehicles</h2>
         {initial && <div className={styles.intakePanel}>
           <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste vehicle link</h2><p>Add another catalogue vehicle to this existing quote. Details, photos, fuel and USD price fill automatically.</p></div></div>
-          <textarea rows={3} value={vehiclePasteText} onChange={(event) => setVehiclePasteText(event.target.value)} placeholder="https://hainautocn.com/vehicles/vehicle-slug"/>
+          <textarea rows={3} value={vehiclePasteText} onChange={(event) => setVehiclePasteText(event.target.value)} placeholder="https://www.nindgeauto.com/vehicles/vehicle-slug"/>
           <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={appendPastedVehicles} disabled={detecting || !vehiclePasteText.trim()}><ClipboardPaste size={14}/>{detecting ? "Adding vehicle…" : "Add pasted vehicle"}</button><small>Nothing is saved until you click Save changes.</small></div>
           {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
         </div>}
@@ -403,7 +403,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>Original unit price *<input type="number" step="0.01" value={item.fobOriginal} onChange={(e) => updateItem(item.key, { fobOriginal: num(e.target.value) })} /></label>
               <label>Discount<input type="number" step="0.01" value={item.discount ?? 0} onChange={(e) => updateItem(item.key, { discount: num(e.target.value) })} /></label>
               <label>Final unit price ({isCif ? "CIF" : "FOB"} used) *<input type="number" step="0.01" value={item.fobFinal} onChange={(e) => updateItem(item.key, { fobFinal: num(e.target.value) })} /></label>
-              <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://hainautocn.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
+              <label className={styles.wide}>Actual vehicle link<input type="url" placeholder="https://www.nindgeauto.com/vehicles/..." value={(item.historyNotes ?? "").replace(/^Vehicle link:\s*/i, "")} onChange={(e) => updateItem(item.key, { historyNotes: e.target.value ? `Vehicle link: ${e.target.value}` : null })} /></label>
               <label className={styles.wide}>Spec summary (shown on the printed quote)
                 <textarea rows={2} placeholder="e.g. SUV grande de chasis independiente · V6 híbrido biturbo 3.4L…" value={item.specSummary ?? ""} onChange={(e) => updateItem(item.key, { specSummary: e.target.value })} />
               </label>

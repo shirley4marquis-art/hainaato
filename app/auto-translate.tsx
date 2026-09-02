@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { AUTO_TRANSLATE_LANGUAGES, normalizeLangParam } from "../lib/i18n/regions";
 
 declare global {
@@ -13,6 +13,7 @@ declare global {
 }
 
 const LOCALE_COOKIE = "haina_locale";
+const EXPLICIT_LOCALE_COOKIE = "haina_locale_explicit";
 const INCLUDED_LANGUAGES = AUTO_TRANSLATE_LANGUAGES.join(",");
 
 function readCookie(name: string): string | null {
@@ -40,25 +41,33 @@ function applyTranslation(lang: string) {
 
 export function AutoTranslate() {
   const searchParams = useSearchParams();
+  const initialOverride = normalizeLangParam(searchParams.get("lang"));
+  const [translationEnabled, setTranslationEnabled] = useState(
+    initialOverride !== null && initialOverride !== "en",
+  );
 
   useEffect(() => {
     const override = normalizeLangParam(searchParams.get("lang"));
     const current = readCookie(LOCALE_COOKIE);
+    const hasExplicitLocale = readCookie(EXPLICIT_LOCALE_COOKIE) === "1";
 
     // Explicit ?lang= switch: persist it and reload once (without the param) so
     // the widget re-initialises against the new googtrans cookie.
-    if (override && override !== current) {
+    if (override) {
       writeCookie(LOCALE_COOKIE, override);
+      writeCookie(EXPLICIT_LOCALE_COOKIE, "1");
       applyTranslation(override);
+      startTransition(() => setTranslationEnabled(override !== "en"));
       const url = new URL(window.location.href);
       url.searchParams.delete("lang");
       window.location.replace(url.toString());
       return;
     }
 
-    // Otherwise honour whatever proxy.ts resolved (geo / prior choice).
-    const active = override || current;
-    if (active) applyTranslation(active);
+    if (!hasExplicitLocale && current) writeCookie(LOCALE_COOKIE, "", 0);
+    const active = hasExplicitLocale && current ? current : "en";
+    applyTranslation(active);
+    startTransition(() => setTranslationEnabled(active !== "en"));
   }, [searchParams]);
 
   useEffect(() => {
@@ -74,6 +83,8 @@ export function AutoTranslate() {
 
   return <>
     <div id="google_translate_element" className="auto-translate-element" aria-hidden="true" />
-    <Script src="https://translate.google.com/translate_a/element.js?cb=hainaAutoTranslateInit" strategy="afterInteractive" />
+    {translationEnabled ? (
+      <Script src="https://translate.google.com/translate_a/element.js?cb=hainaAutoTranslateInit" strategy="afterInteractive" />
+    ) : null}
   </>;
 }

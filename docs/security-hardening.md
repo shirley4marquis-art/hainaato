@@ -1,4 +1,4 @@
-# Production Security Hardening & Geo-Restriction Runbook
+# Production Security Hardening Runbook
 
 This document covers the configuration that lives **outside the repo** — Cloudflare,
 Vercel and Supabase dashboard settings — that pairs with the in-app code in
@@ -8,16 +8,16 @@ Target request path:
 
 ```
 Internet
-  → Cloudflare (DNS proxied): geo firewall, managed WAF/OWASP, Bot Fight Mode,
-    IP reputation, rate-limiting rules, DDoS, Turnstile
-  → Vercel origin (locked: only Cloudflare IPs + x-edge-auth secret header)
-  → proxy.ts: origin-auth check + geo re-check + security headers
-  → route handlers: server-side validation + per-endpoint rate limits
-  → Postgres (parameterised queries only)
+  -> Cloudflare (DNS proxied): managed WAF/OWASP, Bot Fight Mode,
+     IP reputation, rate-limiting rules, DDoS, Turnstile
+  -> Vercel origin (locked: only Cloudflare IPs + x-edge-auth secret header)
+  -> proxy.ts: origin-auth check + security headers
+  -> route handlers: server-side validation + per-endpoint rate limits
+  -> Postgres (parameterised queries only)
 ```
 
-Principle: **deny-by-default** for sensitive services (admin, direct origin
-access, blocked regions); fast and frictionless for legitimate visitors.
+Principle: **deny-by-default** for sensitive services (admin and direct-origin
+access); fast and frictionless for legitimate visitors.
 
 ---
 
@@ -29,13 +29,10 @@ full annotated list. Security-relevant ones:
 
 | Var | Purpose | When to set |
 | --- | --- | --- |
-| `BLOCKED_COUNTRIES` | CSV ISO-3166 alpha-2, origin-side block. Default `CN`. | now |
-| `GEO_IP_ALLOWLIST` | CSV of trusted IPs that bypass the block. | as needed |
 | `EDGE_AUTH_SECRET` | Long random string. `proxy.ts` 403s any request without `x-edge-auth: <this>`. | **only after step 4** |
 | `IP_HASH_SALT` | Long random string; salts hashed IPs in the security log. | now |
 | `CSP_ENFORCE` | `1` = enforce CSP; unset = Report-Only. | after step 6 |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Turnstile challenge on admin login. | step 5 |
-| `EDGE_CONFIG` / `VERCEL_API_TOKEN` / `EDGE_CONFIG_ID` / `VERCEL_TEAM_ID` | Optional: edit the geo policy from `/admin/security` with no redeploy. | optional |
 
 Generate secrets: `openssl rand -hex 32`.
 
@@ -70,42 +67,22 @@ Cloudflare → **SSL/TLS**:
 
 ---
 
-## 3. Geo firewall — block Mainland China (spec §1)
+## 3. Geographic data
 
-Cloudflare → **Security → WAF → Custom rules** → *Create rule*:
+The application does not read country headers, make country-based access
+decisions, log a visitor's country, or automatically select a language from a
+visitor's location. If an earlier Cloudflare country WAF rule is active, remove
+or disable it separately in Cloudflare; that configuration is outside this repo.
 
-- **Name**: `Block Mainland China`
-- **Expression** (Edit expression):
-  ```
-  (ip.src.country eq "CN") and not (ip.src in $trusted_cn_ips)
-  ```
-- **Action**: **Block**
-- **With response**: custom response, status `403`, body:
-  `Forbidden` (plain text — no rule details, no mention of country; spec §1).
-
-Then create the referenced list: **Manage Account → Configurations → Lists** →
-create an **IP List** named `trusted_cn_ips` (start empty). This is the
-admin-editable allowlist for trusted Chinese IPs.
-
-Notes:
-- `CN` is Mainland China only. **Hong Kong (`HK`), Macau (`MO`) and Taiwan
-  (`TW`) are separate country codes and are NOT affected.** To block them later,
-  add them to the expression *and* to `BLOCKED_COUNTRIES`.
-- To add more blocked countries later, either edit this expression or use a
-  Cloudflare list of country codes; keep `BLOCKED_COUNTRIES` in Vercel in sync
-  so the origin-side backstop matches.
-- This rule runs for **every** request path including `/api/*`, so direct API
-  calls from CN are blocked too.
-- VPN/proxy traffic: add a *lower-priority* rule that issues a **Managed
-  Challenge** when `cf.threat_score gt 10` or
-  `ip.src.is_anonymous_proxy` — a risk signal, not a hard block (spec §1).
+Use non-geographic WAF signals such as threat score, bot detection, and rate
+limits when protection is needed.
 
 ---
 
 ## 4. Origin lockdown (spec §13)
 
 Goal: the Vercel origin is only reachable *through* Cloudflare, so nobody
-bypasses the geo/WAF layer by hitting `*.vercel.app` or the origin IP.
+bypasses the WAF layer by hitting `*.vercel.app` or the origin IP.
 
 1. **Cloudflare Transform Rule** (Rules → Transform Rules → Modify Request
    Header) → *Add* header `x-edge-auth` = `<EDGE_AUTH_SECRET value>` on all
@@ -183,7 +160,7 @@ Cloudflare → **Security**:
    with DevTools console open; note any `Report-Only` violations.
 3. Adjust the allowlist in `lib/security/csp.ts` if a legitimate resource is
    flagged. The two `'unsafe-inline'` entries are required by the Google
-   Translate widget (used for automatic regional translation — see
+   Translate widget (used for visitor-selected translation; see
    `lib/i18n/regions.ts`) and are documented in that file. `'unsafe-eval'` is
    not used. Exercise translation into several languages (`?lang=pt`, `?lang=fr`,
    `?lang=ar`) while checking for CSP reports.
@@ -236,10 +213,9 @@ Supabase dashboard → **Authentication**:
 - `lib/security/log.ts` writes to `security_events` (IPs salted-hashed, never
   raw; no credentials/tokens). Migration:
   `supabase/migrations/202608280001_security.sql`.
-- Events: `geo_blocked`, `edge_auth_failed`, `rate_limited`,
-  `admin_login_failed`, `admin_login_blocked`, `admin_login_success`,
-  `security_policy_changed`.
-- Staff view: **`/admin/security`** — recent events + the editable geo policy.
+- Events: `edge_auth_failed`, `rate_limited`, `admin_login_failed`,
+  `admin_login_blocked`, and `admin_login_success`.
+- Staff view: **`/admin/security`** — recent security events.
 - Cloudflare: **Security → Events** for WAF/bot/rate-limit blocks; set up a
   **Notification** for WAF-event spikes and for Origin errors.
 - Consider Logpush (Cloudflare) + Vercel Log Drains to a SIEM for retention.
@@ -250,17 +226,10 @@ Supabase dashboard → **Authentication**:
 
 Run against a Preview/staging deployment that is already behind Cloudflare.
 
-- [ ] `npm run build` succeeds; `npm run security:test-geo` passes.
+- [ ] `npm run build` succeeds; `npm run test:proxy` passes.
 - [ ] `npm run build && npm run security:check-secrets` → no secrets in
       `.next/static`.
-- [ ] From a Mainland-China VPN: `https://hainautocn.com/` → `403`.
-- [ ] Same VPN: `curl https://hainautocn.com/api/quote-status?ref=EST0001`
-      → `403` (direct API blocked).
 - [ ] `curl https://<deployment>.vercel.app/` (no `x-edge-auth`) → `403`.
-- [ ] Add your office IP to `trusted_cn_ips` + `GEO_IP_ALLOWLIST`, retest from
-      VPN with that IP → reachable. Remove afterwards.
-- [ ] HK / TW / a normal country → site loads normally, no challenge for a
-      plain browser.
 - [ ] `curl -sI https://hainautocn.com/` shows: `strict-transport-security`,
       `content-security-policy` (or `-report-only`), `x-content-type-options: nosniff`,
       `referrer-policy`, `permissions-policy`, no `x-powered-by`.
@@ -274,9 +243,8 @@ Run against a Preview/staging deployment that is already behind Cloudflare.
       cooldown (escalation ladder).
 - [ ] Trigger a server error on a route → generic page, real error only in
       Vercel logs.
-- [ ] Automatic translation: a Venezuela-geo request renders Spanish through
-      checkout; `?lang=pt` / `?lang=fr` switch cleanly; `?lang=en` reverts. CSP
-      shows no new violations. (`lib/i18n/regions.ts`)
+- [ ] Visitor-selected translation: `?lang=pt` / `?lang=fr` switch cleanly;
+      `?lang=en` reverts. CSP shows no new violations. (`lib/i18n/regions.ts`)
 - [ ] Admin login with MFA enrolled → prompts for TOTP.
 - [ ] `/admin`, `/admin/security`, `/api/admin/*` → redirect / `401` when not
       signed in.

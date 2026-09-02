@@ -4,7 +4,7 @@ import { isAdminUser } from "../../../../lib/supabase/roles";
 import { checkRateLimit, resetRateLimit } from "../../../../lib/security/rate-limit";
 import { verifyTurnstile, turnstileConfigured } from "../../../../lib/security/turnstile";
 import { logSecurityEvent } from "../../../../lib/security/log";
-import { clientIp, resolveCountry } from "../../../../lib/security/geo-policy";
+import { clientIp } from "../../../../lib/security/client-ip";
 
 // Brute-force protection (spec §5): per-IP and per-email fixed windows with an
 // escalating cooldown, plus a Turnstile challenge when configured. Cloudflare's
@@ -19,7 +19,6 @@ function generic(status: number, error: string) {
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request.headers);
-  const country = resolveCountry(request.headers);
   const ipKey = `admin-login:ip:${ip ?? "unknown"}`;
 
   let body: unknown;
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
     await logSecurityEvent({
       type: "admin_login_blocked",
       ip,
-      country,
       path: "/api/admin/login",
       detail: { email, retryAfter },
     });
@@ -67,7 +65,6 @@ export async function POST(request: NextRequest) {
       await logSecurityEvent({
         type: "admin_login_failed",
         ip,
-        country,
         path: "/api/admin/login",
         detail: { email, reason: "turnstile", codes: ts.errorCodes },
       });
@@ -82,7 +79,6 @@ export async function POST(request: NextRequest) {
     await logSecurityEvent({
       type: "admin_login_failed",
       ip,
-      country,
       path: "/api/admin/login",
       detail: { email, reason: "bad_credentials" },
     });
@@ -93,7 +89,6 @@ export async function POST(request: NextRequest) {
     await logSecurityEvent({
       type: "admin_login_failed",
       ip,
-      country,
       path: "/api/admin/login",
       detail: { email, reason: "not_staff" },
     });
@@ -105,7 +100,6 @@ export async function POST(request: NextRequest) {
   await logSecurityEvent({
     type: "admin_login_success",
     ip,
-    country,
     path: "/api/admin/login",
     detail: { email, mfa: Boolean(data.user?.factors?.length) },
   });

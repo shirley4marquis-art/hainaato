@@ -9,8 +9,8 @@ type IntakeRequest = { urls?: string[] };
 
 function slugFromVehicleUrl(value: string): string | null {
   try {
-    const url = new URL(value, "https://hainautocn.com");
-    if (!new Set(["hainautocn.com", "hainautocn.com", "localhost"]).has(url.hostname)) return null;
+    const url = new URL(value, "https://www.nindgeauto.com");
+    if (!new Set(["nindgeauto.com", "www.nindgeauto.com", "hainautocn.com", "www.hainautocn.com", "localhost"]).has(url.hostname)) return null;
     const match = url.pathname.match(/^\/vehicles\/([^/?#]+)\/?$/);
     return match ? decodeURIComponent(match[1]) : null;
   } catch { return null; }
@@ -38,13 +38,13 @@ export async function POST(request: Request) {
       url: imagePath(vehicle.site, vehicle.id, file), caption: index === 0 ? "Main vehicle view" : `Vehicle view ${index + 1}`,
     }));
     return {
-      sourceUrl: `https://hainautocn.com/vehicles/${encodeURIComponent(vehicle.slug)}`,
+      sourceUrl: `https://www.nindgeauto.com/vehicles/${encodeURIComponent(vehicle.slug)}`,
       item: {
         make, model: indexEntry?.model || titleParts.join(" ") || vehicle.title, year: vehicle.year,
         condition: indexEntry?.condition ?? (vehicle.mileageKm === 0 ? "new" : "used"), mileageKm: vehicle.mileageKm,
         fuelType: fuelType ?? undefined, transmission: vehicle.gearbox, drivetrain: vehicle.driveType,
         exteriorColor: vehicle.color, qty: 1, fobOriginal: usdPrice,
-        discount: 0, fobFinal: usdPrice, historyNotes: `Vehicle link: https://hainautocn.com/vehicles/${vehicle.slug}`,
+        discount: 0, fobFinal: usdPrice, historyNotes: `Vehicle link: https://www.nindgeauto.com/vehicles/${vehicle.slug}`,
         specSummary: [vehicle.bodyType, fuelType, vehicle.gearbox, vehicle.driveType].filter(Boolean).join(" · ") || vehicle.overview,
         photos,
       },

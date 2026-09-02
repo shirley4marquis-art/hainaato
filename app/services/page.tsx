@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {SiteShell} from "../ui";
 
-export const metadata:Metadata={title:"Importación de vehículos de China a Venezuela",description:"Servicio integral para importar vehículos de China a Venezuela: inspección, documentación de exportación, transporte marítimo, coordinación aduanera y entrega.",alternates:{canonical:"/services"}};
+export const metadata:Metadata={title:"Importación de vehículos de China a Sudamérica",description:"Servicio integral para importar vehículos de China a Venezuela y Sudamérica: inspección, documentación de exportación, transporte marítimo y coordinación en destino.",alternates:{canonical:"/services"}};
 
 const services=[
   {icon:"DOC",title:"Licenses & Compliance",lead:"Export permits and clearance papers for the full workflow.",copy:"We handle vehicle cancellation and export permit applications through compliant end-to-end export workflows."},
@@ -27,7 +27,7 @@ const reports=[
 ];
 
 export default function Services(){return <SiteShell>
-  <section className="services-hero"><div className="container"><span>END-TO-END EXPORT SUPPORT</span><h1>One-stop Auto Export Solution</h1><p>From sourcing to delivery, we handle every step.</p><div><Link href="#core-services">Explore services</Link><Link href="/quote">Get a free quote</Link></div></div></section>
+  <section className="services-hero"><div className="container"><span>END-TO-END EXPORT SUPPORT</span><h1>One-stop Auto Export Solution</h1><p>From sourcing to delivery, we handle every step.</p><div><Link href="#core-services">Explore services</Link><Link href="/quote">Get a free quote</Link><Link href="/importar-autos-china-sudamerica">Guía para Sudamérica</Link></div></div></section>
   <section id="core-services" className="services-main"><div className="container">
     <header className="services-heading"><span>WHAT WE HANDLE</span><h2>Core Services</h2><p>Export permits, nationwide logistics, global transport, and destination delivery — aligned with professional China used-car export workflows.</p></header>
     <div className="core-service-grid">{services.map((service)=><article key={service.title}><b className="service-icon">{service.icon}</b><h3>{service.title}</h3><strong>{service.lead}</strong><p>{service.copy}</p></article>)}</div>

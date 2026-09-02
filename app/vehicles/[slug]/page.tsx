@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -44,7 +45,7 @@ import { rankVehicleImages } from "../../../lib/image-ranking";
 // is run manually, not continuously) rather than the default of never
 // caching at all.
 export const revalidate = 3600;
-const SITE_URL = "https://hainautocn.com";
+const SITE_URL = "https://www.nindgeauto.com";
 const VEHICLE_FALLBACK_SHARE_IMAGE = `${SITE_URL}/images/hainaauto-vehicles-hero-full-hd.jpg`;
 
 function capitalize(s: string): string {
@@ -97,7 +98,7 @@ export async function generateMetadata({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
   const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
-  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. 中国汽车出口，车辆可从中国进口到委内瑞拉；HainaAuto ofrece inspección, documentación y logística.`;
+  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de HainaAuto.`;
   const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
   const heroFile = rankVehicleImages(vehicle.images)[0];
   const shareImage = heroFile
@@ -110,8 +111,8 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       siteName: "HainaAuto",
-      locale: "zh_CN",
-      alternateLocale: ["es_VE"],
+      locale: "es_VE",
+      alternateLocale: ["es_CO", "es_PE", "es_CL", "es_EC", "es_AR", "pt_BR", "zh_CN"],
       url: canonicalUrl,
       title: vehicle.title,
       description,
@@ -345,11 +346,11 @@ export default async function VehicleDetail({
           <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel} />
           <div className="side-card specialist-card">
             <span className="avatar" aria-label="HainaAuto export team">
-              <img src="/hainaauto-logo.webp" alt="HainaAuto logo" />
+              <Image src="/hainaauto-logo.webp" alt="HainaAuto logo" width={32} height={32} />
             </span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-            <a href="mailto:sales@hainautocn.com">sales@hainautocn.com</a>
+            <a href="mailto:sales@nindgeauto.com">sales@nindgeauto.com</a>
             <p>We typically respond within 24 hours.</p>
           </div>
           <div className="side-card">

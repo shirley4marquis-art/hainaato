@@ -4,7 +4,7 @@ import Link from "next/link";
 import {useEffect,useState} from "react";
 
 type QuoteSummary={ref:string;internalRef:string;destination:string;currency:string;cifTotal:number;depositPct:number;depositAmount:number;balanceAmount:number;validUntil:string|null;deliveryStatus:"processing"|"sent"|"failed"|"whatsapp-only";vehicles:{title:string;qty:number;unitPrice:number;photo:string|null}[]};
-const SALES_EMAIL="sales@hainautocn.com";
+const SALES_EMAIL="sales@nindgeauto.com";
 const WHATSAPP_NUMBER="8615032178759";
 function money(value:number,currency:string){return new Intl.NumberFormat("en-US",{style:"currency",currency,maximumFractionDigits:0}).format(value)}
 

@@ -6,30 +6,22 @@
 //   1. Origin-lockdown check  — reject requests that did not transit the
 //      CDN/WAF (Cloudflare) when EDGE_AUTH_SECRET is configured. Defense in
 //      depth for spec §13; the primary lockdown is Vercel Trusted IPs.
-//   2. Geo-restriction        — deny Mainland China (configurable) with a
-//      generic 403. Defense in depth for spec §1; the primary block is the
-//      Cloudflare WAF geo firewall rule.
-//   3. Security headers        — spec §6, §7 (CSP is also set as a constant in
+//   2. Security headers        — spec §6, §7 (CSP is also set as a constant in
 //      next.config.ts; re-set here so proxy-terminal responses carry it).
-//   4. Locale cookie + staff auth for /admin — pre-existing behaviour.
+//   3. Visitor-selected locale cookie + staff auth for /admin.
 //
 // See docs/security-hardening.md for the CDN/WAF configuration this pairs with.
 import { NextResponse } from "next/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
 import { isAdminUser } from "./lib/supabase/roles";
-import {
-  getGeoPolicy,
-  resolveCountry,
-  clientIp,
-  ipAllowed,
-  isCountryBlocked,
-} from "./lib/security/geo-policy";
+import { clientIp } from "./lib/security/client-ip";
 import { baseSecurityHeaders, allSecurityHeaders } from "./lib/security/csp";
 import { logSecurityEvent } from "./lib/security/log";
-import { autoTranslateLang, normalizeLangParam } from "./lib/i18n/regions";
+import { normalizeLangParam } from "./lib/i18n/regions";
 
 const LOCALE_COOKIE = "haina_locale";
+const EXPLICIT_LOCALE_COOKIE = "haina_locale_explicit";
 const YEAR_SECONDS = 31_536_000;
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/api/admin/login"]);
@@ -61,7 +53,7 @@ function isEdgeAuthenticated(request: NextRequest): boolean {
 }
 
 function forbidden(): NextResponse {
-  // Generic — no rule detail, no country echo (spec §1).
+  // Generic - no rule detail is exposed.
   const res = new NextResponse("Forbidden", {
     status: 403,
     headers: { "content-type": "text/plain; charset=utf-8" },
@@ -75,62 +67,53 @@ function decorate(response: NextResponse): NextResponse {
   return response;
 }
 
-// Persist the resolved UI language. `haina_locale` is our own signal (read by
-// app/auto-translate.tsx and app/layout.tsx); `googtrans` is the cookie the
-// Google Translate widget itself reads (`/<source>/<target>`) so translation is
-// applied as the widget initialises rather than after a client render.
-function applyLocaleCookies(response: NextResponse, lang: string, explicit: boolean) {
+// Persist a visitor-selected UI language. The explicit marker prevents legacy
+// cookies created by the retired country-based behaviour from being reused.
+function applyLocaleCookies(response: NextResponse, lang: string) {
   const base = { path: "/", maxAge: YEAR_SECONDS, sameSite: "lax" as const };
   response.cookies.set(LOCALE_COOKIE, lang, base);
+  response.cookies.set(EXPLICIT_LOCALE_COOKIE, "1", base);
   if (lang && lang !== "en") {
     response.cookies.set("googtrans", `/en/${lang}`, base);
-  } else if (explicit) {
-    // Visitor explicitly asked for English — clear any prior translation.
+  } else {
+    // Visitor explicitly asked for English - clear any prior translation.
     response.cookies.set("googtrans", "", { path: "/", maxAge: 0 });
   }
 }
 
 export async function proxy(request: NextRequest, event: NextFetchEvent) {
   const { pathname } = request.nextUrl;
-  const country = resolveCountry(request.headers);
   const ip = clientIp(request.headers);
 
   // 1. Origin lockdown — the request must have transited the CDN.
   if (!isEdgeAuthenticated(request)) {
-    event.waitUntil(logSecurityEvent({ type: "edge_auth_failed", ip, country, path: pathname }));
+    event.waitUntil(logSecurityEvent({ type: "edge_auth_failed", ip, path: pathname }));
     return forbidden();
   }
 
-  // 2. Geo-restriction (deny-by-default for blocked regions).
-  const policy = await getGeoPolicy();
-  if (isCountryBlocked(country, policy) && !ipAllowed(ip, policy.allowIps)) {
-    event.waitUntil(logSecurityEvent({ type: "geo_blocked", ip, country, path: pathname }));
-    return forbidden();
-  }
-
-  // 3. Automatic localisation. The site is authored in English; pick the target
-  //    language for this visitor and persist it in cookies so the Google
-  //    Translate widget (app/auto-translate.tsx) applies it on load — through
-  //    the whole session, including checkout. Precedence:
-  //      ?lang= override  >  existing choice (cookie)  >  visitor's country  >  English
+  // 2. Visitor-selected localisation. Country headers are intentionally ignored;
+  //    explicit ?lang= choices and a prior explicit locale cookie remain supported.
   const langOverride = normalizeLangParam(request.nextUrl.searchParams.get("lang"));
+  const hasExplicitLocale = request.cookies.get(EXPLICIT_LOCALE_COOKIE)?.value === "1";
   const rawExisting = request.cookies.get(LOCALE_COOKIE)?.value || null;
-  // Normalise legacy / malformed cookie values (e.g. the old "es-VE") to a
-  // supported code so `googtrans` is always well-formed.
-  const existingLocale = rawExisting === "en" ? "en" : normalizeLangParam(rawExisting);
-  const targetLang = langOverride || existingLocale || autoTranslateLang(country);
+  const existingLocale = hasExplicitLocale
+    ? rawExisting === "en"
+      ? "en"
+      : normalizeLangParam(rawExisting)
+    : null;
+  const targetLang = langOverride || existingLocale || "en";
 
   const isAdminArea = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
   // Only write cookies on real page navigations, and only when something
   // actually changed — a Set-Cookie on every response would defeat CDN caching
   // of routes like /api/shipment-updates.
   const isPageNav = !isAdminArea && !pathname.startsWith("/api/");
-  const localeChanged = targetLang !== existingLocale || langOverride !== null;
+  const localeChanged = langOverride !== null;
 
   if (!isAdminArea) {
     const response = NextResponse.next();
     if (isPageNav && localeChanged) {
-      applyLocaleCookies(response, targetLang, langOverride !== null);
+      applyLocaleCookies(response, targetLang);
     }
     return decorate(response);
   }
@@ -161,6 +144,6 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
 export const config = {
   // First entry: all pages except static assets / files-with-extensions.
   // Second entry: every API route (including ones with dotted path params) so
-  // the geo + edge-auth gate also covers direct API access (spec §1).
+  // the edge-auth gate also covers direct API access.
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)", "/api/:path*"],
 };

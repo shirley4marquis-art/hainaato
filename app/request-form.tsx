@@ -1,4 +1,6 @@
 "use client";
+
+import Image from "next/image";
 import {FormEvent,useState} from "react";
 import {useRouter} from "next/navigation";
 import {submitLead} from "./submit-lead";
@@ -79,7 +81,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
   return <form id="quote-form" className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
     <div className="quote-form-intro">
       <div className="quote-brand-mark" aria-hidden="true">
-        <img src="/hainaauto-logo.webp" alt="HainaAuto logo" />
+        <Image src="/hainaauto-logo.webp" alt="HainaAuto logo" width={30} height={30} />
       </div>
       <div>
         <span>HAINA AUTO</span>

@@ -11,19 +11,16 @@ import { createHash } from "node:crypto";
 import { Pool } from "pg";
 
 export type SecurityEventType =
-  | "geo_blocked"
   | "edge_auth_failed"
   | "rate_limited"
   | "admin_login_failed"
   | "admin_login_blocked"
   | "admin_login_success"
-  | "security_policy_changed"
   | "suspicious_request";
 
 export type SecurityEventInput = {
   type: SecurityEventType;
   ip?: string | null;
-  country?: string | null;
   path?: string | null;
   detail?: Record<string, unknown> | null;
 };
@@ -48,13 +45,12 @@ async function ensureDb(): Promise<void> {
   if (!ready) {
     ready = getPool()
       .query(`
-        CREATE TABLE IF NOT EXISTS security_events (
-          id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-          ts timestamptz NOT NULL DEFAULT now(),
-          type text NOT NULL,
-          ip_hash text,
-          country text,
-          path text,
+         CREATE TABLE IF NOT EXISTS security_events (
+           id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+           ts timestamptz NOT NULL DEFAULT now(),
+           type text NOT NULL,
+           ip_hash text,
+           path text,
           detail jsonb NOT NULL DEFAULT '{}'
         );
         CREATE INDEX IF NOT EXISTS security_events_ts_idx ON security_events (ts DESC);
@@ -80,12 +76,11 @@ export async function logSecurityEvent(input: SecurityEventInput): Promise<void>
   try {
     await ensureDb();
     await getPool().query(
-      `INSERT INTO security_events (type, ip_hash, country, path, detail)
-       VALUES ($1, $2, $3, $4, $5)`,
+      `INSERT INTO security_events (type, ip_hash, path, detail)
+       VALUES ($1, $2, $3, $4)`,
       [
         input.type,
         hashIp(input.ip ?? null),
-        input.country ?? null,
         input.path ? input.path.slice(0, 512) : null,
         JSON.stringify(input.detail ?? {}),
       ]
@@ -100,7 +95,6 @@ export type SecurityEventRow = {
   ts: string;
   type: string;
   ip_hash: string | null;
-  country: string | null;
   path: string | null;
   detail: Record<string, unknown>;
 };
@@ -111,7 +105,7 @@ export async function recentSecurityEvents(limit = 100, offset = 0): Promise<Sec
   const safeLimit = Math.min(500, Math.max(1, Math.round(limit)));
   const safeOffset = Math.max(0, Math.round(offset));
   const { rows } = await getPool().query<SecurityEventRow>(
-    `SELECT id::text, ts, type, ip_hash, country, path, detail
+    `SELECT id::text, ts, type, ip_hash, path, detail
        FROM security_events
       ORDER BY ts DESC
       LIMIT $1 OFFSET $2`,
