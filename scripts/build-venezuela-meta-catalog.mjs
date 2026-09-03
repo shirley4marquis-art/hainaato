@@ -82,9 +82,8 @@ function bodyType(v) {
 }
 
 function priceBand(priceUsd) {
-  if (priceUsd < 6_000) return "Precio USD: menos de 6.000";
-  if (priceUsd < 9_000) return "Precio USD: 6.000 a 8.999";
-  if (priceUsd < 15_000) return "Precio USD: 9.000 a 14.999";
+  if (priceUsd < 10_000) return "Precio USD: menos de 10.000";
+  if (priceUsd < 15_000) return "Precio USD: 10.000 a 14.999";
   if (priceUsd < 25_000) return "Precio USD: 15.000 a 24.999";
   if (priceUsd < 40_000) return "Precio USD: 25.000 a 39.999";
   return "Precio USD: 40.000 o más";

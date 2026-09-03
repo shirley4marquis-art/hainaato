@@ -136,6 +136,10 @@ function customLabel0(v) {
   return categoryLabel(v);
 }
 
+function priceCollection(v) {
+  return v.priceCNY * USD_PER_CNY < 10_000 ? "price_under_10000" : "price_10000_plus";
+}
+
 // Deterministic even-stride sample of `count` items spread across `list`,
 // rather than just the first `count` (which would skew toward whichever
 // site/dealer happens to sort first).
@@ -244,7 +248,7 @@ const eligible = [...new Map(
 ).values()];
 const selected = curateSelection(eligible);
 
-const header = ["id", "title", "description", "availability", "condition", "price", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1"];
+const header = ["id", "title", "description", "availability", "condition", "price", "image_link", "brand", "additional_image_link", "product_type", "custom_label_0", "custom_label_1", "custom_label_2"];
 const lines = [header.join(",")];
 
 let totalAdditionalImages = 0;
@@ -268,6 +272,7 @@ for (const v of selected) {
     productType(v, brand),
     customLabel0(v),
     categoryPriority[categoryLabel(v)],
+    priceCollection(v),
   ];
   lines.push(row.map(csvField).join(","));
 }
