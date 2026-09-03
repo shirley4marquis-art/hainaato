@@ -85,7 +85,8 @@ const PINNED_LISTING_SLUGS = new Set([
 
 const isPickup = (v) => /^(pickup|pickup truck)$/.test((v.bodyType ?? "").trim().toLowerCase());
 const isSuv = (v) => /^(suv|off-road vehicle\/suv)$/.test((v.bodyType ?? "").trim().toLowerCase());
-const isPassenger = (v) => /^(car|passenger car|sedan|hatchback|station wagon|coupe|convertible|sports car)$/.test((v.bodyType ?? "").trim().toLowerCase());
+const isSupercar = (v) => /^(sports car|coupe|convertible)$/.test((v.bodyType ?? "").trim().toLowerCase()) || /supercar|hypercar|\bgt[ -]?r\b|\b911\b|\br8\b|\b718\b/i.test(v.title);
+const isPassenger = (v) => !isSupercar(v) && /^(car|passenger car|sedan|hatchback|station wagon)$/.test((v.bodyType ?? "").trim().toLowerCase());
 const isVanBus = (v) => /^(van|minivan|bus|commercial vehicles\/mpvs)$/.test((v.bodyType ?? "").trim().toLowerCase());
 const HEAVY_TRUCK_BODY_RE = /dump truck|tipper|tractor truck|mixer truck|heavy truck|machinery|equipment/i;
 const HEAVY_TRUCK_TITLE_RE = /dump truck|tipper|tractor truck|truck head|mixer truck|cement mixer|heavy truck|semi[- ]?truck|howo|sinotruk|shacman/i;
@@ -103,18 +104,20 @@ function categoryLabel(v) {
   if (isPickup(v)) return "Pickup Trucks";
   if (isVanBus(v)) return "Vans & Buses";
   if (isSuv(v)) return "SUVs & Off-Road";
+  if (isSupercar(v)) return "Sports & Supercars";
   if (isPassenger(v)) return "Passenger Cars";
   return "Specialty Vehicles";
 }
 
 const categoryPriority = {
-  "Heavy-Duty Trucks": "priority_01_heavy_duty_trucks",
-  Trucks: "priority_02_trucks",
+  "SUVs & Off-Road": "priority_01_suvs",
+  "Passenger Cars": "priority_02_passenger_cars",
   "Pickup Trucks": "priority_03_pickups",
   "Vans & Buses": "priority_04_vans_buses",
-  "SUVs & Off-Road": "priority_05_suvs",
-  "Passenger Cars": "priority_06_passenger_cars",
-  "Specialty Vehicles": "priority_07_specialty",
+  "Sports & Supercars": "priority_05_sports_supercars",
+  "Specialty Vehicles": "priority_06_specialty",
+  Trucks: "priority_07_trucks",
+  "Heavy-Duty Trucks": "priority_08_heavy_duty_trucks",
 };
 
 function productType(v, brand) {
@@ -165,14 +168,16 @@ function curateSelection(eligible) {
   const suvRemainder = suvs.filter((v) => !FOUR_WHEEL_TITLE_RE.test(v.title));
   const passengerCars = eligible.filter((v) => categoryLabel(v) === "Passenger Cars");
   const vansAndBuses = eligible.filter((v) => categoryLabel(v) === "Vans & Buses");
-  const other = eligible.filter((v) => categoryLabel(v) === "Specialty Vehicles");
+  const sportsAndSupercars = eligible.filter((v) => categoryLabel(v) === "Sports & Supercars");
+  const specialty = eligible.filter((v) => categoryLabel(v) === "Specialty Vehicles");
 
   const remainderBuckets = [
     ["4x4 SUVs", fourByFourSuvs],
-    ["Vans & buses", vansAndBuses],
     ["SUVs & off-road (non-4x4)", suvRemainder],
     ["Passenger cars", passengerCars],
-    ["Specialty vehicles", other],
+    ["Vans & buses", vansAndBuses],
+    ["Sports & supercars", sportsAndSupercars],
+    ["Specialty vehicles", specialty],
   ];
   const remainingBudget = Math.max(0, TOTAL_CAP - heavyTrucks.length - trucks.length - pickups.length);
   const remainderPoolSize = remainderBuckets.reduce((sum, [, list]) => sum + list.length, 0);
@@ -184,6 +189,12 @@ function curateSelection(eligible) {
   const drift = remainingBudget - quotas.reduce((a, b) => a + b, 0);
   const largest = quotas.indexOf(Math.max(...quotas));
   if (largest >= 0) quotas[largest] += drift;
+  const specialtyIndex = remainderBuckets.findIndex(([label]) => label === "Specialty vehicles");
+  if (specialtyIndex >= 0 && remainderBuckets[specialtyIndex][1].length > 0 && quotas[specialtyIndex] === 0) {
+    const donorIndex = quotas.indexOf(Math.max(...quotas));
+    quotas[specialtyIndex] = 1;
+    if (donorIndex >= 0 && donorIndex !== specialtyIndex) quotas[donorIndex] -= 1;
+  }
 
   console.log(`Heavy-duty trucks (priority 1, all included): ${heavyTrucks.length}`);
   console.log(`Trucks (priority 2, all included): ${trucks.length}`);
@@ -191,10 +202,10 @@ function curateSelection(eligible) {
   remainderBuckets.forEach(([label, list], i) => console.log(`${label}: ${quotas[i]} of ${list.length}`));
 
   return [
-    ...heavyTrucks,
-    ...trucks,
-    ...pickups,
     ...remainderBuckets.flatMap(([, list], i) => evenSample(list, quotas[i])),
+    ...pickups,
+    ...trucks,
+    ...heavyTrucks,
   ];
 }
 

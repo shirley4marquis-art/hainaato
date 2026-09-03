@@ -14,7 +14,7 @@ const USD_PER_CNY = 0.139;
 const PER_TRIM_CAP = 24;
 const YEAR_MIN = 2024;
 const YEAR_MAX = 2026;
-const CATEGORY_TARGETS = {pickup:180,suv:130,passenger:100,commercial:75,truck:60,heavy_duty:50,supercar:25,motorcycle:5,other:10};
+const CATEGORY_TARGETS = {suv:130,passenger:100,pickup:180,commercial:75,supercar:25,specialty:15,truck:60,heavy_duty:50};
 
 const brandAliases = new Map([
   ["great", "Great Wall"],
@@ -64,22 +64,21 @@ const categoryNames = {
   suv: "SUVs y todoterrenos",
   passenger: "Sedanes y hatchbacks",
   supercar: "Supercarros y deportivos",
-  motorcycle: "Motocicletas",
-  other: "Otros vehículos",
+  specialty: "Vehículos especiales y motocicletas",
 };
 
 function bodyType(v) {
   const value = (v.bodyType ?? "").toLowerCase();
   const title = v.title ?? "";
   if (/dump truck|heavy truck|tractor truck|mixer truck|machinery|equipment/.test(value) || /excavat|loader|crane|dump truck|tipper|tractor truck|semi[- ]?truck|heavy machinery|mixer truck|cement mixer|\bhowo\b|sinotruk|shacman/i.test(title)) return "heavy_duty";
-  if (/motorcycle|motorbike|scooter/.test(value) || /\bmotorcycle\b|\bmotorbike\b|\bscooter\b/i.test(title)) return "motorcycle";
+  if (/motorcycle|motorbike|scooter/.test(value) || /\bmotorcycle\b|\bmotorbike\b|\bscooter\b/i.test(title)) return "specialty";
   if (/sports car|coupe|convertible/.test(value) || /supercar|hypercar|\bgt[ -]?r\b|\b911\b|\br8\b|\b718\b/i.test(title)) return "supercar";
   if (value.includes("pickup") || /\bhilux\b|\branger\b|\bfrontier\b|\bnavara\b|\bsilverado\b|\bf-?150\b|\bmaverick\b|\bd-max\b|\bpickup\b/i.test(title)) return "pickup";
   if (/commercial|mpv|van|bus/.test(value) || /\bminivan\b|\bpassenger van\b|\bpeople carrier\b/i.test(title)) return "commercial";
   if (/truck/.test(value) || /\btruck\b|\blorry\b/i.test(title)) return "truck";
   if (value.includes("suv") || value.includes("off-road")) return "suv";
   if (/passenger|sedan|hatchback/.test(value) || value === "car") return "passenger";
-  return "other";
+  return "specialty";
 }
 
 function priceBand(priceUsd) {
@@ -126,7 +125,7 @@ function specificSegment(v, type) {
   if (type === "heavy_duty") return /dump|tipper|volteo/.test(value) ? "Camión de volteo" : /tractor|prime mover/.test(value) ? "Tractocamión" : "Camión pesado";
   if (type === "truck") return "Camión liviano o mediano";
   if (type === "supercar") return "Deportivo o vehículo de lujo";
-  if (type === "motorcycle") return "Motocicleta";
+  if (type === "specialty") return /motorcycle|motorbike|scooter|motocicleta/i.test(value) ? "Motocicleta" : "Vehículo especial";
   return "Vehículo especial";
 }
 
@@ -154,7 +153,7 @@ function catalogBrand(v) {
   // A primary brand with a non-matching model is outside this Venezuela-focused feed.
   if (brandRules.some(([brand]) => raw.toLowerCase() === brand.toLowerCase())) return null;
   const normalized = brandAliases.get(raw.toLowerCase()) ?? raw;
-  const eligibleType = ["supercar","motorcycle","heavy_duty","truck","pickup","commercial","suv","passenger"].includes(type);
+  const eligibleType = ["supercar","specialty","heavy_duty","truck","pickup","commercial","suv","passenger"].includes(type);
   return eligibleType && approvedFallbackBrands.has(normalized) ? normalized : null;
 }
 
@@ -253,7 +252,7 @@ function brandDemandRank(v) {
 function priority(v) {
   const rank = trimRank(v);
   const type = bodyType(v);
-  const typeOrder = ["heavy_duty", "truck", "pickup", "commercial", "suv", "passenger", "supercar", "motorcycle", "other"];
+  const typeOrder = ["suv", "passenger", "pickup", "commercial", "supercar", "specialty", "truck", "heavy_duty"];
   const typeRank = typeOrder.includes(type) ? typeOrder.indexOf(type) : typeOrder.length;
   const conditionRank = v.condition === "new" ? 0 : 1;
   const requestedOrder = type === "pickup" || type === "truck" || type === "machinery" ? [brandDemandRank(v), demandRank(v), rank] : [rank, brandDemandRank(v), demandRank(v)];
