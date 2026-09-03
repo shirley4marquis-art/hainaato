@@ -24,13 +24,14 @@ const brandAliases = new Map([
   ["sinotruk / howo", "Sinotruk HOWO"], ["sinotruk", "Sinotruk"], ["howo", "Sinotruk HOWO"],
 ]);
 const approvedFallbackBrands = new Set([
-  "Aston Martin", "Audi", "Bentley", "BMW", "Changan", "Dongfeng", "Farizon", "Foton",
+  "Aston Martin", "Audi", "Bentley", "BMW", "Cadillac", "Changan", "Dongfeng", "Farizon", "Foton",
   "Haval", "Isuzu", "Iveco", "JAC", "Jaguar", "Jinbei", "JMC", "Kairui", "Lamborghini",
   "Maxus", "Mazda", "McLaren", "Mercedes-Benz", "MG", "MINI", "Mitsubishi", "Neta",
   "Porsche", "SAIC", "Sinotruk", "Sinotruk HOWO", "Subaru", "Wuling", "Yutong", "Zeekr",
 ]);
 
 const brandRules = [
+  ["Cadillac", /escalade|xt4|xt5|xt6|ct4|ct5/i],
   ["Toyota", /hilux|tundra|tacoma|fortuner|land cruiser|landcruiser|prado|corolla|yaris|rav4|highlander/i],
   ["Chevrolet", /silverado|tahoe|trailblazer|equinox|cruze|aveo|captiva/i],
   ["Ford", /ranger|explorer|edge|bronco|territory|f-150|maverick|everest/i],
@@ -46,6 +47,7 @@ const brandRules = [
 ];
 
 const wantedTrimRules = [
+  /escalade/i,
   /hilux/i, /fortuner/i, /land cruiser|landcruiser|prado/i, /corolla/i, /rav4/i,
   /silverado|tahoe|trailblazer|equinox/i, /ranger|explorer|edge|territory/i,
   /tucson|santa fe|elantra|creta/i, /sportage|sorento|seltos|rio/i,
@@ -118,7 +120,7 @@ function driveClass(v) {
 function specificSegment(v, type) {
   const value = `${v.bodyType ?? ""} ${v.title ?? ""}`.toLowerCase();
   if (type === "pickup") return /hilux|ranger|frontier|navara|t8|t9|hunter|d-max/.test(value) ? "Pickup mediana" : /f-?150|silverado|ram 1500/.test(value) ? "Pickup grande" : "Pickup utilitaria";
-  if (type === "suv") return /land cruiser|prado|fortuner|patrol|tahoe|palisade/.test(value) ? "SUV 4x4 grande" : /rav4|cr-v|tucson|sportage|tiggo 7|coolray|x70/.test(value) ? "SUV familiar" : "SUV compacta o mediana";
+  if (type === "suv") return /escalade|land cruiser|prado|fortuner|patrol|tahoe|palisade/.test(value) ? "SUV 4x4 grande" : /rav4|cr-v|tucson|sportage|tiggo 7|coolray|x70/.test(value) ? "SUV familiar" : "SUV compacta o mediana";
   if (type === "passenger") return /hatchback/.test(value) ? "Hatchback económico" : /sedan|corolla|civic|sentra|sylphy|elantra|emgrand/.test(value) ? "Sedán familiar" : "Automóvil económico";
   if (type === "commercial") return /bus|minibus|passenger|people carrier/.test(value) ? "Van o autobús de pasajeros" : /cargo|panel/.test(value) ? "Van de carga" : "Vehículo comercial";
   if (type === "heavy_duty") return /dump|tipper|volteo/.test(value) ? "Camión de volteo" : /tractor|prime mover/.test(value) ? "Tractocamión" : "Camión pesado";

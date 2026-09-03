@@ -79,6 +79,9 @@ const USD_PER_CNY = 0.139;
 // isn't biased toward one dealer/site's scrape order.
 const TOTAL_CAP = 2000;
 const FOUR_WHEEL_TITLE_RE = /4wd|4x4|awd|all-wheel|four-wheel/i;
+const PINNED_LISTING_SLUGS = new Set([
+  "hainaauto-manual-cadillac-escalade-v-2026",
+]);
 
 const isPickup = (v) => /^(pickup|pickup truck)$/.test((v.bodyType ?? "").trim().toLowerCase());
 const isSuv = (v) => /^(suv|off-road vehicle\/suv)$/.test((v.bodyType ?? "").trim().toLowerCase());
@@ -136,8 +139,12 @@ function customLabel0(v) {
 function evenSample(list, count) {
   if (count >= list.length) return list;
   if (count <= 0) return [];
-  const step = list.length / count;
-  return Array.from({ length: count }, (_, i) => list[Math.floor(i * step)]);
+  const pinned = list.filter((vehicle) => PINNED_LISTING_SLUGS.has(vehicle.slug)).slice(0, count);
+  const pool = list.filter((vehicle) => !PINNED_LISTING_SLUGS.has(vehicle.slug));
+  const remaining = count - pinned.length;
+  if (remaining <= 0) return pinned;
+  const step = pool.length / remaining;
+  return [...pinned, ...Array.from({ length: remaining }, (_, i) => pool[Math.floor(i * step)])];
 }
 
 // Within the 4x4 priority group, Toyota (Hilux, Land Cruiser, etc. — the
