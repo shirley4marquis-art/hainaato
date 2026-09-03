@@ -6,6 +6,10 @@ const detailShardCache = new Map<number, Record<string, Vehicle>>();
 const DETAIL_SHARD_COUNT = 64;
 const VEHICLE_SLUG_PATTERN = /^[a-z]+-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+// Keep this in sync with the catalogue revision in lib/vehicles.ts. Changing
+// the loader invalidates deployment caches when a curated detail is added.
+export const VEHICLE_DETAIL_REVISION = "2026-09-03-escalade-v";
+
 function detailShardForSlug(slug: string): number {
   let hash = 2166136261;
   for (let index = 0; index < slug.length; index += 1) {
