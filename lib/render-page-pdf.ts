@@ -2,8 +2,8 @@
 // to render and optional auth headers/cookies when the page is protected.
 export type RenderPagePdfAuth = { kind: "cookie"; cookieHeader: string } | { kind: "headers"; headers: Record<string, string> } | { kind: "none" };
 
-const MAX_PDF_IMAGE_WIDTH = 1200;
-const MAX_PDF_IMAGE_HEIGHT = 900;
+const MAX_PDF_IMAGE_WIDTH = 900;
+const MAX_PDF_IMAGE_HEIGHT = 675;
 
 // Vercel's Fluid Compute can route several concurrent requests into the same
 // warm instance to avoid cold starts. Each renderPagePdf() call launches its
@@ -89,10 +89,19 @@ async function renderPagePdfNow(pathname: string, baseUrl: string, auth: RenderP
     } else if (auth.kind === "headers") {
       await context.setExtraHTTPHeaders(auth.headers);
     }
+    // Print routes are fully server-rendered. Hydrating them in this short-lived
+    // browser only consumes scarce serverless resources. Image transforms are
+    // serialized for the same reason: Sharp decodes are memory intensive.
+    let imageWork: Promise<void> = Promise.resolve();
     await context.route("**/*", async (route) => {
       const request = route.request();
       const requestUrl = new URL(request.url());
       const resourceType = request.resourceType();
+
+      if (resourceType === "script" || resourceType === "media") {
+        await route.abort();
+        return;
+      }
 
       if (requestUrl.origin !== printOrigin) {
         if (resourceType === "script" || resourceType === "image" || resourceType === "font" || resourceType === "stylesheet") {
@@ -108,10 +117,14 @@ async function renderPagePdfNow(pathname: string, baseUrl: string, auth: RenderP
         return;
       }
 
+      const previousImageWork = imageWork;
+      let releaseImageWork!: () => void;
+      imageWork = new Promise<void>((resolve) => { releaseImageWork = resolve; });
+      await previousImageWork;
       try {
         const response = await fetch(request.url(), { headers: await request.allHeaders() });
         if (!response.ok) {
-          await route.continue();
+          await route.abort();
           return;
         }
         const source = Buffer.from(await response.arrayBuffer());
@@ -124,7 +137,7 @@ async function renderPagePdfNow(pathname: string, baseUrl: string, auth: RenderP
             fit: "inside",
             withoutEnlargement: true,
           })
-          .jpeg({ quality: 78, mozjpeg: true })
+          .jpeg({ quality: 72, mozjpeg: true })
           .toBuffer();
         await route.fulfill({
           status: 200,
@@ -136,7 +149,9 @@ async function renderPagePdfNow(pathname: string, baseUrl: string, auth: RenderP
           body: optimized,
         });
       } catch {
-        await route.continue();
+        await route.abort();
+      } finally {
+        releaseImageWork();
       }
     });
     const page = await context.newPage();

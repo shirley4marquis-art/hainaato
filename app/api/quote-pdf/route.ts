@@ -7,14 +7,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getQuoteStatus } from "../../../lib/crm";
 import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
+import { verifyQuoteAccessToken } from "../../../lib/quote-access";
+import { guardRequest } from "../../../lib/security/http";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
+  const limited = await guardRequest(request, { name: "quote-pdf", limit: 6, windowSec: 10 * 60 });
+  if (limited) return limited;
+
   const ref = (request.nextUrl.searchParams.get("ref") || "").trim().toUpperCase();
-  if (!ref) return NextResponse.json({ ok: false, error: "Missing quote reference." }, { status: 400 });
+  const token = request.nextUrl.searchParams.get("token") || "";
+  if (!ref || !verifyQuoteAccessToken(ref, token)) {
+    return NextResponse.json({ ok: false, error: "This quotation download link is invalid or incomplete." }, { status: 403 });
+  }
 
   let quote;
   try {

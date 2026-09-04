@@ -289,7 +289,9 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
           specs and price together prevents details from one listing being
           mistaken for another in a multi-vehicle quotation. */}
       {quote.items.map((item, itemIndex) => {
-        const photos = (item.photos ?? []).slice(0, 3);
+        // Two photos keep the vehicle identifiable without exhausting the
+        // memory available to serverless Chromium.
+        const photos = (item.photos ?? []).slice(0, 2);
         const details = [
           [detailLabels.condition, item.condition],
           [detailLabels.mileage, item.mileageKm != null ? `${item.mileageKm.toLocaleString("en-US")} km` : null],

@@ -31,6 +31,9 @@ function getPool(): Pool {
 type Row = Record<string, unknown>;
 
 async function nextRef(client: PoolClient): Promise<string> {
+  // Prevent simultaneous submissions from choosing the same EST number.
+  // This lock is transaction-scoped and is released automatically.
+  await client.query("SELECT pg_advisory_xact_lock(hashtext('hainaauto:quote-reference'))");
   const { rows } = await client.query<{ ref: string }>("SELECT ref FROM quotes WHERE ref LIKE 'EST%'");
   let max = 0;
   for (const { ref } of rows) {

@@ -14,7 +14,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "This quotation link is invalid or incomplete." }, { status: 403 });
   }
 
-  const [quote, emails] = await Promise.all([adminGetQuote(ref), listQuoteEmails(ref)]);
+  let quote: Awaited<ReturnType<typeof adminGetQuote>>;
+  let emails: Awaited<ReturnType<typeof listQuoteEmails>>;
+  try {
+    [quote, emails] = await Promise.all([adminGetQuote(ref), listQuoteEmails(ref)]);
+  } catch (error) {
+    console.error(`[quote-success] lookup failed for ${ref}:`, error);
+    return NextResponse.json({ ok: false, error: "This quotation is temporarily unavailable. Please try again shortly." }, { status: 502 });
+  }
   if (!quote) return NextResponse.json({ ok: false, error: "Quotation not found." }, { status: 404 });
   const latestEmail = emails[0] ?? null;
 
