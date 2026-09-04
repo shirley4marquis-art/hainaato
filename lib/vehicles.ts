@@ -23,7 +23,7 @@ const dataDir = path.join(process.cwd(), "data");
 
 // Bump when manually curated inventory is added so deployment build caches
 // cannot reuse a server bundle traced against an older catalogue snapshot.
-export const VEHICLE_CATALOG_REVISION = "2026-09-04-all-partner-inventory-restored";
+export const VEHICLE_CATALOG_REVISION = "2026-09-04-prices-minus-20-hendrick-plus-15";
 
 let indexCache: VehicleIndexEntry[] | null = null;
 

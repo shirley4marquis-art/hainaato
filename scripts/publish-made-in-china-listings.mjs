@@ -188,7 +188,7 @@ for (const listing of listings) {
   const stockCode = stockCodeFor(listing);
   // Keep new supplier listings aligned with the catalogue-wide reduction.
   const supplierPriceCNY = priceToCny(listing.price, listing.currency);
-  const priceCNY = supplierPriceCNY == null ? null : supplierPriceCNY * 0.75;
+  const priceCNY = supplierPriceCNY == null ? null : supplierPriceCNY * 0.6;
   const bodyType = bodyTypeFor(listing);
   const transmission = listing.specifications?.transmission || null;
   const fuel = listing.specifications?.fuel_type || null;

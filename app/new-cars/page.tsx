@@ -19,6 +19,7 @@ type Vehicle = {
 };
 
 const PAGE_SIZE = 12;
+const CURRENT_PRICE_FACTOR = 0.8;
 
 const commonNote = "Displayed HAINA AUTO prices are treated as CIF by default: vehicle, international ocean freight and marine insurance are included unless the written quotation is explicitly marked FOB. Destination-country duties, nationalization, registration, plates and local charges are separate.";
 
@@ -74,7 +75,7 @@ function VehicleCard({vehicle,view}:{vehicle:Vehicle;view:"grid"|"list"}) {
       <p className={styles.stock}><span>Stock</span> <b>{vehicle.stock}</b></p>
       <dl>
         <div><dt>MSRP (reference)</dt><dd><Price cny={vehicle.msrpCNY}/></dd></div>
-        <div><dt>Selling price</dt><dd className={styles.price}><Price cny={vehicle.priceCNY}/></dd></div>
+        <div><dt>Selling price</dt><dd className={styles.price}><Price cny={vehicle.priceCNY == null ? null : Math.round(vehicle.priceCNY * CURRENT_PRICE_FACTOR)}/></dd></div>
       </dl>
       <p className={styles.cifBadge}>CIF included</p>
       <p className={styles.disclaimer}>{vehicle.note?.includes("export documents") ? vehicle.note : commonNote}</p>

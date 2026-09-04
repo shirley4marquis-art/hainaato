@@ -8,7 +8,8 @@ const API_KEY = "OQa8l7SzMctJyr5bhSG9jYvlGnZUQfgl";
 const TARGET_COUNT = 400;
 const USD_PER_CNY = 0.139;
 // 25% below the previously published 35%-of-source sale-price rule.
-const HENDRICK_PRICE_FACTOR = 0.2625;
+// September 2026 adjustment: 15% above the previously published prices.
+const HENDRICK_PRICE_FACTOR = 0.301875;
 const root = process.cwd();
 
 function numericId(vin) {

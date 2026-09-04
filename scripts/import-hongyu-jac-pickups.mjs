@@ -7,6 +7,7 @@ const site = "hongyu";
 const USD_PER_CNY = 0.139;
 // 25% below the previously published 70% sale-price rule.
 const RECENT_LISTING_PRICE_FACTOR = 0.525;
+const CURRENT_PRICE_FACTOR = 0.8;
 const products = [
   {
     id: "jac-t9-hunter",
@@ -122,9 +123,9 @@ for (const product of products) {
 
   // finalPriceUsd is an approved final CIF selling price and must not receive
   // the general catalogue reduction a second time.
-  const discountedPriceUsd = product.finalPriceUsd != null
+  const discountedPriceUsd = (product.finalPriceUsd != null
     ? product.finalPriceUsd
-    : product.priceUsd * RECENT_LISTING_PRICE_FACTOR;
+    : product.priceUsd * RECENT_LISTING_PRICE_FACTOR) * CURRENT_PRICE_FACTOR;
   const priceCNY = discountedPriceUsd / USD_PER_CNY;
   imported.push({
     slug, site, id: product.id, title: product.title, year: product.year, priceCNY,

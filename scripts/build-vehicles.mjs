@@ -40,9 +40,10 @@ function toNumber(v) {
 // it survives every future data:build rather than being a one-off patch.
 // MSRP is left untouched: it's a separate real reference figure (factory
 // suggested price), not "our" price.
-// 25% below the previous 60% sale-price rule (0.60 * 0.75 = 0.45).
-const SALE_PRICE_MULTIPLIER = 0.45;
-const CURRENT_PRICE_REDUCTION = 0.75;
+// September 2026 adjustment: 20% below the previous catalogue prices.
+// 0.45 * 0.80 = 0.36; overrides follow the same cumulative 0.75 * 0.80 rule.
+const SALE_PRICE_MULTIPLIER = 0.36;
+const CURRENT_PRICE_REDUCTION = 0.60;
 
 // Hand-maintained, per-listing price corrections keyed by slug (site-id) —
 // this file is never written by this script, only read, so business-owner
