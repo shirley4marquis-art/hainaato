@@ -1566,5 +1566,9 @@
   "cntransit-970118084": {
     "priceCNY": 109072,
     "note": "Manual correction 2026-08-24: -¥35,971 (~$5,000 USD) off all Tesla Model Y (¥145,043 -> ¥109,072). Listed with brand \"Model\" due to a scraper title-parsing quirk (title starts with \"Model Y ...\") — this is a genuine Model Y, not a data error."
+  },
+  "hainaauto-03033275": {
+    "priceCNY": 41967,
+    "note": "Manual final-price selection 2026-09-04: randomly selected eligible 2024 automatic gasoline vehicle; CNY 41,967 baseline receives the catalogue's 0.60 override factor to produce CNY 25,180, displayed as exactly USD 3,500 at the site's fixed exchange rate."
   }
 }
