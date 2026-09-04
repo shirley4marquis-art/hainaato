@@ -23,7 +23,7 @@ const dataDir = path.join(process.cwd(), "data");
 
 // Bump when manually curated inventory is added so deployment build caches
 // cannot reuse a server bundle traced against an older catalogue snapshot.
-export const VEHICLE_CATALOG_REVISION = "2026-09-03-escalade-v";
+export const VEHICLE_CATALOG_REVISION = "2026-09-04-all-partner-inventory-restored";
 
 let indexCache: VehicleIndexEntry[] | null = null;
 
@@ -188,7 +188,7 @@ export function searchVehicles(params: VehicleSearchParams) {
       ? [...results].sort((a, b) => (a.priceCNY ?? Infinity) - (b.priceCNY ?? Infinity))
       : sort === "price-desc"
         ? [...results].sort((a, b) => (b.priceCNY ?? 0) - (a.priceCNY ?? 0))
-        : prioritizeToyotaSources(results);
+        : keepPartnerToyotaInventoryAfterPrimaryCatalogue(results);
 
   const total = results.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -223,36 +223,21 @@ export function getLatestVehicles(count=10):VehicleIndexEntry[]{
   return loadIndex().filter(v=>v.imageCount>0&&v.availability==="available").slice(0,count);
 }
 
-function isToyotaTruck(vehicle: VehicleIndexEntry): boolean {
-  return /pickup|truck/i.test(vehicle.bodyType ?? "") || /hilux|tundra|tacoma|land cruiser|pickup|truck/i.test(vehicle.title);
-}
-
-// Keep the catalogue's overall brand mix and arrival positions stable, but
-// reorder the Toyota entries occupying those positions. China/Japan-sourced
-// trucks lead, other non-Hendrick Toyotas follow, and Hendrick inventory is
-// moved to the end of the Toyota sequence. Explicit price sorts remain exact.
-function prioritizeToyotaSources(vehicles: VehicleIndexEntry[]): VehicleIndexEntry[] {
-  const toyotaPositions: number[] = [];
-  const toyotas: VehicleIndexEntry[] = [];
-  vehicles.forEach((vehicle, index) => {
-    if (vehicle.brand.trim().toLowerCase() !== "toyota") return;
-    toyotaPositions.push(index);
-    toyotas.push(vehicle);
-  });
-  if (toyotas.length < 2) return vehicles;
-
-  const prioritized = [...toyotas].sort((a, b) => {
-    const rank = (vehicle: VehicleIndexEntry) => {
-      if (vehicle.site === "hendrick") return 2;
-      return isToyotaTruck(vehicle) ? 0 : 1;
-    };
-    return rank(a) - rank(b);
-  });
-  const result = [...vehicles];
-  toyotaPositions.forEach((position, index) => {
-    result[position] = prioritized[index];
-  });
-  return result;
+// Hendrick contributes hundreds of near-identical dealer records. Keep all of
+// them searchable, but place them after the primary China/Japan catalogue so
+// that a Toyota search is not dominated by a single partner feed. Explicit
+// price sorts remain exact and are never source-adjusted.
+function keepPartnerToyotaInventoryAfterPrimaryCatalogue(vehicles: VehicleIndexEntry[]): VehicleIndexEntry[] {
+  const primary: VehicleIndexEntry[] = [];
+  const hendrick: VehicleIndexEntry[] = [];
+  for (const vehicle of vehicles) {
+    if (vehicle.brand.trim().toLowerCase() === "toyota" && vehicle.site === "hendrick") {
+      hendrick.push(vehicle);
+    } else {
+      primary.push(vehicle);
+    }
+  }
+  return hendrick.length ? [...primary, ...hendrick] : vehicles;
 }
 
 // Models pinned to the front of the homepage's "Latest new-car arrivals" list
@@ -279,25 +264,9 @@ const HOMEPAGE_BRAND_BACKFILL_SLUGS = [
   "hainaauto-618413790", // Mercedes-Benz GLC
 ];
 
-// Kept out of the homepage spotlight specifically — hainaauto-33511934's photo
-// set had 6 of 12 images belonging to unrelated vehicles (two different
-// sedans and a black Tang, mixed in with the actual white Song Pro). The
-// stray images were removed from its own listing (data/vehicles/), but it's
-// still excluded here rather than risk showing more of the same on the
-// homepage where it's most visible.
-// Listings excluded from homepage previews when their source imagery does not
-// meet the presentation standard. The listing remains available in search and
-// on its own detail page; only promotional homepage placements are affected.
-const HOMEPAGE_PREVIEW_EXCLUDE = new Set([
-  "hainaauto-33511934",
-  "hainaauto-66605435",
-  "hendrick-1394491573",
-  "hendrick-192411905",
-  "hainaauto-207819861",
-]);
-
+// Every listing with a usable image may be promoted on the homepage.
 export function isHomepagePreviewEligible(vehicle: VehicleIndexEntry): boolean {
-  return !HOMEPAGE_PREVIEW_EXCLUDE.has(vehicle.slug);
+  return vehicle.imageCount > 0;
 }
 
 export function getLatestNewVehicles(count=10):VehicleIndexEntry[]{

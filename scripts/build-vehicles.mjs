@@ -11,6 +11,22 @@ const autoShop = path.join(root, "Auto-Shop");
 const outDir = path.join(root, "data");
 const outVehiclesDir = path.join(outDir, "vehicles");
 
+// These inventories are maintained by separate partner importers, so retain
+// them when rebuilding the bulk hainaauto/cntransit catalogue.
+const BULK_SITES = new Set(["hainaauto", "cntransit"]);
+const existingIndexPath = path.join(outDir, "vehicles-index.json");
+const existingDetailsPath = path.join(outDir, "vehicle-details.json");
+const preservedIndex = fs.existsSync(existingIndexPath)
+  ? JSON.parse(fs.readFileSync(existingIndexPath, "utf8")).filter((vehicle) => !BULK_SITES.has(vehicle.site))
+  : [];
+const preservedDetails = fs.existsSync(existingDetailsPath)
+  ? Object.fromEntries(
+      Object.entries(JSON.parse(fs.readFileSync(existingDetailsPath, "utf8"))).filter(
+        ([, vehicle]) => !BULK_SITES.has(vehicle.site)
+      )
+    )
+  : {};
+
 fs.rmSync(outVehiclesDir, { recursive: true, force: true });
 fs.mkdirSync(outVehiclesDir, { recursive: true });
 
@@ -225,6 +241,17 @@ function loadCntransit() {
 await loadHainaauto();
 await loadManualListings();
 loadCntransit();
+
+const generatedSlugs = new Set(index.map((vehicle) => vehicle.slug));
+for (const vehicle of preservedIndex) {
+  if (!generatedSlugs.has(vehicle.slug)) index.push(vehicle);
+}
+for (const [slug, vehicle] of Object.entries(preservedDetails)) {
+  if (!details[slug]) details[slug] = vehicle;
+}
+if (preservedIndex.length > 0) {
+  console.log(`preserved: ${preservedIndex.length} partner and curated vehicles`);
+}
 
 // Images are addressed by filename only (see lib/format.ts imagePath); the
 // /api/vehicle-image route scopes the cache key by vehicle id and validates
