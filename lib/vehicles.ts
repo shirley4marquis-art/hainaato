@@ -147,7 +147,12 @@ export function searchVehicles(params: VehicleSearchParams) {
 
   if (q) {
     const needle = q.trim().toLowerCase();
-    if (needle) results = results.filter((v) => `${v.title} ${v.stockCode}`.toLowerCase().includes(needle));
+    if (needle) {
+      results = results.filter((v) => {
+        const source = v.site === "hendrick" ? "hendrick hendrick toyota" : v.site;
+        return `${v.title} ${v.stockCode} ${source}`.toLowerCase().includes(needle);
+      });
+    }
   }
   if (collection) {
     const selected = CATALOGUE_COLLECTIONS.find((item) => item.id === collection);

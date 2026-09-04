@@ -98,6 +98,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <div className="vlist-baseinfo-item"><span className="label">TRANSM.</span><span className="value truncate">{v.transmission??"—"}</span></div>
         </div>
         <div className="vlist-tags">
+          {v.site === "hendrick" && <span className="tag">Hendrick Toyota</span>}
           <span className="tag">{v.condition === "new" ? "New Car" : "Actual Mileage"}</span>
           <span className="tag">{fuelChoiceLabel(v.fuel)}</span>
           <span className="tag">Original vehicle photos</span><span className="tag">Export Ready</span><span className="tag">Available</span>
