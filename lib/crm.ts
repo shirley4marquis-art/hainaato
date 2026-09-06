@@ -533,6 +533,8 @@ export type AdminQuoteSummary = {
   currency: string;
   cifTotal: number;
   status: string;
+  language: QuoteLanguage;
+  destinationPort: string;
   source: string | null;
   createdAt: string;
 };
@@ -540,8 +542,8 @@ export type AdminQuoteSummary = {
 export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
   const { rows } = await getPool().query(`
     SELECT q.ref, q.document_number, c.name AS customer_name, c.email AS customer_email,
-           q.destination_country, q.currency, q.cif_total,
-           q.status, q.source, q.created_at,
+           q.destination_country, q.destination_port, q.currency, q.cif_total,
+           q.status, q.language, q.source, q.created_at,
            (SELECT string_agg(make || ' ' || model, ', ' ORDER BY sort_order) FROM quote_items WHERE quote_id = q.id) AS vehicle_summary
     FROM quotes q JOIN customers c ON c.id = q.customer_id
     ORDER BY q.created_at DESC
@@ -552,11 +554,13 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
     customerName: r.customer_name as string,
     customerEmail: (r.customer_email as string) ?? null,
     destinationCountry: r.destination_country as string,
+    destinationPort: (r.destination_port as string) ?? "",
     vehicleSummary: (r.vehicle_summary as string) ?? "—",
     source: (r.source as string) ?? null,
     currency: r.currency as string,
     cifTotal: r.cif_total as number,
     status: r.status as string,
+    language: normalizeQuoteLanguage(r.language),
     createdAt: (r.created_at as Date).toISOString(),
   }));
 }

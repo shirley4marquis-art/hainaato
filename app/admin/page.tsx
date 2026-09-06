@@ -1,113 +1,139 @@
 import Link from "next/link";
-import { ArrowRight, DatabaseZap, FileText, Inbox, Plus, Truck, Users, Wallet } from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  Car,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  FilePlus2,
+  Handshake,
+  Inbox,
+  Package,
+  Ship,
+  Truck,
+  UserPlus,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { AdminShell } from "./admin-shell";
-import { adminListQuotes } from "../../lib/crm";
-import { ACTIVE_ORDER_STATUSES, STATUS_META, STATUS_ORDER, quoteStatusMeta } from "./status";
+import { adminListCustomers, adminListQuotes } from "../../lib/crm";
+import { getTotalVehicleCount, searchVehicles } from "../../lib/vehicles";
+import { quoteStatusMeta } from "./status";
 import styles from "./admin.module.css";
 
 // See the identical note in app/admin/quotes/page.tsx — without this, this
-// page gets statically cached (no cookies()/headers() call of its own to
-// signal otherwise) and silently stops reflecting new quotes after the
-// first render.
+// page gets statically cached and silently stops reflecting new quotes.
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboard() {
-  const quotes = await adminListQuotes();
+const AWAITING_SHIPPING = new Set(["inspection_passed", "export_docs_ready", "booked_for_shipping"]);
+const IN_TRANSIT = new Set(["shipped", "departed_port", "arrived_port", "customs_clearance", "out_for_delivery"]);
+const CLOSED = new Set(["lost", "delivered"]);
 
-  const counts = new Map<string, number>();
-  for (const q of quotes) counts.set(q.status, (counts.get(q.status) ?? 0) + 1);
-  const openQuotes = quotes.filter((q) => q.status === "quoted" || q.status === "negotiating").length;
-  const activeOrders = quotes.filter((q) => ACTIVE_ORDER_STATUSES.has(q.status)).length;
+export default async function AdminDashboard() {
+  const [quotes, customers] = await Promise.all([adminListQuotes(), adminListCustomers()]);
+
+  const totalVehicles = getTotalVehicleCount();
+  const availableVehicles = searchVehicles({ availability: "available", pageSize: 1 }).total;
+
+  const by = (predicate: (status: string) => boolean) => quotes.filter((q) => predicate(q.status)).length;
+  const newInquiries = by((s) => s === "quoted");
+  const negotiating = by((s) => s === "negotiating");
+  const depositsPaid = by((s) => s === "deposit_paid" || s === "usdt_payment_confirmed" || s === "bitcoin_payment_confirmed");
+  const awaitingShipping = by((s) => AWAITING_SHIPPING.has(s));
+  const inTransit = by((s) => IN_TRANSIT.has(s));
+  const activeCustomers = customers.filter((c) => c.quoteCount > 0).length;
   const pipelineValue = quotes
-    .filter((q) => q.status !== "lost" && q.status !== "delivered")
-    .reduce((sum, q) => sum + q.cifTotal, 0);
+    .filter((q) => !CLOSED.has(q.status))
+    .reduce((sum, q) => sum + (q.cifTotal ?? 0), 0);
+
   const recent = quotes.slice(0, 8);
+
+  const cards: {
+    label: string;
+    value: number;
+    href: string;
+    icon: ComponentType<{ size?: number }>;
+    hint?: string;
+    tone?: "warn" | "active";
+  }[] = [
+    { label: "Total vehicles", value: totalVehicles, href: "/admin/vehicles", icon: Car },
+    { label: "Available vehicles", value: availableVehicles, href: "/admin/vehicles", icon: CheckCircle2, hint: `${totalVehicles - availableVehicles} reserved / sold` },
+    { label: "New inquiries", value: newInquiries, href: "/admin/quotes", icon: Inbox, hint: newInquiries ? "Needs a first quote" : undefined, tone: newInquiries ? "warn" : undefined },
+    { label: "In negotiation", value: negotiating, href: "/admin/quotes?group=quote", icon: Handshake },
+    { label: "Active customers", value: activeCustomers, href: "/admin/clients", icon: Users, hint: `${customers.length} on file` },
+    { label: "Deposits paid", value: depositsPaid, href: "/admin/quotes", icon: Wallet, tone: depositsPaid ? "active" : undefined },
+    { label: "Awaiting shipping", value: awaitingShipping, href: "/admin/quotes", icon: Package, tone: awaitingShipping ? "warn" : undefined },
+    { label: "In transit", value: inTransit, href: "/admin/quotes", icon: Ship, tone: inTransit ? "active" : undefined },
+  ];
+
+  const quickActions = [
+    { label: "Add vehicle", href: "/admin/imports", icon: Car },
+    { label: "Add customer", href: "/admin/clients", icon: UserPlus },
+    { label: "Create quote", href: "/admin/quotes/new", icon: FileText },
+    { label: "Generate document", href: "/admin/documents", icon: FilePlus2 },
+    { label: "Add shipment", href: "/admin/quotes", icon: Truck },
+    { label: "Record payment", href: "/admin/quotes", icon: CreditCard },
+  ] as const;
 
   return (
     <AdminShell>
       <div className={styles.pageHeading}>
         <div>
           <span className={styles.eyebrow}>Operations center</span>
-          <h1>Good to see you</h1>
-          <p>Keep quotes, orders, clients, and inventory moving from one place.</p>
+          <h1>Dashboard</h1>
+          <p>Vehicles, customers, quotes, documents, payments and shipping — at a glance.</p>
         </div>
-        <Link className={styles.btn} href="/admin/quotes/new">
-          <Plus size={14} /> New quote
-        </Link>
+      </div>
+
+      <section className={styles.quickGrid} aria-label="Quick actions">
+        {quickActions.map(({ label, href, icon: Icon }) => (
+          <Link key={label} href={href}>
+            <span>
+              <Icon size={18} />
+            </span>
+            {label}
+          </Link>
+        ))}
+      </section>
+
+      <div className={styles.opsGrid}>
+        {cards.map(({ label, value, href, icon: Icon, hint, tone }) => (
+          <Link key={label} className={styles.opCard} href={href}>
+            <span className={styles.opCardTop}>
+              <Icon size={15} />
+              <span className={styles.opCardLabel}>{label}</span>
+            </span>
+            <span className={styles.opCardValue}>{value.toLocaleString()}</span>
+            {hint && (
+              <span className={styles.opCardHint} data-tone={tone}>
+                {hint}
+              </span>
+            )}
+          </Link>
+        ))}
       </div>
 
       <div className={styles.statGrid}>
-        <div className={styles.statCard}>
-          <span className={`${styles.statIcon} ${styles.statIconBlue}`}>
-            <FileText size={18} />
-          </span>
-          <div>
-            <p className={styles.statLabel}>Open quotes</p>
-            <p className={styles.statValue}>{openQuotes}</p>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <span className={`${styles.statIcon} ${styles.statIconGreen}`}>
-            <Truck size={18} />
-          </span>
-          <div>
-            <p className={styles.statLabel}>Active orders</p>
-            <p className={styles.statValue}>{activeOrders}</p>
-          </div>
-        </div>
         <div className={styles.statCard}>
           <span className={`${styles.statIcon} ${styles.statIconAmber}`}>
             <Wallet size={18} />
           </span>
           <div>
             <p className={styles.statLabel}>Open pipeline value</p>
-            <p className={styles.statValue}>${pipelineValue.toLocaleString()}</p>
+            <p className={styles.statValue}>${Math.round(pipelineValue).toLocaleString()}</p>
           </div>
-        </div>
-      </div>
-
-      <section className={styles.quickActions} aria-label="Quick actions">
-        <Link href="/admin/quotes/new">
-          <span className={`${styles.quickActionIcon} ${styles.statIconBlue}`}><FileText size={17} /></span>
-          <span><b>Create a quote</b><small>Start a new customer proposal</small></span>
-          <ArrowRight size={16} />
-        </Link>
-        <Link href="/admin/quotes">
-          <span className={`${styles.quickActionIcon} ${styles.statIconGreen}`}><Truck size={17} /></span>
-          <span><b>Manage orders</b><small>{activeOrders} active order{activeOrders === 1 ? "" : "s"} in progress</small></span>
-          <ArrowRight size={16} />
-        </Link>
-        <Link href="/admin/clients">
-          <span className={`${styles.quickActionIcon} ${styles.statIconAmber}`}><Users size={17} /></span>
-          <span><b>Review clients</b><small>Open your customer records</small></span>
-          <ArrowRight size={16} />
-        </Link>
-        <Link href="/admin/imports">
-          <span className={styles.quickActionIcon}><DatabaseZap size={17} /></span>
-          <span><b>Review imports</b><small>Approve inventory candidates</small></span>
-          <ArrowRight size={16} />
-        </Link>
-      </section>
-
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Pipeline by status</h2>
-        <div className={styles.statusSummary}>
-          {STATUS_ORDER.map((key) => {
-            const meta = STATUS_META[key];
-            const Icon = meta.icon;
-            return (
-              <span className={styles.statusPill} data-tone={meta.tone} key={key}>
-                <Icon size={11} /> {meta.label}: {counts.get(key) ?? 0}
-              </span>
-            );
-          })}
         </div>
       </div>
 
       <div className={styles.section}>
         <div className={styles.sectionHeading}>
-          <div><span className={styles.eyebrow}>Latest activity</span><h2>Recent orders</h2></div>
-          <Link className={styles.btnGhost} href="/admin/quotes">View all</Link>
+          <div>
+            <span className={styles.eyebrow}>Latest activity</span>
+            <h2>Recent orders</h2>
+          </div>
+          <Link className={styles.btnGhost} href="/admin/quotes">
+            View all
+          </Link>
         </div>
         {recent.length === 0 ? (
           <div className={styles.emptyState}>
@@ -115,31 +141,33 @@ export default async function AdminDashboard() {
             <p style={{ margin: 0 }}>No orders yet.</p>
           </div>
         ) : (
-          <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr><th>Ref</th><th>Customer</th><th>Vehicle(s)</th><th>Status</th><th>Created</th></tr>
-            </thead>
-            <tbody>
-              {recent.map((q) => {
-                const meta = quoteStatusMeta(q.status);
-                const Icon = meta.icon;
-                return (
-                  <tr key={q.ref}>
-                    <td><Link href={`/admin/quotes/${q.ref}`}>{q.documentNumber ?? q.ref}</Link></td>
-                    <td>{q.customerName}</td>
-                    <td>{q.vehicleSummary}</td>
-                    <td>
-                      <span className={styles.statusPill} data-tone={meta.tone}>
-                        <Icon size={11} /> {meta.label}
-                      </span>
-                    </td>
-                    <td>{new Date(q.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className={styles.rowList}>
+            {recent.map((q) => {
+              const meta = quoteStatusMeta(q.status);
+              const Icon = meta.icon;
+              return (
+                <Link className={styles.dataRow} href={`/admin/quotes/${q.ref}`} key={q.ref}>
+                  <span className={styles.dataRowThumbIcon}>
+                    <Icon size={18} />
+                  </span>
+                  <div className={styles.dataRowMain}>
+                    <b>{q.customerName}</b>
+                    <p>
+                      {q.documentNumber ?? q.ref} · {q.vehicleSummary} · {q.destinationCountry}
+                    </p>
+                    <span className={styles.statusPill} data-tone={meta.tone}>
+                      {meta.label}
+                    </span>
+                  </div>
+                  <div className={styles.dataRowMeta}>
+                    <b>
+                      {q.currency} {Math.round(q.cifTotal).toLocaleString()}
+                    </b>
+                    <small>{new Date(q.createdAt).toLocaleDateString()}</small>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
