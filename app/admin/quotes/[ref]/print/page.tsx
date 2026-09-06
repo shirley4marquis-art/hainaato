@@ -8,9 +8,9 @@ import {
   isCifQuote,
   itemTitle,
   labelsFor,
-  quoteCifTotal,
   quoteNationalizationCifValue,
 } from "../../../../../lib/quote-document";
+import { computeQuoteTotals } from "../../../../../lib/quote-totals";
 import { parseHistoryRows } from "../../../../../lib/vehicle-document-details";
 import styles from "./print.module.css";
 
@@ -51,11 +51,15 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   const t = labelsFor(quote.language);
   const lineItems = buildLineItems(quote);
   const isCif = isCifQuote(quote);
-  const effectiveCifTotal = quoteCifTotal(quote);
-  const grandTotal = effectiveCifTotal + (quote.dutyEstimate ?? 0);
-  const depositPct = quote.depositPct ?? 40;
-  const depositAmount = effectiveCifTotal * (depositPct / 100);
-  const balanceAmount = effectiveCifTotal - depositAmount;
+  // One shared calculation for the stored totals, the printed document and the
+  // live editor — see lib/quote-totals.ts.
+  const totals = computeQuoteTotals(quote);
+  const effectiveCifTotal = totals.cifTotal;
+  const grandTotal = totals.grandTotal;
+  const depositPct = totals.depositPct;
+  const depositAmount = totals.depositAmount;
+  const balanceAmount = totals.balanceAmount;
+  const customsEstimate = totals.customsEstimate;
   const nationalizationCifValue = quoteNationalizationCifValue(quote);
   const destinationPortLabel = quote.destinationPort.toUpperCase();
   const engineDisplacement = quote.items
@@ -72,6 +76,7 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
     : null;
 
   const terms = [
+    ...(quote.paymentTerms?.trim() ? [quote.paymentTerms.trim()] : []),
     t.depositTerm(depositPct),
     t.daysValid(7),
     t.availabilityTerm,
@@ -80,8 +85,13 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   ];
 
   const detailLabels = quote.language === "es"
-    ? { details: "DETALLES DEL VEHÍCULO", configuration: "CONFIGURACIÓN Y EQUIPAMIENTO", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", interior: "Color interior", engine: "Motor", capacity: "Capacidad", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
-    : { details: "VEHICLE DETAILS", configuration: "CONFIGURATION & EQUIPMENT", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", interior: "Interior color", engine: "Engine", capacity: "Capacity", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
+    ? { details: "DETALLES DEL VEHÍCULO", configuration: "CONFIGURACIÓN Y EQUIPAMIENTO", vin: "VIN / N.º de chasis", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", interior: "Color interior", engine: "Motor", capacity: "Capacidad", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
+    : { details: "VEHICLE DETAILS", configuration: "CONFIGURATION & EQUIPMENT", vin: "VIN / Chassis No.", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", interior: "Interior color", engine: "Engine", capacity: "Capacity", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
+
+  const conditionLabel = (condition: string) =>
+    quote.language === "es"
+      ? condition === "new" ? "Nuevo" : "Usado"
+      : condition === "new" ? "New" : "Used";
 
   return (
     <div className={styles.root}>
@@ -218,11 +228,11 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
               {formatMoney(effectiveCifTotal, quote.currency)}
             </span>
           </div>
-          {quote.dutyEstimate != null && (
+          {customsEstimate != null && (
             <>
               <div className={styles.estimateRow}>
                 <span className={styles.estimateLabel}>{t.destinationEstimate}</span>
-                <span className={styles.estimateValue}>{formatMoney(quote.dutyEstimate, quote.currency)}</span>
+                <span className={styles.estimateValue}>{formatMoney(customsEstimate, quote.currency)}</span>
               </div>
               <p className={styles.estimateNote}>{t.destinationEstimateNote}</p>
             </>
@@ -234,7 +244,7 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
                 <span className={styles.estimateValue}>{formatMoney(venezuelaNationalization.total, quote.currency)}</span>
               </div>
               <p className={styles.estimateNote}>
-                {t.customsPreviewNote} CIF = {formatMoney(venezuelaNationalization.cifValue, quote.currency)} · Duty = {formatMoney(venezuelaNationalization.importDuty, quote.currency)} · Service fee = {formatMoney(venezuelaNationalization.customsServiceFee, quote.currency)} · VAT = {formatMoney(venezuelaNationalization.vat, quote.currency)}{venezuelaNationalization.luxuryFee > 0 ? ` · Luxury surcharge = ${formatMoney(venezuelaNationalization.luxuryFee, quote.currency)}` : ""}.
+                {t.customsPreviewNote} {t.customsBreakdownCif} = {formatMoney(venezuelaNationalization.cifValue, quote.currency)} · {t.customsBreakdownDuty} = {formatMoney(venezuelaNationalization.importDuty, quote.currency)} · {t.customsBreakdownServiceFee} = {formatMoney(venezuelaNationalization.customsServiceFee, quote.currency)} · {t.customsBreakdownVat} = {formatMoney(venezuelaNationalization.vat, quote.currency)}{venezuelaNationalization.luxuryFee > 0 ? ` · ${t.customsBreakdownLuxury} = ${formatMoney(venezuelaNationalization.luxuryFee, quote.currency)}` : ""}.
               </p>
             </>
           )}
@@ -293,8 +303,9 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
         // memory available to serverless Chromium.
         const photos = (item.photos ?? []).slice(0, 2);
         const details = [
-          [detailLabels.condition, item.condition],
-          [detailLabels.mileage, item.mileageKm != null ? `${item.mileageKm.toLocaleString("en-US")} km` : null],
+          [detailLabels.vin, item.vin?.trim() || null],
+          [detailLabels.condition, conditionLabel(item.condition)],
+          [detailLabels.mileage, item.mileageKm != null ? `${item.mileageKm.toLocaleString(quote.language === "es" ? "es-ES" : "en-US")} km` : null],
           [detailLabels.fuel, item.fuelType],
           [detailLabels.transmission, item.transmission],
           [detailLabels.drivetrain, item.drivetrain],

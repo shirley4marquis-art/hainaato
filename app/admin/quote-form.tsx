@@ -7,6 +7,8 @@ import type { AdminQuoteDetail, AdminQuoteItemInput, AdminQuoteItemPhotoInput } 
 import { FUEL_OPTIONS } from "../../lib/fuel-options";
 import { CUSTOM_COLOR_SURCHARGE_USD } from "../../lib/vehicle-customization";
 import { QUOTE_LANGUAGE_OPTIONS, type QuoteLanguage } from "../../lib/quote-language";
+import { computeQuoteTotals } from "../../lib/quote-totals";
+import { formatMoney } from "../../lib/quote-document";
 import { STATUS_ORDER, quoteStatusMeta, quoteStatusProgress } from "./status";
 
 type ItemDraft = AdminQuoteItemInput & { key: string };
@@ -21,6 +23,7 @@ function newKey() {
 function blankItem(): ItemDraft {
   return {
     key: newKey(),
+    vin: "",
     make: "",
     model: "",
     condition: "used",
@@ -69,6 +72,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     destinationCountry: initial?.destinationCountry ?? "",
     incoterm: initial?.incoterm ?? "CIF",
     deliveryEstimate: initial?.deliveryEstimate ?? "",
+    paymentTerms: initial?.paymentTerms ?? "",
     inlandTransportCost: initial?.inlandTransportCost ?? 0,
     exportDocumentationCost: initial?.exportDocumentationCost ?? 0,
     freightCost: initial?.freightCost ?? 0,
@@ -222,6 +226,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
       destinationCountry: quote.destinationCountry,
       incoterm: quote.incoterm || "CIF",
       deliveryEstimate: quote.deliveryEstimate || null,
+      paymentTerms: quote.paymentTerms.trim() || null,
       inlandTransportCost: quote.inlandTransportCost,
       exportDocumentationCost: quote.exportDocumentationCost,
       freightCost: quote.freightCost,
@@ -261,6 +266,20 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   }
 
   const isCif = quote.incoterm !== "FOB";
+
+  // Live preview of the same calculation the server runs on save
+  // (lib/quote-totals.ts) — so staff see the real totals before generating.
+  const liveTotals = computeQuoteTotals({
+    incoterm: quote.incoterm,
+    items: items.map((it) => ({ fobFinal: it.fobFinal, qty: it.qty })),
+    inlandTransportCost: quote.inlandTransportCost,
+    exportDocumentationCost: quote.exportDocumentationCost,
+    freightCost: quote.freightCost,
+    insuranceCost: quote.insuranceCost,
+    depositPct: quote.depositPct,
+    dutyPct: quote.dutyPct === "" ? null : quote.dutyPct,
+  });
+  const money = (n: number) => formatMoney(n, quote.currency);
 
   return (
     <div className={styles.form}>
@@ -339,24 +358,40 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
           <label>Export documentation<input type="number" step="0.01" value={quote.exportDocumentationCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, exportDocumentationCost: num(e.target.value) })} /></label>
           <label>Freight<input type="number" step="0.01" value={quote.freightCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, freightCost: num(e.target.value) })} /></label>
           <label>Insurance<input type="number" step="0.01" value={quote.insuranceCost} disabled={isCif} onChange={(e) => setQuote({ ...quote, insuranceCost: num(e.target.value) })} /></label>
-          <label>Deposit %<input type="number" step="1" value={quote.depositPct} onChange={(e) => setQuote({ ...quote, depositPct: num(e.target.value) })} /></label>
-          <label>Duty % (optional)<input type="number" step="0.1" value={quote.dutyPct} onChange={(e) => setQuote({ ...quote, dutyPct: e.target.value === "" ? "" : num(e.target.value) })} /></label>
+          <label>Deposit %<input type="number" step="1" min={0} max={100} value={quote.depositPct} onChange={(e) => setQuote({ ...quote, depositPct: num(e.target.value) })} /></label>
+          <label>Duty % (optional)<input type="number" step="0.1" min={0} max={100} value={quote.dutyPct} onChange={(e) => setQuote({ ...quote, dutyPct: e.target.value === "" ? "" : num(e.target.value) })} /></label>
+          <label className={styles.wide}>Payment terms (shown on the document)
+            <textarea rows={2} placeholder="e.g. 50% deposit on order confirmation, 50% balance against copy of Bill of Lading" value={quote.paymentTerms} onChange={(e) => setQuote({ ...quote, paymentTerms: e.target.value })} />
+          </label>
           <label className={styles.wide}>Internal notes<textarea rows={2} value={quote.notes ?? ""} onChange={(e) => setQuote({ ...quote, notes: e.target.value })} /></label>
           <label style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <input type="checkbox" checked={quote.publicConsent} onChange={(e) => setQuote({ ...quote, publicConsent: e.target.checked })} />
             Customer consented to a public anonymized status update
           </label>
         </div>
-        {isCif && (
-          <p style={{ fontSize: 12, color: "#6b7684", marginTop: 10 }}>
-            CIF quotes treat the entered vehicle unit price as already including vehicle cost, international ocean freight and marine insurance. Local destination charges remain separate.
-          </p>
-        )}
-        {initial && (
-          <p style={{ fontSize: 12, color: "#6b7684", marginTop: 10 }}>
-            CIF total ≈ {initial.cifTotal.toLocaleString()} {initial.currency} · Grand total ≈ {(initial.grandTotalReference ?? initial.cifTotal).toLocaleString()} {initial.currency} (recalculated on save)
-          </p>
-        )}
+      </div>
+
+      <div className={`${styles.section} ${styles.totalsPanel}`}>
+        <h2 className={styles.sectionTitle}>Totals ({quote.currency})</h2>
+        <dl className={styles.totalsList}>
+          <div><dt>Vehicle subtotal</dt><dd>{money(liveTotals.itemsSubtotal)}</dd></div>
+          {!isCif && <div><dt>Freight</dt><dd>{money(liveTotals.freight)}</dd></div>}
+          {!isCif && <div><dt>Marine insurance</dt><dd>{money(liveTotals.insurance)}</dd></div>}
+          <div className={styles.totalsStrong}><dt>CIF total (payable to HAINA AUTO EXPORT)</dt><dd>{money(liveTotals.cifTotal)}</dd></div>
+          {liveTotals.customsEstimate != null && (
+            <div><dt>Est. customs / nationalization</dt><dd>{money(liveTotals.customsEstimate)}</dd></div>
+          )}
+          {liveTotals.customsEstimate != null && (
+            <div className={styles.totalsStrong}><dt>Estimated grand total</dt><dd>{money(liveTotals.grandTotal)}</dd></div>
+          )}
+          <div><dt>Deposit ({liveTotals.depositPct}%)</dt><dd>{money(liveTotals.depositAmount)}</dd></div>
+          <div><dt>Remaining balance</dt><dd>{money(liveTotals.balanceAmount)}</dd></div>
+        </dl>
+        <p style={{ fontSize: 11, color: "#8a94a1", margin: "8px 0 0" }}>
+          Recalculated and stored when you save. {isCif
+            ? "CIF quotes treat each vehicle unit price as already including vehicle cost, ocean freight and marine insurance."
+            : "FOB quotes add the freight, insurance and documentation costs entered above."}
+        </p>
       </div>
 
       <div className={styles.section}>
@@ -379,6 +414,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
               <label>Make *<input value={item.make} onChange={(e) => updateItem(item.key, { make: e.target.value })} /></label>
               <label>Model *<input value={item.model} onChange={(e) => updateItem(item.key, { model: e.target.value })} /></label>
               <label>Year<input type="number" value={item.year ?? ""} onChange={(e) => updateItem(item.key, { year: e.target.value ? num(e.target.value) : null })} /></label>
+              <label className={styles.wide}>VIN / chassis number<input value={item.vin ?? ""} maxLength={40} placeholder="Optional at quotation stage" onChange={(e) => updateItem(item.key, { vin: e.target.value.toUpperCase() })} /></label>
               <label>Condition
                 <select value={item.condition} onChange={(e) => updateItem(item.key, { condition: e.target.value as "new" | "used" })}>
                   <option value="new">New</option><option value="used">Used</option>

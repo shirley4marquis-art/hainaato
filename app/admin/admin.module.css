@@ -473,6 +473,28 @@
   font-size: 12px;
 }
 
+/* Live totals panel in the quote editor (spec §4) */
+.totalsPanel {
+  padding: 16px;
+  border: 1px solid #e5e9ee;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.totalsList { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.totalsList > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 7px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+.totalsList > div:last-child { border-bottom: 0; }
+.totalsList dt { margin: 0; font-size: 12px; color: #5e6978; font-weight: 600; }
+.totalsList dd { margin: 0; font-size: 13px; font-weight: 700; color: #17202d; white-space: nowrap; }
+.totalsStrong dt { color: #0b1f3a !important; font-weight: 800 !important; }
+.totalsStrong dd { font-size: 15px !important; color: #0d5c44 !important; }
+
 .formSuccess {
   color: #15803d;
   font-size: 12px;

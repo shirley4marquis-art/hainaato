@@ -128,6 +128,17 @@ CREATE TABLE IF NOT EXISTS follow_ups (
 -- parsing free-text notes.
 ALTER TABLE quotes ADD COLUMN IF NOT EXISTS source TEXT;
 
+-- Free-text payment terms shown on the printed document's "Payment Terms &
+-- Conditions" block, above the standard deposit/balance clauses. Staff-entered
+-- per quote (e.g. "50% T/T on order, 50% against B/L copy"); null falls back to
+-- the standard schedule text alone. See lib/crm.ts adminSaveQuote / recalc.
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS payment_terms TEXT;
+
+-- Vehicle identification number for a specific unit in a quote/order — surfaced
+-- on invoices, contracts and shipping documents. Optional at the quotation
+-- stage (a unit may not be assigned yet), required for later document types.
+ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS vin TEXT;
+
 -- One row per outbound quotation email attempt (the automated send on
 -- request, and any staff resend afterward) — lets admin show delivery status
 -- and the exact email content sent, per quote (see lib/crm.ts's
