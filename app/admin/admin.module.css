@@ -516,12 +516,16 @@
   position: fixed;
   left: 0;
   right: 0;
+  /* top:auto and the explicit padding override the site-wide `nav { … }`
+     rule in globals.css (≤900px), which otherwise pins top:78px + padding:20px
+     onto this element and stretches the fixed bar up the whole viewport. */
+  top: auto;
   bottom: 0;
   z-index: 80;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   border-top: 1px solid #e4e8ed;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding: 0 0 env(safe-area-inset-bottom);
 }
 .bottomNavInner {
   display: grid;
