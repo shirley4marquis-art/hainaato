@@ -253,13 +253,17 @@
   border: 1px solid #f3d8b9;
   background: linear-gradient(180deg, #fffaf4 0%, #fff 100%);
   padding: 14px 16px;
-  display: grid;
-  grid-template-columns: 1fr 1.25fr;
-  gap: 10px 18px;
+}
+
+.cifNoticeHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .cifNoticeTitle {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.05em;
@@ -269,33 +273,54 @@
 .cifNoticeAmount {
   margin: 0;
   color: #f5820a;
-  font-size: 25px;
+  font-size: 22px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
-.cifIncludedBox {
-  border-left: 1px solid #ead6c2;
-  padding-left: 14px;
+.cifBreakdown {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 0;
+  font-size: 10px;
 }
 
-.cifIncludedBox p {
-  margin: 0 0 5px;
-  font-size: 10.5px;
+.cifBreakdown thead th {
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid #ead6c2;
+  color: #8a6a3f;
+  font-size: 8.5px;
   font-weight: 800;
-  color: #0b1f3a;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.cifIncludedBox ul {
-  margin: 0;
-  padding-left: 15px;
-  color: #5a6472;
-  font-size: 9.5px;
-  line-height: 1.45;
+.cifBreakdown td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f0e2cf;
+  color: #4a4034;
+  vertical-align: top;
+}
+
+.cifBreakdown th:last-child,
+.cifBreakdown td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  width: 96px;
+}
+
+.cifBreakdown .cifBreakdownTotal td {
+  border-top: 1.5px solid #0b1f3a;
+  border-bottom: 0;
+  padding-top: 7px;
+  font-weight: 900;
+  color: #0b1f3a;
+  font-size: 11px;
 }
 
 .destinationExclusionNote {
-  grid-column: 1 / -1;
-  margin: 2px 0 0;
+  margin: 8px 0 0;
   padding-top: 8px;
   border-top: 1px solid #ead6c2;
   color: #5a6472;

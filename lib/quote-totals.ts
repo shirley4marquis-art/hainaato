@@ -96,3 +96,125 @@ export function computeQuoteTotals(input: QuoteTotalsInput): QuoteTotals {
     balanceAmount,
   };
 }
+
+// ---------------------------------------------------------------------------
+// CIF price breakdown for the client-facing quotation.
+//
+// The client is quoted one fixed CIF price. Customs brokers (and the client)
+// still need to see how it splits into the goods (FOB) value and each
+// shipping cost. This reconstructs a plausible split whose parts sum EXACTLY
+// to the quoted CIF total:
+//
+//   FOB goods value
+//   + Export customs clearance (China)
+//   + Origin port / terminal handling
+//   + Ocean freight to the destination port
+//   + Marine cargo insurance (min. 110% CIF cover)
+//   + Export documentation & handling fees
+//   + Bill of Lading issuance
+//   = CIF total
+//
+// For an explicit FOB quote the shipping figures the desk actually entered
+// are used. For a CIF quote (the common case) the shipping figures are
+// near-market approximations for China → Latin America RoRo/consolidated
+// ocean export, and the goods value is the remainder — so the sum is always
+// the exact quoted CIF price.
+// ---------------------------------------------------------------------------
+
+// Per-unit and per-shipment approximations, USD. Tuned to China → Venezuela
+// RoRo / consolidated-container export as of 2026; deliberately mid-range.
+const MARKET = {
+  oceanFreightPerUnit: 2400,
+  exportClearancePerUnit: 185,
+  originHandlingPerUnit: 150,
+  documentationBase: 110,
+  documentationPerUnit: 20,
+  billOfLading: 85,
+  insuranceRate: 0.0025, // of 110% of CIF — ICC(A) all-risk, minimum cover
+  minInsurance: 60,
+  // The shipping side of a CIF price never realistically exceeds this share
+  // of the total; beyond it the approximations are scaled down so the implied
+  // goods value stays sane for a low-value unit.
+  maxShippingShare: 0.62,
+};
+
+export type CifBreakdown = {
+  goodsValue: number;
+  exportClearance: number;
+  originHandling: number;
+  oceanFreight: number;
+  marineInsurance: number;
+  documentation: number;
+  billOfLading: number;
+  cifTotal: number;
+  /** true when the shipping figures are market approximations (CIF quote). */
+  estimated: boolean;
+};
+
+export function decomposeCif(
+  cifTotal: number,
+  opts: {
+    units: number;
+    incoterm?: string | null;
+    freightCost?: number | null;
+    insuranceCost?: number | null;
+    inlandTransportCost?: number | null;
+    exportDocumentationCost?: number | null;
+  },
+): CifBreakdown {
+  const cif = roundMoney(Math.max(0, Number(cifTotal) || 0));
+  const units = Math.max(1, Math.round(Number(opts.units) || 1));
+  const isFob = (opts.incoterm ?? "").trim().toUpperCase() === "FOB";
+
+  let exportClearance: number;
+  let originHandling: number;
+  let oceanFreight: number;
+  let marineInsurance: number;
+  let documentation: number;
+  let billOfLading: number;
+
+  if (isFob) {
+    // Use what the desk entered; fold any inland cost into origin handling.
+    oceanFreight = roundMoney(Math.max(0, Number(opts.freightCost) || 0));
+    marineInsurance = roundMoney(Math.max(0, Number(opts.insuranceCost) || 0));
+    originHandling = roundMoney(Math.max(0, Number(opts.inlandTransportCost) || 0));
+    exportClearance = roundMoney(Math.max(0, Number(opts.exportDocumentationCost) || 0));
+    documentation = 0;
+    billOfLading = 0;
+  } else {
+    oceanFreight = MARKET.oceanFreightPerUnit * units;
+    exportClearance = MARKET.exportClearancePerUnit * units;
+    originHandling = MARKET.originHandlingPerUnit * units;
+    documentation = MARKET.documentationBase + MARKET.documentationPerUnit * units;
+    billOfLading = MARKET.billOfLading;
+    marineInsurance = Math.max(MARKET.minInsurance, cif * 1.1 * MARKET.insuranceRate);
+  }
+
+  let shipping = [exportClearance, originHandling, oceanFreight, marineInsurance, documentation, billOfLading];
+
+  // Keep the implied goods value realistic for low-value units.
+  const shippingSum = shipping.reduce((a, b) => a + b, 0);
+  const cap = cif * MARKET.maxShippingShare;
+  if (shippingSum > cap && shippingSum > 0) {
+    const k = cap / shippingSum;
+    shipping = shipping.map((v) => v * k);
+  }
+
+  const parts = shipping.map(roundMoney);
+  const [ec, oh, of, mi, doc, bl] = parts;
+  const partsSum = parts.reduce((a, b) => a + b, 0);
+  // The goods value is the exact remainder, so the column always foots to CIF.
+  const goodsValue = roundMoney(cif - partsSum);
+
+  return {
+    goodsValue,
+    exportClearance: ec,
+    originHandling: oh,
+    oceanFreight: of,
+    marineInsurance: mi,
+    documentation: doc,
+    billOfLading: bl,
+    cifTotal: cif,
+    estimated: !isFob,
+  };
+}

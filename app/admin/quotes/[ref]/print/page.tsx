@@ -10,7 +10,7 @@ import {
   labelsFor,
   quoteNationalizationCifValue,
 } from "../../../../../lib/quote-document";
-import { computeQuoteTotals } from "../../../../../lib/quote-totals";
+import { computeQuoteTotals, decomposeCif } from "../../../../../lib/quote-totals";
 import { parseHistoryRows } from "../../../../../lib/vehicle-document-details";
 import styles from "./print.module.css";
 
@@ -62,6 +62,25 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   const customsEstimate = totals.customsEstimate;
   const nationalizationCifValue = quoteNationalizationCifValue(quote);
   const destinationPortLabel = quote.destinationPort.toUpperCase();
+  const unitCount = quote.items.reduce((sum, item) => sum + (item.qty || 0), 0);
+  // FOB goods value + each shipping cost, summing exactly to the CIF total.
+  const cifBreakdown = decomposeCif(effectiveCifTotal, {
+    units: unitCount,
+    incoterm: quote.incoterm,
+    freightCost: quote.freightCost,
+    insuranceCost: quote.insuranceCost,
+    inlandTransportCost: quote.inlandTransportCost,
+    exportDocumentationCost: quote.exportDocumentationCost,
+  });
+  const cifBreakdownRows: { label: string; amount: number }[] = [
+    { label: t.cbGoods, amount: cifBreakdown.goodsValue },
+    { label: t.cbExportClearance, amount: cifBreakdown.exportClearance },
+    { label: t.cbOriginHandling, amount: cifBreakdown.originHandling },
+    { label: `${t.cbOceanFreight} (${destinationPortLabel})`, amount: cifBreakdown.oceanFreight },
+    { label: t.cbInsurance, amount: cifBreakdown.marineInsurance },
+    { label: t.cbDocumentation, amount: cifBreakdown.documentation },
+    { label: t.cbBillOfLading, amount: cifBreakdown.billOfLading },
+  ].filter((row) => row.amount > 0);
   const engineDisplacement = quote.items
     .map((item) => {
       const match = item.engine?.match(/(\d+(?:\.\d+)?)\s*(?:l|lt|litros|litres)/i);
@@ -180,19 +199,33 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
 
         {isCif && (
           <section className={styles.cifNotice}>
-            <div>
+            <div className={styles.cifNoticeHead}>
               <p className={styles.cifNoticeTitle}>{t.cifPriceHeading} — {destinationPortLabel}</p>
               <p className={styles.cifNoticeAmount}>{formatPdfAmount(effectiveCifTotal, quote.currency)}</p>
             </div>
-            <div className={styles.cifIncludedBox}>
-              <p>{t.cifIncludesHeading}</p>
-              <ul>
-                <li>{t.cifVehicleIncluded}</li>
-                <li>{t.freight}</li>
-                <li>{t.insurance}</li>
-              </ul>
-            </div>
-            <p className={styles.destinationExclusionNote}>{t.destinationChargesExcluded}</p>
+            <table className={styles.cifBreakdown}>
+              <thead>
+                <tr>
+                  <th>{t.cifBreakdownHeading}</th>
+                  <th>{quote.currency}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cifBreakdownRows.map((row) => (
+                  <tr key={row.label}>
+                    <td>{row.label}</td>
+                    <td>{formatMoney(row.amount, quote.currency)}</td>
+                  </tr>
+                ))}
+                <tr className={styles.cifBreakdownTotal}>
+                  <td>{t.cbTotal} — {destinationPortLabel}</td>
+                  <td>{formatMoney(cifBreakdown.cifTotal, quote.currency)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className={styles.destinationExclusionNote}>
+              {cifBreakdown.estimated ? `${t.cifBreakdownNote} ` : ""}{t.destinationChargesExcluded}
+            </p>
           </section>
         )}
 

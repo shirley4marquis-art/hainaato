@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { computeQuoteTotals } from "./quote-totals";
+import { computeQuoteTotals, decomposeCif } from "./quote-totals";
 
 test("CIF quote: unit price already includes freight and insurance", () => {
   const totals = computeQuoteTotals({
@@ -69,4 +69,44 @@ test("missing deposit percentage falls back to 40%", () => {
   });
   assert.equal(totals.depositPct, 40);
   assert.equal(totals.depositAmount, 4000);
+});
+
+const cifComponents = (b: ReturnType<typeof decomposeCif>) =>
+  b.goodsValue + b.exportClearance + b.originHandling + b.oceanFreight + b.marineInsurance + b.documentation + b.billOfLading;
+
+test("CIF breakdown always sums back to the exact CIF total", () => {
+  for (const cif of [3000, 8393.65, 15993.61, 42000, 128500.5]) {
+    for (const units of [1, 2, 5]) {
+      const b = decomposeCif(cif, { units, incoterm: "CIF" });
+      assert.ok(Math.abs(cifComponents(b) - cif) < 0.005, `sum ${cifComponents(b)} != ${cif}`);
+      assert.equal(b.cifTotal, cif);
+      assert.ok(b.goodsValue > 0, `goods value ${b.goodsValue} must stay positive for CIF ${cif}`);
+      assert.equal(b.estimated, true);
+    }
+  }
+});
+
+test("CIF breakdown keeps a realistic goods share for a low-value unit", () => {
+  const b = decomposeCif(3000, { units: 1, incoterm: "CIF" });
+  // Shipping is scaled so goods value never drops below ~38% of CIF.
+  assert.ok(b.goodsValue >= 3000 * 0.37);
+  assert.ok(b.oceanFreight > 0 && b.marineInsurance > 0);
+});
+
+test("CIF breakdown uses the desk's own figures for an explicit FOB quote", () => {
+  const b = decomposeCif(36460, {
+    units: 1,
+    incoterm: "FOB",
+    freightCost: 950,
+    insuranceCost: 210,
+    inlandTransportCost: 120,
+    exportDocumentationCost: 180,
+  });
+  assert.equal(b.oceanFreight, 950);
+  assert.equal(b.marineInsurance, 210);
+  assert.equal(b.originHandling, 120);
+  assert.equal(b.exportClearance, 180);
+  assert.equal(b.goodsValue, 35000);
+  assert.equal(b.estimated, false);
+  assert.ok(Math.abs(cifComponents(b) - 36460) < 0.005);
 });
