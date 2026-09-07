@@ -93,6 +93,20 @@ test("CIF breakdown keeps a realistic goods share for a low-value unit", () => {
   assert.ok(b.oceanFreight > 0 && b.marineInsurance > 0);
 });
 
+test("CIF breakdown reproduces the reference quotation HA-COT-2026-097", () => {
+  const b = decomposeCif(7600, { units: 1, incoterm: "CIF" });
+  assert.equal(b.goodsValue, 5420);
+  assert.equal(b.exportClearance, 95);
+  assert.equal(b.originHandling, 185);
+  assert.equal(b.documentation, 80);
+  assert.equal(b.billOfLading, 65);
+  assert.equal(b.oceanFreight, 1720);
+  assert.equal(b.marineInsurance, 35);
+  assert.equal(b.fobSubtotal, 5845);
+  assert.equal(b.freightAndInsurance, 1755);
+  assert.equal(b.fobSubtotal + b.freightAndInsurance, b.cifTotal);
+});
+
 test("CIF breakdown uses the desk's own figures for an explicit FOB quote", () => {
   const b = decomposeCif(36460, {
     units: 1,

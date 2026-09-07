@@ -1,13 +1,12 @@
-/* Isolated print-document styling — deliberately not reusing the public
-   site's globals.css (marketing typography/colors would leak into the
-   printed document). Every rule here is self-contained. */
+/* Isolated print-document styling for the commercial quotation. Every rule
+   is self-contained — the public site's globals.css is deliberately not
+   reused. Layout mirrors the reference quotation HA-COT-2026-097. */
 
 .root {
   background: #e8eaed;
-  min-height: 100vh;
   padding: 24px 0;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #1a1a1a;
+  font-family: Arial, Helvetica, "Liberation Sans", sans-serif;
+  color: #1e2733;
 }
 
 .page {
@@ -17,39 +16,44 @@
   background: #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   position: relative;
-  padding: 0 0 60px;
+  padding: 0 22mm 26mm;
   box-sizing: border-box;
 }
 
 .topBar {
-  height: 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 7px;
   background: #f5820a;
 }
 
+/* ---------- Header ---------- */
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 22px 34px 18px;
-  border-bottom: 3px solid #0b1f3a;
+  gap: 18px;
+  padding: 26px 0 14px;
+  border-bottom: 2px solid #0b1f3a;
 }
 
 .headerLeft {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 13px;
 }
 
 .logo {
-  width: 62px;
-  height: 62px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   flex: none;
 }
 
 .companyName {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   color: #0b1f3a;
   margin: 0;
@@ -58,29 +62,20 @@
 
 .companyTag {
   display: block;
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 800;
   color: #f5820a;
-  letter-spacing: 0.06em;
-  margin: 1px 0 6px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin: 2px 0 5px;
 }
 
 .companyAddress {
-  font-size: 10.5px;
+  font-size: 9.5px;
   color: #5a6472;
   line-height: 1.5;
-  margin: 0 0 3px;
-}
-
-.companyContact {
-  font-size: 10.5px;
-  color: #5a6472;
   margin: 0;
-}
-
-.companyContact a {
-  color: #1262c5;
-  text-decoration: none;
+  max-width: 230px;
 }
 
 .headerRight {
@@ -89,489 +84,256 @@
 }
 
 .docTitle {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 30px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: #0b1f3a;
-  margin: 0;
+  letter-spacing: 0.04em;
+  margin: 0 0 3px;
 }
 
-.docNumber {
-  font-size: 11px;
-  color: #5a6472;
-}
-
-.summaryRow {
-  display: flex;
-  justify-content: flex-end;
-  gap: 30px;
-  padding: 14px 34px 0;
-}
-
-.summaryItem {
-  text-align: right;
-}
-
-.summaryLabel {
+.docNumber,
+.docDate {
   display: block;
-  font-size: 9.5px;
-  font-weight: 800;
-  color: #8b95a3;
-  letter-spacing: 0.08em;
-}
-
-.summaryValue {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0b1f3a;
-}
-
-.summaryTotal .summaryValue {
-  color: #f5820a;
-  font-size: 20px;
-}
-
-.partyGrid {
-  margin: 20px 34px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.partyCard {
-  border: 1px solid #dde2e8;
-  border-top: 4px solid #0b1f3a;
-  padding: 12px 14px 13px;
-  min-height: 94px;
-}
-
-.partyKicker {
-  margin: 0 0 7px;
-  color: #f5820a;
-  font-size: 9.5px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.clientBar {
-  margin: 20px 34px 0;
-  background: #0b1f3a;
-  color: #fff;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 6px 12px;
-}
-
-.clientBlock {
-  margin: 0 34px;
-  padding: 12px 12px 14px;
-  border: 1px solid #dde2e8;
-  border-top: none;
-}
-
-.clientName {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0b1f3a;
-  margin: 0 0 4px;
-}
-
-.clientLine {
-  font-size: 11px;
-  color: #5a6472;
-  margin: 0 0 2px;
-}
-
-.commercialSummary {
-  margin: 14px 34px 0;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 14px;
-  align-items: stretch;
-  background: #0b1f3a;
-  color: #fff;
-}
-
-.commercialSummary > div:first-child {
-  padding: 12px 14px;
-  border-right: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.commercialSummary span {
-  display: block;
-  color: #f8b565;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.commercialSummary b {
-  display: block;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.commercialSummary dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-}
-
-.commercialSummary dl div {
-  padding: 12px 12px;
-  border-right: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.commercialSummary dl div:last-child {
-  border-right: 0;
-}
-
-.commercialSummary dt {
-  color: #aebbd0;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.commercialSummary dd {
-  margin: 0;
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.cifNotice {
-  margin: 14px 34px 0;
-  border: 1px solid #f3d8b9;
-  background: linear-gradient(180deg, #fffaf4 0%, #fff 100%);
-  padding: 14px 16px;
-}
-
-.cifNoticeHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.cifNoticeTitle {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: #0b1f3a;
-}
-
-.cifNoticeAmount {
-  margin: 0;
-  color: #f5820a;
-  font-size: 22px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.cifBreakdown {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0 0;
   font-size: 10px;
-}
-
-.cifBreakdown thead th {
-  text-align: left;
-  padding: 5px 8px;
-  border-bottom: 1px solid #ead6c2;
-  color: #8a6a3f;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.cifBreakdown td {
-  padding: 5px 8px;
-  border-bottom: 1px solid #f0e2cf;
-  color: #4a4034;
-  vertical-align: top;
-}
-
-.cifBreakdown th:last-child,
-.cifBreakdown td:last-child {
-  text-align: right;
-  white-space: nowrap;
-  width: 96px;
-}
-
-.cifBreakdown .cifBreakdownTotal td {
-  border-top: 1.5px solid #0b1f3a;
-  border-bottom: 0;
-  padding-top: 7px;
-  font-weight: 900;
-  color: #0b1f3a;
-  font-size: 11px;
-}
-
-.destinationExclusionNote {
-  margin: 8px 0 0;
-  padding-top: 8px;
-  border-top: 1px solid #ead6c2;
-  color: #5a6472;
-  font-size: 9.5px;
-  line-height: 1.5;
-}
-
-.table {
-  width: calc(100% - 68px);
-  margin: 16px 34px 0;
-  border-collapse: collapse;
-  font-size: 11px;
-}
-
-.table thead th {
-  text-align: left;
-  background: #0b1f3a;
-  color: #fff;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 8px 10px;
-  border-bottom: 0;
-}
-
-.table thead th:not(:first-child) {
-  text-align: right;
-}
-
-.table td {
-  padding: 10px 10px;
-  border-bottom: 1px solid #eceff2;
-  vertical-align: top;
-}
-
-.table tr:nth-child(even) td {
-  background: #fafbfc;
-}
-
-.itemLabel {
-  font-weight: 700;
-  color: #0b1f3a;
-}
-
-.itemSub {
-  font-size: 10px;
-  color: #5a6472;
-  line-height: 1.5;
-  margin: 3px 0 0;
-}
-
-.numCell {
-  text-align: right;
-  white-space: nowrap;
-  color: #1a1a1a;
-}
-
-.totalsBlock {
-  margin: 0 34px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.grandTotalRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #0b1f3a;
-  color: #fff;
-  padding: 12px 16px;
-  margin-top: 4px;
-  min-width: 380px;
-}
-
-.grandTotalLabel {
-  font-size: 13px;
-  font-weight: 800;
-  color: #fff;
-}
-
-.grandTotalValue {
-  font-size: 20px;
-  font-weight: 800;
-  color: #f5820a;
-  margin-left: auto;
-}
-
-.grandTotalCurrency {
-  font-size: 11px;
-  font-weight: 700;
-  color: #d4dce8;
-  margin-right: 4px;
-}
-
-/* Destination-cost estimate — deliberately not styled like grandTotalRow
-   (no orange accent bar, no bold headline treatment) so it can never be
-   mistaken for an amount payable to HainaAuto. */
-.estimateRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #fff;
-  border: 1px dashed #c7ccd4;
-  padding: 8px 16px;
-  margin-top: 6px;
-}
-
-.estimateLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: #5a6472;
-}
-
-.estimateValue {
-  font-size: 14px;
-  font-weight: 700;
-  color: #5a6472;
-  margin-left: auto;
-}
-
-.estimateNote {
-  font-size: 9px;
-  font-style: italic;
-  color: #9aa2ad;
-  text-align: right;
-  margin: 2px 0 0;
-  max-width: 320px;
-}
-
-.costToOwnRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 6px 16px 0;
-}
-
-.paymentSchedule {
-  margin: 18px 34px 0;
-}
-
-.paymentGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid #dde2e8;
-}
-
-.paymentGrid > div {
-  padding: 12px 14px;
-  border-right: 1px solid #dde2e8;
-}
-
-.paymentGrid > div:last-child {
-  border-right: 0;
-}
-
-.paymentGrid span {
-  display: block;
-  color: #5a6472;
-  font-size: 9.5px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.paymentGrid b {
-  display: block;
-  color: #0b1f3a;
-  font-size: 17px;
-  margin-bottom: 5px;
-}
-
-.paymentGrid small {
-  display: block;
-  color: #6d7785;
-  font-size: 9.5px;
-  line-height: 1.45;
-}
-
-.costToOwnLabel {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #8b95a3;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.costToOwnValue {
-  font-size: 13px;
-  font-weight: 800;
-  color: #3a4353;
-  margin-left: auto;
-}
-
-.termsBlock {
-  margin: 22px 34px 0;
-}
-
-.blockHeading {
-  font-size: 10.5px;
-  font-weight: 800;
-  color: #0b1f3a;
-  letter-spacing: 0.05em;
-  margin: 0 0 6px;
-}
-
-.termsList {
-  margin: 0;
-  padding: 0;
-  font-size: 9.5px;
   color: #5a6472;
   line-height: 1.6;
-  list-style: none;
-  /* CSS columns, not grid/flex — grid/flex items are blockified per spec,
-     which strips native list-item markers from <li> children. We render
-     numbers as text anyway (below), but columns also wrap more like the
-     sample's flowing two-column layout than a strict grid does. */
-  columns: 2;
-  column-gap: 20px;
 }
 
-.termsList li {
-  margin-bottom: 4px;
-  break-inside: avoid;
+/* ---------- Section kickers ---------- */
+.sectionKicker {
+  margin: 20px 0 8px;
+  color: #f5820a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
+.subHead {
+  margin: 18px 0 7px;
+  color: #0b1f3a;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ---------- Customer key/value table ---------- */
+.kvTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5px;
+}
+
+.kvTable tr:nth-child(odd) {
+  background: #eef3f8;
+}
+
+.kvTable th {
+  text-align: left;
+  width: 42%;
+  padding: 7px 10px;
+  font-weight: 700;
+  color: #0b1f3a;
+  vertical-align: top;
+}
+
+.kvTable td {
+  padding: 7px 10px;
+  color: #38424f;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Prose ---------- */
+.objectText {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #38424f;
+}
+
+.para {
+  margin: 12px 0 0;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #38424f;
+}
+
+/* ---------- Vehicle row ---------- */
+.vehicleRow {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0 4px;
+  align-items: flex-start;
+}
+
+.vehiclePhoto,
+.vehiclePhotoEmpty {
+  width: 190px;
+  height: 128px;
+  object-fit: cover;
+  flex: none;
+  border: 1px solid #dde2e8;
+  background: #f5f6f8;
+}
+
+.vehicleTitle {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0b1f3a;
+}
+
+.vehicleMeta {
+  margin: 2px 0 0;
+  font-size: 9px;
+  color: #7b8593;
+}
+
+.vehicleSpec {
+  margin: 3px 0 0;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: #47515e;
+}
+
+/* ---------- Totals / breakdown tables ---------- */
+.totalsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 0;
+  font-size: 10.5px;
+}
+
+.totalsTable thead th {
+  background: #0b1f3a;
+  color: #fff;
+  text-align: left;
+  padding: 7px 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.totalsTable thead th:last-child {
+  text-align: right;
+  width: 110px;
+}
+
+.totalsTable td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #e6eaef;
+  color: #38424f;
+  vertical-align: top;
+}
+
+.totalsTable td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalsTable tbody tr:nth-child(odd):not(.rowOrange):not(.rowDark) {
+  background: #f6f8fa;
+}
+
+.rowOrange td {
+  background: #f5820a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 11px;
+  border-bottom: 0;
+}
+
+.rowDark td {
+  background: #0b1f3a;
+  color: #fff;
+  font-weight: 800;
+  font-size: 11px;
+  border-bottom: 0;
+}
+
+/* ---------- Statement lines ---------- */
+.payStatement {
+  margin: 14px 0 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0b1f3a;
+  line-height: 1.55;
+}
+
+.checkLine {
+  margin: 6px 0 0;
+  font-size: 10px;
+  color: #47515e;
+  font-variant-numeric: tabular-nums;
+}
+
+.disclaimer,
+.footNote {
+  margin: 8px 0 0;
+  font-size: 9px;
+  line-height: 1.55;
+  color: #8a929d;
+}
+
+/* ---------- Mini header (pages 2 & 3) ---------- */
+.miniHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0 12px;
+  border-bottom: 2px solid #f5820a;
+}
+
+.miniLogo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex: none;
+}
+
+.miniHeader p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0b1f3a;
+}
+
+/* ---------- Signatures ---------- */
 .signatures {
   display: flex;
-  gap: 40px;
-  margin: 30px 34px 0;
+  gap: 34px;
+  margin: 34px 0 0;
 }
 
 .signature {
   flex: 1;
-  border-top: 1px solid #1a1a1a;
-  padding-top: 6px;
-  font-size: 10.5px;
-  font-weight: 700;
+  border-top: 1px solid #0b1f3a;
+  padding-top: 7px;
+}
+
+.signature b {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
   color: #0b1f3a;
 }
 
-.signatureSub {
-  display: block;
-  font-size: 9.5px;
-  font-weight: 400;
-  color: #8b95a3;
-  margin-top: 3px;
+.signKicker {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f5820a;
 }
 
+.signSub {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  color: #8a929d;
+}
+
+/* ---------- Footer ---------- */
 .footerBar {
   position: absolute;
   left: 0;
@@ -580,199 +342,16 @@
 }
 
 .footerBarTop {
-  height: 8px;
+  height: 6px;
   background: #0b1f3a;
 }
 
 .footerBarText {
   background: #0b1f3a;
   color: #cfd6e0;
-  font-size: 9px;
-  text-align: center;
-  padding: 8px 10px;
-}
-
-/* Photo pages */
-.photoMiniHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 34px 14px;
-  border-bottom: 3px solid #f5820a;
-}
-
-.photoMiniLogo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  flex: none;
-}
-
-.photoVehicleTitle {
-  font-size: 15px;
-  font-weight: 800;
-  color: #0b1f3a;
-  margin: 0;
-}
-
-.photoVehicleSub {
-  font-size: 10.5px;
-  color: #f5820a;
-  font-weight: 700;
-  margin: 0;
-}
-
-.vehicleSheetBody {
-  padding: 18px 34px 28px;
-}
-
-.vehiclePhotos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.vehiclePhoto {
-  margin: 0;
-}
-
-.photoImg {
-  width: 100%;
-  height: 205px;
-  object-fit: contain;
-  background: #f5f6f8;
-  display: block;
-  border: 1px solid #dde2e8;
-}
-
-.photoCaption {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #5a6472;
-  margin: 6px 0 0;
-}
-
-.photoUnavailable {
-  grid-column: 1 / -1;
-  height: 255px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed #c7ccd4;
-  background: #f5f6f8;
-  color: #8b95a3;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.vehicleDetailsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border: 1px solid #dde2e8;
-  border-right: 0;
-  border-bottom: 0;
-  margin-top: 18px;
-}
-
-.vehicleDetail {
-  min-height: 48px;
-  padding: 9px 10px;
-  border-right: 1px solid #dde2e8;
-  border-bottom: 1px solid #dde2e8;
-  box-sizing: border-box;
-}
-
-.vehicleDetail span,
-.vehiclePriceGrid span {
-  display: block;
-  color: #8b95a3;
   font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-.vehicleDetail b {
-  color: #0b1f3a;
-  font-size: 11px;
-}
-
-.vehicleSpecSummary {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  background: #f5f6f8;
-  color: #5a6472;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.vehicleConfigBlock {
-  margin-top: 12px;
-}
-
-.vehicleConfigBlock > p {
-  margin: 0 0 6px;
-  color: #0b1f3a;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .06em;
-}
-
-.vehicleConfigGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid #dde2e8;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.vehicleConfigGrid > div {
-  min-height: 38px;
-  padding: 7px 8px;
-  border-right: 1px solid #dde2e8;
-  border-bottom: 1px solid #dde2e8;
-}
-
-.vehicleConfigGrid span {
-  display: block;
-  color: #8b95a3;
-  font-size: 7.8px;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-.vehicleConfigGrid b {
-  color: #0b1f3a;
-  font-size: 9.3px;
-  line-height: 1.28;
-}
-
-.vehiclePriceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 14px;
-  background: #0b1f3a;
-  color: #fff;
-}
-
-.vehiclePriceGrid > div {
-  padding: 11px 14px;
-  border-right: 1px solid rgba(255,255,255,.18);
-}
-
-.vehiclePriceGrid > div:last-child {
-  border-right: 0;
-}
-
-.vehiclePriceGrid span {
-  color: #aebbd0;
-}
-
-.vehiclePriceGrid b {
-  font-size: 15px;
+  text-align: center;
+  padding: 7px 10px;
 }
 
 @media print {

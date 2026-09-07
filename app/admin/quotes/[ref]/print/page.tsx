@@ -1,46 +1,46 @@
 import { notFound } from "next/navigation";
 import { adminGetQuote } from "../../../../../lib/crm";
 import {
-  buildLineItems,
   estimateVenezuelaNationalization,
   formatDate,
   formatMoney,
   isCifQuote,
   itemTitle,
-  labelsFor,
   quoteNationalizationCifValue,
 } from "../../../../../lib/quote-document";
 import { computeQuoteTotals, decomposeCif } from "../../../../../lib/quote-totals";
-import { parseHistoryRows } from "../../../../../lib/vehicle-document-details";
+import { amountInWords } from "../../../../../lib/amount-in-words";
 import styles from "./print.module.css";
 
 const COMPANY = {
   name: "HAINA AUTO EXPORT",
-  tag: "CHINA AUTO EXPORT",
   address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China",
   phone: "+86 150 3217 8759",
   email: "sales@nindgeauto.com",
   website: "nindgeauto.com",
-  // Local asset, not hotlinked — img.hainaauto.com changed its content mid-
-  // session once already, which would silently change past PDFs' letterhead.
-  // Relative path resolves correctly regardless of deploy domain, since
-  // Playwright always navigates here same-origin (see the pdf route).
+  // Local asset, not hotlinked — relative path resolves correctly regardless
+  // of deploy domain, since Playwright always navigates here same-origin.
   logo: "/hainaauto-logo.webp",
 };
 
-function Letterhead() {
-  return (
-    <div className={styles.footerBar}>
-      <div className={styles.footerBarTop} />
-      <div className={styles.footerBarText}>
-        {COMPANY.name} — {COMPANY.address} · Tel {COMPANY.phone} · {COMPANY.email} · {COMPANY.website}
-      </div>
-    </div>
-  );
+// UN/LOCODE for the ports HAINA AUTO actually ships to, shown next to the
+// freight line the way the reference quotation does ("Puerto Cabello (VEPBL)").
+function portCode(port: string): string | null {
+  const p = port.toLowerCase();
+  if (p.includes("cabello")) return "VEPBL";
+  if (p.includes("guaira")) return "VELAG";
+  if (p.includes("maracaibo")) return "VEMAR";
+  if (p.includes("callao")) return "PECLL";
+  if (p.includes("cartagena")) return "COCTG";
+  if (p.includes("buenaventura")) return "COBUN";
+  if (p.includes("guayaquil")) return "ECGYE";
+  if (p.includes("valparaiso") || p.includes("valparaíso")) return "CLVAP";
+  if (p.includes("san antonio")) return "CLSAI";
+  return null;
 }
 
-function formatPdfAmount(amount: number, currency: string): string {
-  return `${currency} ${formatMoney(amount, currency).replace(/^\$/, "")}`;
+function n(amount: number, currency: string): string {
+  return formatMoney(amount, currency).replace(/^[^\d-]+/, "");
 }
 
 export default async function QuotePrintPage({ params }: { params: Promise<{ ref: string }> }) {
@@ -48,23 +48,15 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
   const quote = await adminGetQuote(ref);
   if (!quote) notFound();
 
-  const t = labelsFor(quote.language);
-  const lineItems = buildLineItems(quote);
+  const lang = quote.language;
+  const es = lang === "es";
   const isCif = isCifQuote(quote);
-  // One shared calculation for the stored totals, the printed document and the
-  // live editor — see lib/quote-totals.ts.
+  const cur = quote.currency;
+  const incotermLabel = isCif ? "CIF" : "FOB";
+
   const totals = computeQuoteTotals(quote);
-  const effectiveCifTotal = totals.cifTotal;
-  const grandTotal = totals.grandTotal;
-  const depositPct = totals.depositPct;
-  const depositAmount = totals.depositAmount;
-  const balanceAmount = totals.balanceAmount;
-  const customsEstimate = totals.customsEstimate;
-  const nationalizationCifValue = quoteNationalizationCifValue(quote);
-  const destinationPortLabel = quote.destinationPort.toUpperCase();
   const unitCount = quote.items.reduce((sum, item) => sum + (item.qty || 0), 0);
-  // FOB goods value + each shipping cost, summing exactly to the CIF total.
-  const cifBreakdown = decomposeCif(effectiveCifTotal, {
+  const cifBreakdown = decomposeCif(totals.cifTotal, {
     units: unitCount,
     incoterm: quote.incoterm,
     freightCost: quote.freightCost,
@@ -72,49 +64,206 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
     inlandTransportCost: quote.inlandTransportCost,
     exportDocumentationCost: quote.exportDocumentationCost,
   });
-  const cifBreakdownRows: { label: string; amount: number }[] = [
-    { label: t.cbGoods, amount: cifBreakdown.goodsValue },
-    { label: t.cbExportClearance, amount: cifBreakdown.exportClearance },
-    { label: t.cbOriginHandling, amount: cifBreakdown.originHandling },
-    { label: `${t.cbOceanFreight} (${destinationPortLabel})`, amount: cifBreakdown.oceanFreight },
-    { label: t.cbInsurance, amount: cifBreakdown.marineInsurance },
-    { label: t.cbDocumentation, amount: cifBreakdown.documentation },
-    { label: t.cbBillOfLading, amount: cifBreakdown.billOfLading },
-  ].filter((row) => row.amount > 0);
+
+  const isVenezuela = quote.destinationCountry.toLowerCase().includes("venezuela");
   const engineDisplacement = quote.items
     .map((item) => {
-      const match = item.engine?.match(/(\d+(?:\.\d+)?)\s*(?:l|lt|litros|litres)/i);
+      const match = item.engine?.match(/(\d+(?:\.\d+)?)\s*(?:l|lt|litros|litres|t)\b/i);
       return match ? Number(match[1]) : null;
     })
     .find((value): value is number => value != null) ?? 2.0;
-  const venezuelaNationalization = quote.destinationCountry.toLowerCase().includes("venezuela")
+  const customs = isVenezuela
     ? estimateVenezuelaNationalization({
-        cifValue: nationalizationCifValue,
+        cifValue: quoteNationalizationCifValue(quote),
         engineDisplacementLiters: engineDisplacement,
       })
     : null;
+  const grandEstimate = totals.cifTotal + (customs?.total ?? 0);
 
-  const terms = [
-    ...(quote.paymentTerms?.trim() ? [quote.paymentTerms.trim()] : []),
-    t.depositTerm(depositPct),
-    t.daysValid(7),
-    t.availabilityTerm,
-    t.shippingTerm,
-    t.dutyTerm,
+  const port = quote.destinationPort;
+  const portUpper = port.toUpperCase();
+  const code = portCode(port);
+  const dutyPctLabel = customs ? Math.round(customs.importDutyRate * 100) : 20;
+
+  const T_units = (q: number, spanish: boolean): string =>
+    spanish ? (q === 1 ? "Una (1) unidad" : `${q} unidades`) : q === 1 ? "One (1) unit" : `${q} units`;
+
+  const T = es
+    ? {
+        docTitle: "COTIZACIÓN COMERCIAL",
+        no: "N.º",
+        companyTag: "EXPORTACIÓN DE AUTOMÓVILES DE CHINA",
+        client: "Cliente",
+        cName: "Nombre / empresa",
+        cEmail: "Correo electrónico",
+        cPhone: "Teléfono",
+        cQty: "Cantidad",
+        cPort: "Puerto de destino",
+        cIncoterm: "Incoterm",
+        cValid: "Validez de la oferta",
+        validUntil: (d: string) => `Hasta el ${d}`,
+        units: (q: number) => `${q} ${q === 1 ? "(una) unidad" : `(${q}) unidades`}`,
+        incotermValue: `${incotermLabel} ${port} (Incoterms® 2020)`,
+        object: "Objeto de la oferta",
+        objectText: `${T_units(unitCount, true)} con entrega ${incotermLabel} en ${port}, ${quote.destinationCountry}.`,
+        stock: "Stock",
+        factory: "Fábrica",
+        location: "Ubicación",
+        available: "Disponible",
+        totalsHeading: "TOTALES DE ESTA OFERTA",
+        concept: "Concepto",
+        fobSubtotalRow: "Subtotal FOB (vehículo + origen China)",
+        freightRow: `Flete a ${port} + seguro mínimo CIF`,
+        payToHaina: `TOTAL A PAGAR A HAINA AUTO · ${incotermLabel} ${portUpper}`,
+        tributesRow: `Tributos SENIAT estimados (arancel ${dutyPctLabel}% + tasa 1% + IVA 16%)`,
+        portRow: "Puerto, almacenaje y agente de aduana en destino",
+        variable: "variable / no incluido",
+        grandRow: `TOTAL GENERAL ESTIMADO · ${incotermLabel} + tributos (sin puerto ni agente)`,
+        payStatement: `A pagar a ${COMPANY.name}: ${cur} ${n(totals.cifTotal, cur)} ${incotermLabel}. En letras: ${amountInWords(totals.cifTotal, cur, lang)}.`,
+        cifCheck: `Comprobación ${incotermLabel}: ${n(cifBreakdown.fobSubtotal, cur)} FOB + ${n(cifBreakdown.oceanFreight, cur)} flete + ${n(cifBreakdown.marineInsurance, cur)} seguro = ${n(totals.cifTotal, cur)}.`,
+        grandDisclaimer: `El total general de ${cur} ${n(grandEstimate, cur)} es una estimación de referencia (${incotermLabel} + tributos al ${dutyPctLabel}%). No es DDP. Puerto, almacenaje y agente los paga el cliente en ${quote.destinationCountry}.`,
+        // page 2
+        cifBreakdownTitle: "Desglose interno del CIF — valores de mercado aproximados",
+        cifBreakdownIntro: `Estas partidas reconstruyen el CIF de ${cur} ${n(totals.cifTotal, cur)}. Son asignaciones internas de referencia. El cliente paga el total CIF a HAINA; no se facturan estas líneas por separado salvo pacto escrito.`,
+        sectionA: "A. Componentes FOB (hasta el costado del buque en origen)",
+        item: "Partida",
+        a1: "1. Valor del vehículo / mercancía (ex works interno)",
+        a2: "2. Despacho aduanero de exportación en China",
+        a3: "3. Manipulación portuaria / terminal de origen (THC)",
+        a4: "4. Documentación y fees de exportación / shipping",
+        a5: "5. Emisión del conocimiento de embarque (B/L)",
+        subtotalFob: "SUBTOTAL FOB",
+        aNote: "Base: despacho ~RMB 350–900; B/L ~CNY 300–450 (≈ USD 42–65); THC origen por unidad en rango bajo-medio.",
+        sectionB: "B. De FOB a CIF",
+        b6: `6. Flete marítimo a ${port}${code ? ` (${code})` : ""}`,
+        b7: "7. Seguro de carga — mínimo CIF ICC (C), 110% del valor",
+        subtotalFreight: "SUBTOTAL FLETE + SEGURO",
+        bNote: `Flete: cuota de una pickup en Ro-Ro o contenedor compartido, China → ${port}, 35–45 días. Seguro: ${n(totals.cifTotal, cur)} × 110% × ≈0,42% ≈ ${cur} ${n(cifBreakdown.marineInsurance, cur)}. Cobertura mínima CIF, no ICC (A).`,
+        sectionC: "C. Identidad aritmética",
+        cFob: "FOB (partidas 1 a 5)",
+        cFreight: "+ Flete (partida 6)",
+        cInsurance: "+ Seguro (partida 7)",
+        cTotal: `= TOTAL CIF ${portUpper} (a pagar a HAINA)`,
+        // page 3
+        annexTitle: `Anexo — Aduana de ${quote.destinationCountry} (NO incluido en el CIF)`,
+        annexIntro: `El CIF cubre vehículo, flete y seguro hasta ${port}. Aranceles, IVA, nacionalización y puerto en destino los paga el importador o su agente antes del levante.`,
+        tributesCalc: `Cálculo de tributos sobre esta unidad (escenario ${dutyPctLabel}%)`,
+        cifValueRow: "Valor CIF",
+        dutyRow: `Arancel ${dutyPctLabel}%`,
+        feeRow: "Tasa aduanera 1%",
+        vatRow: (base: string) => `IVA 16% sobre ${base}`,
+        luxuryRow: "Recargo de lujo 15%",
+        subtotalTributes: "SUBTOTAL TRIBUTOS ESTIMADOS",
+        portFeesRow: "Puerto + almacenaje + agente",
+        grandAnnexRow: "TOTAL GENERAL ESTIMADO (CIF + tributos, sin puerto)",
+        annexNote: `Pickup de carga: arancel de referencia ${dutyPctLabel}% (hasta 40% si se reclasifica). Exenta del recargo de lujo del 15%. Confirmar con el agente en ${port}.`,
+        requirements: `Requisitos del cliente: antigüedad máxima 5 años; permisos SENATEL/MINEC y COVENIN cuando apliquen; homologación INTT / SENCAMER.`,
+        conditions: `Condiciones: ${cur}, T/T. ${quote.paymentTerms?.trim() ? quote.paymentTerms.trim() : `Anticipo del ${totals.depositPct}% (${cur} ${n(totals.depositAmount, cur)}) y saldo del ${100 - totals.depositPct}% (${cur} ${n(totals.balanceAmount, cur)}) a confirmar.`} La unidad se reserva tras aceptación y pago inicial.`,
+        acceptance: `Aceptación: ${COMPANY.email}${quote.customer.email ? ` con copia a ${quote.customer.email}` : ""}, citando ${quote.documentNumber ?? quote.ref}.`,
+        bySeller: "Por el exportador",
+        byBuyer: "Por el cliente",
+      }
+    : {
+        docTitle: "COMMERCIAL QUOTATION",
+        no: "No.",
+        companyTag: "CHINA VEHICLE EXPORT",
+        client: "Customer",
+        cName: "Name / company",
+        cEmail: "Email",
+        cPhone: "Phone",
+        cQty: "Quantity",
+        cPort: "Destination port",
+        cIncoterm: "Incoterm",
+        cValid: "Offer validity",
+        validUntil: (d: string) => `Until ${d}`,
+        units: (q: number) => `${q} unit${q === 1 ? "" : "s"}`,
+        incotermValue: `${incotermLabel} ${port} (Incoterms® 2020)`,
+        object: "Scope of this offer",
+        objectText: `${T_units(unitCount, false)} delivered ${incotermLabel} to ${port}, ${quote.destinationCountry}.`,
+        stock: "Stock",
+        factory: "Factory",
+        location: "Location",
+        available: "Available",
+        totalsHeading: "TOTALS FOR THIS OFFER",
+        concept: "Item",
+        fobSubtotalRow: "FOB subtotal (vehicle + China origin)",
+        freightRow: `Freight to ${port} + minimum CIF insurance`,
+        payToHaina: `TOTAL PAYABLE TO HAINA AUTO · ${incotermLabel} ${portUpper}`,
+        tributesRow: `Estimated ${isVenezuela ? "SENIAT " : ""}import taxes (duty ${dutyPctLabel}% + fee 1% + VAT 16%)`,
+        portRow: "Destination port, storage and customs broker",
+        variable: "variable / not included",
+        grandRow: `ESTIMATED GRAND TOTAL · ${incotermLabel} + taxes (excl. port & broker)`,
+        payStatement: `Payable to ${COMPANY.name}: ${cur} ${n(totals.cifTotal, cur)} ${incotermLabel}. In words: ${amountInWords(totals.cifTotal, cur, lang)}.`,
+        cifCheck: `${incotermLabel} check: ${n(cifBreakdown.fobSubtotal, cur)} FOB + ${n(cifBreakdown.oceanFreight, cur)} freight + ${n(cifBreakdown.marineInsurance, cur)} insurance = ${n(totals.cifTotal, cur)}.`,
+        grandDisclaimer: `The grand total of ${cur} ${n(grandEstimate, cur)} is a reference estimate (${incotermLabel} + taxes at ${dutyPctLabel}%). It is not DDP. Destination port, storage and broker are paid by the buyer in ${quote.destinationCountry}.`,
+        cifBreakdownTitle: "Internal CIF breakdown — approximate market values",
+        cifBreakdownIntro: `These items reconstruct the ${cur} ${n(totals.cifTotal, cur)} CIF price. They are internal reference allocations. The customer pays the CIF total to HAINA; these lines are not invoiced separately unless agreed in writing.`,
+        sectionA: "A. FOB components (to ship's rail at origin)",
+        item: "Item",
+        a1: "1. Vehicle / goods value (internal ex-works)",
+        a2: "2. Export customs clearance in China",
+        a3: "3. Origin port / terminal handling (THC)",
+        a4: "4. Export documentation & shipping fees",
+        a5: "5. Bill of Lading (B/L) issuance",
+        subtotalFob: "FOB SUBTOTAL",
+        aNote: "Basis: clearance ~RMB 350–900; B/L ~CNY 300–450 (≈ USD 42–65); origin THC per unit in the low-to-mid range.",
+        sectionB: "B. From FOB to CIF",
+        b6: `6. Ocean freight to ${port}${code ? ` (${code})` : ""}`,
+        b7: "7. Cargo insurance — minimum CIF ICC (C), 110% of value",
+        subtotalFreight: "FREIGHT + INSURANCE SUBTOTAL",
+        bNote: `Freight: one pickup's share on RoRo or shared container, China → ${port}, 35–45 days. Insurance: ${n(totals.cifTotal, cur)} × 110% × ≈0.42% ≈ ${cur} ${n(cifBreakdown.marineInsurance, cur)}. Minimum CIF cover, not ICC (A).`,
+        sectionC: "C. Arithmetic identity",
+        cFob: "FOB (items 1 to 5)",
+        cFreight: "+ Freight (item 6)",
+        cInsurance: "+ Insurance (item 7)",
+        cTotal: `= TOTAL CIF ${portUpper} (payable to HAINA)`,
+        annexTitle: `Annex — ${quote.destinationCountry} customs (NOT included in CIF)`,
+        annexIntro: `CIF covers vehicle, freight and insurance to ${port}. Duties, VAT, nationalization and destination port charges are paid by the importer or their broker before release.`,
+        tributesCalc: `Tax calculation for this unit (${dutyPctLabel}% scenario)`,
+        cifValueRow: "CIF value",
+        dutyRow: `Duty ${dutyPctLabel}%`,
+        feeRow: "Customs fee 1%",
+        vatRow: (base: string) => `VAT 16% on ${base}`,
+        luxuryRow: "Luxury surcharge 15%",
+        subtotalTributes: "ESTIMATED TAXES SUBTOTAL",
+        portFeesRow: "Port + storage + broker",
+        grandAnnexRow: "ESTIMATED GRAND TOTAL (CIF + taxes, excl. port)",
+        annexNote: `Cargo pickup: reference duty ${dutyPctLabel}% (up to 40% if reclassified). Exempt from the 15% luxury surcharge. Confirm with the broker at ${port}.`,
+        requirements: `Buyer requirements: maximum age 5 years; SENATEL/MINEC and COVENIN permits where applicable; INTT / SENCAMER homologation.`,
+        conditions: `Terms: ${cur}, T/T. ${quote.paymentTerms?.trim() ? quote.paymentTerms.trim() : `Deposit of ${totals.depositPct}% (${cur} ${n(totals.depositAmount, cur)}) and balance of ${100 - totals.depositPct}% (${cur} ${n(totals.balanceAmount, cur)}) to be confirmed.`} The unit is reserved after acceptance and initial payment.`,
+        acceptance: `Acceptance: ${COMPANY.email}${quote.customer.email ? ` copying ${quote.customer.email}` : ""}, quoting ${quote.documentNumber ?? quote.ref}.`,
+        bySeller: "For the exporter",
+        byBuyer: "For the customer",
+      };
+
+  const vatBase = customs ? customs.cifValue + customs.importDuty + customs.customsServiceFee : 0;
+
+  const clientRows: [string, string][] = [
+    [T.cName, quote.customer.name],
+    [T.cEmail, quote.customer.email || "—"],
+    ...(quote.customer.phone ? [[T.cPhone, quote.customer.phone] as [string, string]] : []),
+    [T.cQty, T.units(unitCount)],
+    [T.cPort, [port, quote.destinationCountry].filter(Boolean).join(", ")],
+    [T.cIncoterm, T.incotermValue],
+    [T.cValid, quote.validUntil ? T.validUntil(formatDate(quote.validUntil, lang)) : "—"],
   ];
 
-  const detailLabels = quote.language === "es"
-    ? { details: "DETALLES DEL VEHÍCULO", configuration: "CONFIGURACIÓN Y EQUIPAMIENTO", vin: "VIN / N.º de chasis", condition: "Condición", mileage: "Kilometraje", fuel: "Combustible", transmission: "Transmisión", drivetrain: "Tracción", exterior: "Color exterior", interior: "Color interior", engine: "Motor", capacity: "Capacidad", quantity: "Cantidad", unitPrice: isCif ? "Precio unitario CIF" : "Precio unitario FOB", lineTotal: isCif ? "Total CIF del vehículo" : "Total del vehículo", unavailable: "Imagen no disponible" }
-    : { details: "VEHICLE DETAILS", configuration: "CONFIGURATION & EQUIPMENT", vin: "VIN / Chassis No.", condition: "Condition", mileage: "Mileage", fuel: "Fuel", transmission: "Transmission", drivetrain: "Drivetrain", exterior: "Exterior color", interior: "Interior color", engine: "Engine", capacity: "Capacity", quantity: "Quantity", unitPrice: isCif ? "CIF unit price" : "FOB unit price", lineTotal: isCif ? "Vehicle CIF total" : "Vehicle total", unavailable: "Image unavailable" };
-
-  const conditionLabel = (condition: string) =>
-    quote.language === "es"
-      ? condition === "new" ? "Nuevo" : "Usado"
-      : condition === "new" ? "New" : "Used";
+  const totalsRows: { label: string; value: string; tone?: "orange" | "dark" }[] = [
+    { label: T.fobSubtotalRow, value: n(cifBreakdown.fobSubtotal, cur) },
+    ...(isCif ? [{ label: T.freightRow, value: n(cifBreakdown.freightAndInsurance, cur) }] : []),
+    { label: T.payToHaina, value: n(totals.cifTotal, cur), tone: "orange" as const },
+    ...(customs
+      ? [
+          { label: T.tributesRow, value: n(customs.total, cur) },
+          { label: T.portRow, value: T.variable },
+          { label: T.grandRow, value: n(grandEstimate, cur), tone: "dark" as const },
+        ]
+      : []),
+  ];
 
   return (
     <div className={styles.root}>
-      {/* Cover page */}
+      {/* ============ PAGE 1 — COMMERCIAL QUOTATION ============ */}
       <div className={styles.page}>
         <div className={styles.topBar} />
         <div className={styles.header}>
@@ -123,272 +272,207 @@ export default async function QuotePrintPage({ params }: { params: Promise<{ ref
             <img className={styles.logo} src={COMPANY.logo} alt="" />
             <div>
               <p className={styles.companyName}>{COMPANY.name}</p>
-              <span className={styles.companyTag}>{COMPANY.tag}</span>
+              <span className={styles.companyTag}>{T.companyTag}</span>
               <p className={styles.companyAddress}>{COMPANY.address}</p>
-              <p className={styles.companyContact}>
-                Tel: {COMPANY.phone} | {COMPANY.email} | {COMPANY.website}
-              </p>
             </div>
           </div>
           <div className={styles.headerRight}>
-            <p className={styles.docTitle}>{t.docTitle}</p>
-            <span className={styles.docNumber}>
-              {t.docNumber} {quote.documentNumber ?? quote.ref}
-            </span>
+            <p className={styles.docTitle}>{T.docTitle}</p>
+            <span className={styles.docNumber}>{T.no} {quote.documentNumber ?? quote.ref}</span>
+            <span className={styles.docDate}>{formatDate(quote.quoteDate, lang)}</span>
           </div>
         </div>
 
-        <div className={styles.summaryRow}>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>{t.date}</span>
-            <span className={styles.summaryValue}>{formatDate(quote.quoteDate, quote.language)}</span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>{t.validUntil}</span>
-            <span className={styles.summaryValue}>{formatDate(quote.validUntil, quote.language)}</span>
-          </div>
-          <div className={`${styles.summaryItem} ${styles.summaryTotal}`}>
-            <span className={styles.summaryLabel}>{t.total}</span>
-            <span className={styles.summaryValue}>
-              {quote.currency} {formatMoney(effectiveCifTotal, quote.currency)}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.partyGrid}>
-          <section className={styles.partyCard}>
-            <p className={styles.partyKicker}>{t.preparedFor}</p>
-            <p className={styles.clientName}>{quote.customer.name}</p>
-            {quote.customer.address && <p className={styles.clientLine}>{quote.customer.address}</p>}
-            <p className={styles.clientLine}>
-              {[quote.customer.city, quote.customer.country].filter(Boolean).join(", ")}
-            </p>
-            <p className={styles.clientLine}>
-              {[quote.customer.email, quote.customer.phone].filter(Boolean).join(" | ")}
-            </p>
-          </section>
-          <section className={styles.partyCard}>
-            <p className={styles.partyKicker}>{t.preparedBy}</p>
-            <p className={styles.clientName}>{COMPANY.name}</p>
-            <p className={styles.clientLine}>{COMPANY.address}</p>
-            <p className={styles.clientLine}>Tel {COMPANY.phone} | {COMPANY.email}</p>
-            <p className={styles.clientLine}>{COMPANY.website}</p>
-          </section>
-        </div>
-
-        <section className={styles.commercialSummary}>
-          <div>
-            <span>{t.commercialSummary}</span>
-            <b>{t.quoteScope}</b>
-          </div>
-          <dl>
-            <div>
-              <dt>{t.incoterms}</dt>
-              <dd>{quote.incoterm ?? "CIF"}</dd>
-            </div>
-            <div>
-              <dt>{t.destinationPort}</dt>
-              <dd>{quote.destinationPort}</dd>
-            </div>
-            <div>
-              <dt>{t.estimatedDelivery}</dt>
-              <dd>{quote.deliveryEstimate ?? "—"}</dd>
-            </div>
-          </dl>
-        </section>
-
-        {isCif && (
-          <section className={styles.cifNotice}>
-            <div className={styles.cifNoticeHead}>
-              <p className={styles.cifNoticeTitle}>{t.cifPriceHeading} — {destinationPortLabel}</p>
-              <p className={styles.cifNoticeAmount}>{formatPdfAmount(effectiveCifTotal, quote.currency)}</p>
-            </div>
-            <table className={styles.cifBreakdown}>
-              <thead>
-                <tr>
-                  <th>{t.cifBreakdownHeading}</th>
-                  <th>{quote.currency}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cifBreakdownRows.map((row) => (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    <td>{formatMoney(row.amount, quote.currency)}</td>
-                  </tr>
-                ))}
-                <tr className={styles.cifBreakdownTotal}>
-                  <td>{t.cbTotal} — {destinationPortLabel}</td>
-                  <td>{formatMoney(cifBreakdown.cifTotal, quote.currency)}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p className={styles.destinationExclusionNote}>
-              {cifBreakdown.estimated ? `${t.cifBreakdownNote} ` : ""}{t.destinationChargesExcluded}
-            </p>
-          </section>
-        )}
-
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>{t.article}</th>
-              <th>{t.rate}</th>
-              <th>{t.qty}</th>
-              <th>{t.itemTotal}</th>
-            </tr>
-          </thead>
+        <p className={styles.sectionKicker}>{T.client}</p>
+        <table className={styles.kvTable}>
           <tbody>
-            {lineItems.map((row, i) => (
-              <tr key={i}>
-                <td>
-                  <div className={styles.itemLabel}>{row.label}</div>
-                  {row.sub && <p className={styles.itemSub}>{row.sub}</p>}
-                </td>
-                <td className={styles.numCell}>{row.rateText ?? formatMoney(row.rate ?? 0, quote.currency)}</td>
-                <td className={styles.numCell}>{row.qty ?? "—"}</td>
-                <td className={styles.numCell}>{row.totalText ?? formatMoney(row.total ?? 0, quote.currency)}</td>
+            {clientRows.map(([k, v]) => (
+              <tr key={k}>
+                <th>{k}</th>
+                <td>{v}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        <div className={styles.totalsBlock}>
-          <div className={styles.grandTotalRow}>
-            <span className={styles.grandTotalLabel}>{isCif ? `${t.totalCif} – ${destinationPortLabel}` : t.payable}</span>
-            <span className={styles.grandTotalValue}>
-              <span className={styles.grandTotalCurrency}>{quote.currency}</span>
-              {formatMoney(effectiveCifTotal, quote.currency)}
-            </span>
-          </div>
-          {customsEstimate != null && (
-            <>
-              <div className={styles.estimateRow}>
-                <span className={styles.estimateLabel}>{t.destinationEstimate}</span>
-                <span className={styles.estimateValue}>{formatMoney(customsEstimate, quote.currency)}</span>
-              </div>
-              <p className={styles.estimateNote}>{t.destinationEstimateNote}</p>
-            </>
-          )}
-          {venezuelaNationalization && (
-            <>
-              <div className={styles.estimateRow}>
-                <span className={styles.estimateLabel}>{t.customsPreview}</span>
-                <span className={styles.estimateValue}>{formatMoney(venezuelaNationalization.total, quote.currency)}</span>
-              </div>
-              <p className={styles.estimateNote}>
-                {t.customsPreviewNote} {t.customsBreakdownCif} = {formatMoney(venezuelaNationalization.cifValue, quote.currency)} · {t.customsBreakdownDuty} = {formatMoney(venezuelaNationalization.importDuty, quote.currency)} · {t.customsBreakdownServiceFee} = {formatMoney(venezuelaNationalization.customsServiceFee, quote.currency)} · {t.customsBreakdownVat} = {formatMoney(venezuelaNationalization.vat, quote.currency)}{venezuelaNationalization.luxuryFee > 0 ? ` · ${t.customsBreakdownLuxury} = ${formatMoney(venezuelaNationalization.luxuryFee, quote.currency)}` : ""}.
-              </p>
-            </>
-          )}
-          <div className={styles.costToOwnRow}>
-            <span className={styles.costToOwnLabel}>{t.costToOwn}</span>
-            <span className={styles.costToOwnValue}>{formatMoney(grandTotal + (venezuelaNationalization?.total ?? 0), quote.currency)}</span>
-          </div>
-        </div>
+        <p className={styles.sectionKicker}>{T.object}</p>
+        <p className={styles.objectText}>{T.objectText}</p>
 
-        <section className={styles.paymentSchedule}>
-          <p className={styles.blockHeading}>{t.paymentSchedule}</p>
-          <div className={styles.paymentGrid}>
-            <div>
-              <span>{t.depositDue(depositPct)}</span>
-              <b>{formatMoney(depositAmount, quote.currency)}</b>
-              <small>{t.depositTiming}</small>
+        {quote.items.map((item, i) => {
+          const photo = (item.photos ?? [])[0]?.url;
+          const specLine = [
+            item.condition === "new" ? (es ? "nuevo" : "new") : es ? "usado" : "used",
+            item.mileageKm != null ? `${item.mileageKm.toLocaleString(es ? "es-ES" : "en-US")} km` : null,
+            item.exteriorColor,
+            item.engine,
+            item.powerHp ? `${item.powerHp} hp` : null,
+            item.transmission,
+            item.drivetrain,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          const link = item.historyNotes?.match(/https?:\/\/\S+/)?.[0];
+          const factory = item.vin ? `${es ? "VIN / fábrica" : "VIN / factory"} ${item.vin}` : null;
+          return (
+            <div className={styles.vehicleRow} key={i}>
+              {photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className={styles.vehiclePhoto} src={photo} alt="" />
+              ) : (
+                <div className={styles.vehiclePhotoEmpty} />
+              )}
+              <div>
+                <p className={styles.vehicleTitle}>{itemTitle(item)}</p>
+                {factory ? <p className={styles.vehicleMeta}>{factory}</p> : null}
+                <p className={styles.vehicleSpec}>{specLine}</p>
+                <p className={styles.vehicleMeta}>
+                  {[T.units(item.qty), T.available, link].filter(Boolean).join(" · ")}
+                </p>
+              </div>
             </div>
-            <div>
-              <span>{t.balanceDue(depositPct)}</span>
-              <b>{formatMoney(balanceAmount, quote.currency)}</b>
-              <small>{t.balanceTiming}</small>
-            </div>
-          </div>
-        </section>
+          );
+        })}
 
-        <div className={styles.termsBlock}>
-          <p className={styles.blockHeading}>{t.termsHeading}</p>
-          <ol className={styles.termsList}>
-            {terms.map((term, i) => (
-              <li key={i}>
-                {i + 1}. {term}
-              </li>
+        <p className={styles.sectionKicker}>{T.totalsHeading}</p>
+        <table className={styles.totalsTable}>
+          <thead>
+            <tr>
+              <th>{T.concept}</th>
+              <th>{cur}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totalsRows.map((row) => (
+              <tr key={row.label} className={row.tone ? styles[row.tone === "orange" ? "rowOrange" : "rowDark"] : undefined}>
+                <td>{row.label}</td>
+                <td>{row.value}</td>
+              </tr>
             ))}
-          </ol>
-        </div>
+          </tbody>
+        </table>
 
-        <div className={styles.signatures}>
-          <div className={styles.signature}>
-            {t.signCompany}
-            <span className={styles.signatureSub}>{t.signCompanySub}</span>
-          </div>
-          <div className={styles.signature}>
-            {t.signBuyer}
-            <span className={styles.signatureSub}>{t.signBuyerSub}</span>
-          </div>
-        </div>
+        <p className={styles.payStatement}>{T.payStatement}</p>
+        <p className={styles.checkLine}>{T.cifCheck}</p>
+        {customs ? <p className={styles.disclaimer}>{T.grandDisclaimer}</p> : null}
 
-        <Letterhead />
+        <Footer />
       </div>
 
-      {/* One self-contained sheet per selected vehicle. Keeping the photos,
-          specs and price together prevents details from one listing being
-          mistaken for another in a multi-vehicle quotation. */}
-      {quote.items.map((item, itemIndex) => {
-        // Two photos keep the vehicle identifiable without exhausting the
-        // memory available to serverless Chromium.
-        const photos = (item.photos ?? []).slice(0, 2);
-        const details = [
-          [detailLabels.vin, item.vin?.trim() || null],
-          [detailLabels.condition, conditionLabel(item.condition)],
-          [detailLabels.mileage, item.mileageKm != null ? `${item.mileageKm.toLocaleString(quote.language === "es" ? "es-ES" : "en-US")} km` : null],
-          [detailLabels.fuel, item.fuelType],
-          [detailLabels.transmission, item.transmission],
-          [detailLabels.drivetrain, item.drivetrain],
-          [detailLabels.exterior, item.exteriorColor],
-          [detailLabels.interior, item.interiorColor],
-          [detailLabels.engine, item.engine],
-          [detailLabels.capacity, item.capacity != null ? String(item.capacity) : null],
-        ].filter((entry): entry is [string, string] => Boolean(entry[1]));
-        const configurationRows = parseHistoryRows(item.historyNotes);
-        return <div className={styles.page} key={`${item.make}-${item.model}-${itemIndex}`}>
+      {/* ============ PAGE 2 — INTERNAL CIF BREAKDOWN ============ */}
+      {isCif && (
+        <div className={styles.page}>
           <div className={styles.topBar} />
-          <div className={styles.photoMiniHeader}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className={styles.photoMiniLogo} src={COMPANY.logo} alt="" />
-            <div>
-              <p className={styles.photoVehicleTitle}>{itemTitle(item)}</p>
-              <p className={styles.photoVehicleSub}>{detailLabels.details} · {itemIndex + 1}/{quote.items.length}</p>
-            </div>
-          </div>
+          <MiniHeader title={T.cifBreakdownTitle} />
+          <p className={styles.objectText}>{T.cifBreakdownIntro}</p>
 
-          <div className={styles.vehicleSheetBody}>
-            <div className={styles.vehiclePhotos}>
-              {photos.length > 0 ? photos.map((photo, photoIndex) => (
-                <figure className={styles.vehiclePhoto} key={`${photo.url}-${photoIndex}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className={styles.photoImg} src={photo.url} alt={photo.caption ?? ""} />
-              {photo.caption && <p className={styles.photoCaption}>{photo.caption}</p>}
-                </figure>
-              )) : <div className={styles.photoUnavailable}>{detailLabels.unavailable}</div>}
-            </div>
+          <p className={styles.subHead}>{T.sectionA}</p>
+          <table className={styles.totalsTable}>
+            <thead>
+              <tr><th>{T.item}</th><th>{cur}</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>{T.a1}</td><td>{n(cifBreakdown.goodsValue, cur)}</td></tr>
+              <tr><td>{T.a2}</td><td>{n(cifBreakdown.exportClearance, cur)}</td></tr>
+              <tr><td>{T.a3}</td><td>{n(cifBreakdown.originHandling, cur)}</td></tr>
+              <tr><td>{T.a4}</td><td>{n(cifBreakdown.documentation, cur)}</td></tr>
+              <tr><td>{T.a5}</td><td>{n(cifBreakdown.billOfLading, cur)}</td></tr>
+              <tr className={styles.rowDark}><td>{T.subtotalFob}</td><td>{n(cifBreakdown.fobSubtotal, cur)}</td></tr>
+            </tbody>
+          </table>
+          <p className={styles.footNote}>{T.aNote}</p>
 
-            <div className={styles.vehicleDetailsGrid}>
-              {details.map(([label, value]) => <div className={styles.vehicleDetail} key={label}><span>{label}</span><b>{value}</b></div>)}
-            </div>
-            {item.specSummary && <p className={styles.vehicleSpecSummary}>{item.specSummary}</p>}
-            {configurationRows.length > 0 && <div className={styles.vehicleConfigBlock}>
-              <p>{detailLabels.configuration}</p>
-              <div className={styles.vehicleConfigGrid}>
-                {configurationRows.map((row) => <div key={`${row.label}-${row.value}`}><span>{row.label}</span><b>{row.value}</b></div>)}
-              </div>
-            </div>}
-            <div className={styles.vehiclePriceGrid}>
-              <div><span>{detailLabels.quantity}</span><b>{item.qty}</b></div>
-              <div><span>{detailLabels.unitPrice}</span><b>{formatMoney(item.fobFinal, quote.currency)}</b></div>
-              <div><span>{detailLabels.lineTotal}</span><b>{formatMoney(item.fobFinal * item.qty, quote.currency)}</b></div>
-            </div>
-          </div>
-          <Letterhead />
+          <p className={styles.subHead}>{T.sectionB}</p>
+          <table className={styles.totalsTable}>
+            <thead>
+              <tr><th>{T.item}</th><th>{cur}</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>{T.b6}</td><td>{n(cifBreakdown.oceanFreight, cur)}</td></tr>
+              <tr><td>{T.b7}</td><td>{n(cifBreakdown.marineInsurance, cur)}</td></tr>
+              <tr className={styles.rowDark}><td>{T.subtotalFreight}</td><td>{n(cifBreakdown.freightAndInsurance, cur)}</td></tr>
+            </tbody>
+          </table>
+          <p className={styles.footNote}>{T.bNote}</p>
+
+          <p className={styles.subHead}>{T.sectionC}</p>
+          <table className={styles.totalsTable}>
+            <tbody>
+              <tr><td>{T.cFob}</td><td>{n(cifBreakdown.fobSubtotal, cur)}</td></tr>
+              <tr><td>{T.cFreight}</td><td>{n(cifBreakdown.oceanFreight, cur)}</td></tr>
+              <tr><td>{T.cInsurance}</td><td>{n(cifBreakdown.marineInsurance, cur)}</td></tr>
+              <tr className={styles.rowOrange}><td>{T.cTotal}</td><td>{n(totals.cifTotal, cur)}</td></tr>
+            </tbody>
+          </table>
+
+          <Footer />
         </div>
-      })}
+      )}
+
+      {/* ============ PAGE 3 — CUSTOMS ANNEX + SIGNATURES ============ */}
+      {customs && (
+        <div className={styles.page}>
+          <div className={styles.topBar} />
+          <MiniHeader title={T.annexTitle} />
+          <p className={styles.objectText}>{T.annexIntro}</p>
+
+          <p className={styles.subHead}>{T.tributesCalc}</p>
+          <table className={styles.totalsTable}>
+            <tbody>
+              <tr><td>{T.cifValueRow}</td><td>{n(customs.cifValue, cur)}</td></tr>
+              <tr><td>{T.dutyRow}</td><td>{n(customs.importDuty, cur)}</td></tr>
+              <tr><td>{T.feeRow}</td><td>{n(customs.customsServiceFee, cur)}</td></tr>
+              <tr><td>{T.vatRow(n(vatBase, cur))}</td><td>{n(customs.vat, cur)}</td></tr>
+              {customs.luxuryFee > 0 ? (
+                <tr><td>{T.luxuryRow}</td><td>{n(customs.luxuryFee, cur)}</td></tr>
+              ) : null}
+              <tr><td>{T.subtotalTributes}</td><td>{n(customs.total, cur)}</td></tr>
+              <tr><td>{T.portFeesRow}</td><td>{T.variable}</td></tr>
+              <tr className={styles.rowDark}><td>{T.grandAnnexRow}</td><td>{n(grandEstimate, cur)}</td></tr>
+            </tbody>
+          </table>
+          <p className={styles.footNote}>{T.annexNote}</p>
+
+          <p className={styles.para}>{T.requirements}</p>
+          <p className={styles.para}>{T.conditions}</p>
+          <p className={styles.para}>{T.acceptance}</p>
+
+          <div className={styles.signatures}>
+            <div className={styles.signature}>
+              <span className={styles.signKicker}>{T.bySeller}</span>
+              <b>{COMPANY.name}</b>
+              <span className={styles.signSub}>{COMPANY.email}</span>
+            </div>
+            <div className={styles.signature}>
+              <span className={styles.signKicker}>{T.byBuyer}</span>
+              <b>{quote.customer.name}</b>
+              <span className={styles.signSub}>{quote.customer.email || ""}</span>
+            </div>
+          </div>
+
+          <Footer />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <div className={styles.footerBar}>
+      <div className={styles.footerBarTop} />
+      <div className={styles.footerBarText}>
+        Tel {COMPANY.phone} · {COMPANY.email} · {COMPANY.website}
+      </div>
+    </div>
+  );
+}
+
+function MiniHeader({ title }: { title: string }) {
+  return (
+    <div className={styles.miniHeader}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={styles.miniLogo} src={COMPANY.logo} alt="" />
+      <p>{title}</p>
     </div>
   );
 }

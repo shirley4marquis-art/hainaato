@@ -122,16 +122,17 @@ export function computeQuoteTotals(input: QuoteTotalsInput): QuoteTotals {
 // ---------------------------------------------------------------------------
 
 // Per-unit and per-shipment approximations, USD. Tuned to China → Venezuela
-// RoRo / consolidated-container export as of 2026; deliberately mid-range.
+// (Puerto Cabello / La Guaira) RoRo / consolidated-container export, matching
+// the reference quotation HA-COT-2026-097. Deliberately mid/low range.
 const MARKET = {
-  oceanFreightPerUnit: 2400,
-  exportClearancePerUnit: 185,
-  originHandlingPerUnit: 150,
-  documentationBase: 110,
-  documentationPerUnit: 20,
-  billOfLading: 85,
-  insuranceRate: 0.0025, // of 110% of CIF — ICC(A) all-risk, minimum cover
-  minInsurance: 60,
+  oceanFreightPerUnit: 1720, // one pickup's share, RoRo or shared container
+  exportClearancePerUnit: 95, // China export customs declaration (~RMB 350-900)
+  originHandlingPerUnit: 185, // origin port / terminal handling (THC)
+  documentationBase: 80, // export documentation & shipping fees, per shipment
+  documentationPerUnit: 0,
+  billOfLading: 65, // B/L issuance (~CNY 300-450)
+  insuranceRate: 0.0042, // of 110% of CIF value — ICC(C) minimum required cover
+  minInsurance: 25,
   // The shipping side of a CIF price never realistically exceeds this share
   // of the total; beyond it the approximations are scaled down so the implied
   // goods value stays sane for a low-value unit.
@@ -146,6 +147,10 @@ export type CifBreakdown = {
   marineInsurance: number;
   documentation: number;
   billOfLading: number;
+  /** goodsValue + exportClearance + originHandling + documentation + billOfLading. */
+  fobSubtotal: number;
+  /** oceanFreight + marineInsurance. */
+  freightAndInsurance: number;
   cifTotal: number;
   /** true when the shipping figures are market approximations (CIF quote). */
   estimated: boolean;
@@ -195,12 +200,16 @@ export function decomposeCif(
   // Keep the implied goods value realistic for low-value units.
   const shippingSum = shipping.reduce((a, b) => a + b, 0);
   const cap = cif * MARKET.maxShippingShare;
-  if (shippingSum > cap && shippingSum > 0) {
+  const capped = shippingSum > cap && shippingSum > 0;
+  if (capped) {
     const k = cap / shippingSum;
     shipping = shipping.map((v) => v * k);
   }
 
-  const parts = shipping.map(roundMoney);
+  // Estimated legs read as clean whole-dollar figures on the quotation; a
+  // desk-entered FOB quote or a capped estimate keeps its cents.
+  const round = !isFob && !capped ? Math.round : roundMoney;
+  const parts = shipping.map(round);
   const [ec, oh, of, mi, doc, bl] = parts;
   const partsSum = parts.reduce((a, b) => a + b, 0);
   // The goods value is the exact remainder, so the column always foots to CIF.
@@ -214,6 +223,8 @@ export function decomposeCif(
     marineInsurance: mi,
     documentation: doc,
     billOfLading: bl,
+    fobSubtotal: roundMoney(goodsValue + ec + oh + doc + bl),
+    freightAndInsurance: roundMoney(of + mi),
     cifTotal: cif,
     estimated: !isFob,
   };
