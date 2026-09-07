@@ -1,7 +1,10 @@
+import { guardAdminRequest } from "../../../../../lib/security/admin";
 import { NextRequest, NextResponse } from "next/server";
 import { adminDeleteQuote, adminGetQuote } from "../../../../../lib/crm";
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   const { ref } = await params;
   try {
     const quote = await adminGetQuote(ref);
@@ -13,7 +16,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   const { ref } = await params;
   try {
     const deleted = await adminDeleteQuote(ref);

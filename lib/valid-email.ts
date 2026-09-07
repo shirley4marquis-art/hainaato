@@ -1,4 +1,4 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+import { isSingleEmail } from "./security/generation";
 
 // Domains/local-parts that show up when someone fills a form with a
 // placeholder instead of a real inbox — not exhaustive, just the common
@@ -18,7 +18,7 @@ const PLACEHOLDER_LOCAL_PARTS = new Set(["test", "asdf", "xxx", "none", "n a", "
 export function isLikelyRealEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   const trimmed = email.trim().toLowerCase();
-  if (!EMAIL_PATTERN.test(trimmed)) return false;
+  if (!isSingleEmail(trimmed)) return false;
   const [localPart, domain] = trimmed.split("@");
   if (DISPOSABLE_DOMAINS.has(domain)) return false;
   if (PLACEHOLDER_LOCAL_PARTS.has(localPart.replace(/[^a-z]/g, ""))) return false;

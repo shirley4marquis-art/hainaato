@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
+import Link from "next/link";
 import { AdminShell } from "../../admin-shell";
 import { QuoteForm } from "../../quote-form";
 import { QuoteEmailCenter } from "../../quote-email-center";
@@ -24,6 +25,7 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
     <AdminShell>
       <div className={styles.pageHeading}>
         <h1>{quote.documentNumber ?? quote.ref}</h1>
+        <Link className={styles.btnGhost} href={`/admin/documents?ref=${encodeURIComponent(ref)}`}>Generate official document</Link>
         <a className={styles.btnGhost} href={`/api/admin/quotes/${encodeURIComponent(ref)}/pdf`}>
           <Download size={14} /> Download PDF
         </a>

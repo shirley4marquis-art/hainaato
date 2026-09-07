@@ -10,6 +10,7 @@
 //   LEADS_TO_EMAIL   - optional, defaults to sales@nindgeauto.com
 import type { WebLead } from "./crm";
 import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
+import { isSingleEmail, safeEmailUrl } from "./security/generation";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 const EMAIL_LOGO_CID = "hainaauto-logo";
@@ -58,9 +59,10 @@ export function customSalesEmailHtml(params: {
   const paragraphs = params.message.split(/\n{2,}/).map((part) =>
     `<p style="margin:0 0 16px;font-size:15px;line-height:1.75;color:#44536A">${escapeHtml(part).replace(/\n/g, "<br>")}</p>`
   ).join("");
-  const cta = params.callToActionLabel && params.callToActionUrl
+  const cta = params.callToActionLabel && params.callToActionUrl && safeEmailUrl(params.callToActionUrl)
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0"><tr><td bgcolor="#FF6B00" style="border-radius:8px"><a href="${escapeHtml(params.callToActionUrl)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(params.callToActionLabel)}</a></td></tr></table>`
     : "";
+  params = { ...params, downloadLinks: params.downloadLinks?.filter((link) => safeEmailUrl(link.url)) };
   const downloads = params.downloadLinks?.length
     ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0;border:1px solid #DCE3EC;border-radius:12px;background:#F7F9FC"><tr><td style="padding:18px 20px"><div style="margin-bottom:10px;color:#082F63;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Download files</div>${params.downloadLinks.map((link) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #E3E8EF"><tr><td style="padding:12px 0;color:#44536A;font-size:13px;font-weight:700">${escapeHtml(link.label)}${link.size ? ` <span style="color:#7B879A;font-weight:400">(${escapeHtml(link.size)})</span>` : ""}</td><td align="right" style="padding:12px 0"><a href="${escapeHtml(link.url)}" style="display:inline-block;padding:8px 11px;border-radius:7px;background:#082F63;color:#fff;text-decoration:none;font-size:11px;font-weight:800">Download</a></td></tr></table>`).join("")}</td></tr></table>`
     : "";
@@ -450,6 +452,10 @@ export async function sendEmail(params: {
   attachment?: EmailAttachment;
   attachments?: EmailAttachment[];
 }): Promise<SendResult> {
+  const recipients = Array.isArray(params.to) ? params.to : [params.to];
+  if (!recipients.length || recipients.length > 10 || recipients.some((email) => !isSingleEmail(email))) return { ok: false, error: "Provide up to 10 valid recipient email addresses." };
+  if (!params.subject.trim() || params.subject.length > 200 || /[\r\n\u0000]/.test(params.subject)) return { ok: false, error: "Invalid email subject." };
+  if (Buffer.byteLength(params.html) > 256 * 1024) return { ok: false, error: "Email content is too large." };
   const apiKey = process.env.RESEND_API_KEY;
   const from = brandedCustomerSender(process.env.CUSTOMER_FROM_EMAIL || process.env.LEADS_FROM_EMAIL);
   if (!apiKey) {

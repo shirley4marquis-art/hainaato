@@ -1,6 +1,9 @@
+import { guardAdminRequest } from "../../../../lib/security/admin";
 import { NextResponse } from "next/server";
 import { customSalesEmailHtml, sendEmail } from "../../../../lib/email";
 import { recordClientEmail } from "../../../../lib/crm";
+import { readJsonObject } from "../../../../lib/security/request-body";
+import { isSingleEmail } from "../../../../lib/security/generation";
 
 type MailRequest = {
   customerId?: number | null;
@@ -13,10 +16,11 @@ type MailRequest = {
   callToActionUrl?: string;
 };
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => null) as MailRequest | null;
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
+  const body = await readJsonObject(request).catch(() => null) as MailRequest | null;
+  if (!body || Object.entries(body).some(([key, value]) => key !== "customerId" && typeof value !== "string")) return NextResponse.json({ ok: false, error: "Invalid email request." }, { status: 400 });
   const to = body?.to?.trim() ?? "";
   const subject = body?.subject?.trim() ?? "";
   const heading = body?.heading?.trim() ?? "";
@@ -25,7 +29,7 @@ export async function POST(request: Request) {
   const ctaLabel = body?.callToActionLabel?.trim() ?? "";
   const ctaUrl = body?.callToActionUrl?.trim() ?? "";
 
-  if (!emailPattern.test(to)) return NextResponse.json({ ok: false, error: "Enter a valid recipient email." }, { status: 400 });
+  if (!isSingleEmail(to)) return NextResponse.json({ ok: false, error: "Enter a valid recipient email." }, { status: 400 });
   if (!subject || subject.length > 180) return NextResponse.json({ ok: false, error: "Subject is required and must be under 180 characters." }, { status: 400 });
   if (!heading || heading.length > 180) return NextResponse.json({ ok: false, error: "Email heading is required and must be under 180 characters." }, { status: 400 });
   if (!message || message.length > 12000) return NextResponse.json({ ok: false, error: "Message is required and must be under 12,000 characters." }, { status: 400 });

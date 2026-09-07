@@ -15,7 +15,7 @@ import { guardRequest } from "../../../lib/security/http";
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
-  const limited = await guardRequest(request, { name: "quote-pdf", limit: 6, windowSec: 10 * 60 });
+  const limited = await guardRequest(request, { name: "quote-pdf", limit: 6, windowSec: 10 * 60, failClosed: true });
   if (limited) return limited;
 
   const ref = (request.nextUrl.searchParams.get("ref") || "").trim().toUpperCase();

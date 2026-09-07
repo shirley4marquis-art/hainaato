@@ -21,14 +21,27 @@ export default function Status() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state === "loading") return;
-    const ref = new FormData(event.currentTarget).get("reference");
-    if (typeof ref !== "string" || !ref.trim()) return;
+    const link = new FormData(event.currentTarget).get("reference");
+    if (typeof link !== "string" || !link.trim()) return;
+    let ref = "";
+    let token = "";
+    try {
+      const url = new URL(link.trim(), window.location.origin);
+      ref = url.searchParams.get("ref") || "";
+      token = url.searchParams.get("token") || "";
+    } catch { /* Show the same helpful error for malformed links. */ }
+    if (!ref || !token) {
+      setError("Paste the complete secure quotation link provided after submission. Contact our team if you only have a reference.");
+      setQuote(null);
+      setState("error");
+      return;
+    }
 
     setState("loading");
     setError(null);
     setQuote(null);
     try {
-      const response = await fetch(`/api/quote-status?ref=${encodeURIComponent(ref.trim())}`);
+      const response = await fetch(`/api/quote-status?ref=${encodeURIComponent(ref.trim())}&token=${encodeURIComponent(token)}`, { cache: "no-store" });
       const data = await response.json();
       if (response.ok && data.ok) {
         setQuote(data.quote);
@@ -47,17 +60,17 @@ export default function Status() {
 
   return (
     <SiteShell>
-      <PageHero kicker="REQUEST TRACKING" title="Quote Status" copy="Enter the reference supplied by our team to check your request." />
+      <PageHero kicker="REQUEST TRACKING" title="Quote Status" copy="Paste your secure quotation link to check your request." />
       <section className="section">
         <form className="container status-form" onSubmit={submit} aria-busy={state === "loading"}>
-          <label htmlFor="reference">Quote reference</label>
+          <label htmlFor="reference">Secure quotation link</label>
           <div>
-            <input id="reference" name="reference" placeholder="EST0000" required />
+            <input id="reference" name="reference" placeholder="Paste your quotation link" required />
             <button className="btn primary" disabled={state === "loading"}>
               {state === "loading" ? "Checking…" : "Check status"}
             </button>
           </div>
-          {state === "idle" && <p>Status tracking requires a reference created by the HainaAuto team.</p>}
+          {state === "idle" && <p>Use the link shown after submitting your quote request. Contact our team if you need help accessing it.</p>}
           {state === "not-found" && (
             <p className="form-error" role="alert">
               No request found for that reference. Double-check the code we sent you.

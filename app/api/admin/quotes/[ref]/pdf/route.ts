@@ -1,27 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { guardAdminRequest } from "../../../../../../lib/security/admin";
+import { NextRequest } from "next/server";
 import { renderQuotePdfWithRetry } from "../../../../../../lib/render-quote-pdf";
+import { documentFailure, pdfResponse } from "../../../../../../lib/documents/http";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   const { ref } = await params;
   try {
     const pdf = await renderQuotePdfWithRetry(ref, request.url, {
       kind: "cookie",
       cookieHeader: request.headers.get("cookie") ?? "",
     });
-    return new NextResponse(new Uint8Array(pdf), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="HainaAuto-Quote-${ref}.pdf"`,
-        "Cache-Control": "no-store",
-      },
-    });
+    return pdfResponse(pdf, `HainaAuto-Quotation-${ref}.pdf`, request.nextUrl.searchParams.get("preview") !== "1");
   } catch (error) {
-    console.error("[admin/quotes/pdf] render failed:", error);
-    return NextResponse.json({ ok: false, error: "PDF generation failed." }, { status: 500 });
+    return documentFailure(error);
   }
 }

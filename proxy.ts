@@ -46,7 +46,6 @@ function isEdgeAuthenticated(request: NextRequest): boolean {
   const secret = process.env.EDGE_AUTH_SECRET;
   if (!secret) return true; // not configured yet — never lock anything out
   if (request.headers.get("x-edge-auth") === secret) return true;
-  if (request.headers.get("x-vercel-cron")) return true;
   if (hasValidInternalSecret(request)) return true;
   const { pathname } = request.nextUrl;
   return EDGE_AUTH_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p));
@@ -104,6 +103,10 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   const targetLang = langOverride || existingLocale || "en";
 
   const isAdminArea = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+  if (isAdminArea && !["GET", "HEAD", "OPTIONS"].includes(request.method)) {
+    const origin = request.headers.get("origin");
+    if (request.headers.get("sec-fetch-site") === "cross-site" || (origin && origin !== request.nextUrl.origin)) return forbidden();
+  }
   // Only write cookies on real page navigations, and only when something
   // actually changed — a Set-Cookie on every response would defeat CDN caching
   // of routes like /api/shipment-updates.
@@ -145,5 +148,5 @@ export const config = {
   // First entry: all pages except static assets / files-with-extensions.
   // Second entry: every API route (including ones with dotted path params) so
   // the edge-auth gate also covers direct API access.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)", "/api/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)", "/api/:path*", "/admin/:path*"],
 };

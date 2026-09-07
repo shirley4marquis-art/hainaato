@@ -32,6 +32,9 @@ import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
 import { buildVehicleConfigurationRows, buildVehicleFactRows, formatRowsForHistory } from "../../../lib/vehicle-document-details";
 import { createQuoteAccessToken } from "../../../lib/quote-access";
+import { readJsonObject } from "../../../lib/security/request-body";
+import { createHash } from "node:crypto";
+import { checkRateLimit } from "../../../lib/security/rate-limit";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 300;
@@ -47,7 +50,8 @@ function str(value: unknown): string | undefined {
 function parseVehicles(value: unknown): RequestedVehicle[] {
   if (!Array.isArray(value)) return [];
   const out: RequestedVehicle[] = [];
-  for (const entry of value) {
+  const seen = new Set<string>();
+  for (const entry of value.slice(0, CART_MAX)) {
     if (typeof entry !== "object" || entry === null) continue;
     const slug = str((entry as Record<string, unknown>).slug);
     const qtyRaw = (entry as Record<string, unknown>).qty;
@@ -55,7 +59,10 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
     const fuelPreference = normalizeFuelPreference((entry as Record<string, unknown>).fuelPreference);
     const customColor = (entry as Record<string, unknown>).customColor === true;
     const customColorName = str((entry as Record<string, unknown>).customColorName) ?? null;
-    if (slug) out.push({ slug, qty, fuelPreference, customColor, customColorName });
+    if (slug && !seen.has(slug)) {
+      seen.add(slug);
+      out.push({ slug, qty, fuelPreference, customColor, customColorName });
+    }
   }
   return out.slice(0, CART_MAX);
 }
@@ -123,15 +130,16 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
 }
 
 export async function POST(request: NextRequest) {
-  const limited = await guardRequest(request, { name: "quote-requests", limit: 6, windowSec: 10 * 60 });
+  const limited = await guardRequest(request, { name: "quote-requests", limit: 6, windowSec: 10 * 60, failClosed: true });
   if (limited) return limited;
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = await readJsonObject(request);
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 400 });
   }
+  if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 400 });
   const b = body as Record<string, unknown>;
 
   const name = str(b.name);
@@ -168,6 +176,11 @@ export async function POST(request: NextRequest) {
       { ok: false, error: "None of the selected vehicles are available anymore. Please refresh your cart." },
       { status: 400 }
     );
+  }
+  if (email) {
+    const recipientKey = createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
+    const recipientLimit = await checkRateLimit({ key: `quote-recipient:${recipientKey}`, limit: 3, windowSec: 60 * 60, failClosed: true });
+    if (!recipientLimit.ok) return NextResponse.json({ ok: false, error: "Too many quotation requests for this email. Please try again later." }, { status: 429, headers: { "Retry-After": String(Math.max(1, recipientLimit.retryAfter)) } });
   }
 
   const promotionApplies = qualifiesForCataloguePromotion(builtItems.map(({ cataloguePriceUsd }) => cataloguePriceUsd));
@@ -209,7 +222,7 @@ export async function POST(request: NextRequest) {
       publicConsent,
       source: "cart-checkout",
       items,
-    });
+    }, { publicSubmission: true });
   } catch (error) {
     console.error("[quote-requests] adminSaveQuote failed:", error);
     return NextResponse.json({ ok: false, error: "Could not create the quote. Please try again." }, { status: 502 });

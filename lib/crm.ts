@@ -1,3 +1,4 @@
+import { reserveDocumentNumber } from "./documents/numbering";
 // Writes HainaAuto website leads into HainaAuto's own quotes/customers CRM
 // database (Supabase project "hainaauto-crm", Postgres). This used to open a
 // local SQLite file shared with a sibling project's CRM (TransPacífico
@@ -45,12 +46,13 @@ async function nextRef(client: PoolClient): Promise<string> {
 
 async function findOrCreateCustomer(
   client: PoolClient,
-  { name, phone, email, city, country, notes }: { name: string; phone?: string | null; email?: string | null; city?: string | null; country?: string | null; notes?: string | null }
+  { name, phone, email, city, country, notes }: { name: string; phone?: string | null; email?: string | null; city?: string | null; country?: string | null; notes?: string | null },
+  matchExisting = true,
 ): Promise<Row> {
   if (!name) throw new Error("customer name is required");
   let row: Row | undefined;
-  if (phone) row = (await client.query("SELECT * FROM customers WHERE phone = $1", [phone])).rows[0];
-  if (!row && email) row = (await client.query("SELECT * FROM customers WHERE email = $1", [email])).rows[0];
+  if (matchExisting && phone) row = (await client.query("SELECT * FROM customers WHERE phone = $1", [phone])).rows[0];
+  if (matchExisting && !row && email) row = (await client.query("SELECT * FROM customers WHERE email = $1", [email])).rows[0];
   if (row) return row;
   const { rows } = await client.query(
     "INSERT INTO customers (name, phone, email, city, country, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
@@ -128,19 +130,7 @@ async function createQuote(
 // Customer-facing document number (HA-QT-{year}-{seq}), separate from the
 // internal EST#### ref — scoped per calendar year, matching the printed
 // sample (HA-QT-2026-0002).
-async function nextDocumentNumber(client: PoolClient, year: number): Promise<string> {
-  const prefix = `HA-QT-${year}-`;
-  const { rows } = await client.query<{ document_number: string }>(
-    "SELECT document_number FROM quotes WHERE document_number LIKE $1",
-    [`${prefix}%`]
-  );
-  let max = 0;
-  for (const { document_number } of rows) {
-    const n = parseInt(document_number.slice(prefix.length), 10);
-    if (Number.isFinite(n) && n > max) max = n;
-  }
-  return `${prefix}${String(max + 1).padStart(4, "0")}`;
-}
+async function nextDocumentNumber(client: PoolClient, year: number): Promise<string> { return reserveDocumentNumber(client, "quotation", year); }
 
 async function addFollowUp(client: PoolClient, ref: string, note: string): Promise<void> {
   const quote = (await client.query("SELECT id FROM quotes WHERE ref = $1", [ref])).rows[0] as Row | undefined;
@@ -183,7 +173,7 @@ export async function saveLead(lead: WebLead): Promise<string> {
       city: null,
       country: lead.destination ?? null,
       notes: lead.company ? `Company: ${lead.company}` : null,
-    });
+    }, false);
     const summaryLines = [
       `Web lead via ${lead.source} (nindgeauto.com)`,
       lead.vehicle ? `Vehicle: ${lead.vehicle}` : null,
@@ -339,7 +329,10 @@ export type AdminQuoteInput = {
 // deleted and reinserted rather than diffed — simpler and correct at the
 // scale an admin tool actually needs, since a quote's line items are edited
 // as a whole draft, not incrementally by many concurrent editors.
-export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
+export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSubmission?: boolean } = {}): Promise<string> {
+  // Contact details supplied without verification must never select an
+  // existing customer's private billing details for a downloadable quote.
+  if (options.publicSubmission && (input.ref || input.customer.id)) throw new Error("Public submissions must create new records.");
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
@@ -361,7 +354,7 @@ export async function adminSaveQuote(input: AdminQuoteInput): Promise<string> {
       );
       customerId = input.customer.id;
     } else {
-      const customer = await findOrCreateCustomer(client, input.customer);
+      const customer = await findOrCreateCustomer(client, input.customer, !options.publicSubmission);
       // findOrCreateCustomer only sets these on insert — an existing match by
       // phone/email keeps its prior address, so update it explicitly here too.
       await client.query("UPDATE customers SET address = COALESCE($1, address) WHERE id = $2", [
@@ -670,7 +663,7 @@ export async function listClientEmails(limit = 100): Promise<AdminMailRecord[]> 
   }));
 }
 
-export type AdminQuoteDetail = Omit<AdminQuoteInput, "currency" | "language" | "depositPct"> & {
+export type AdminQuoteDetail = Omit<AdminQuoteInput, "currency" | "language" | "depositPct" | "items"> & {
   ref: string;
   documentNumber: string | null;
   quoteDate: string;

@@ -74,6 +74,7 @@ export type RateLimitOptions = {
   windowSec: number;
   /** Apply the escalating cooldown ladder on breach (default true). */
   escalate?: boolean;
+  failClosed?: boolean;
 };
 
 /**
@@ -84,7 +85,7 @@ export type RateLimitOptions = {
  */
 export async function checkRateLimit(opts: RateLimitOptions): Promise<RateLimitResult> {
   const { key, limit, windowSec, escalate = true } = opts;
-  if (!hasDatabase()) return { ok: true, retryAfter: 0, count: 0, blocked: false };
+  if (!hasDatabase()) return { ok: !opts.failClosed, retryAfter: opts.failClosed ? 60 : 0, count: 0, blocked: false };
 
   try {
     await ensureDb();
@@ -138,8 +139,8 @@ export async function checkRateLimit(opts: RateLimitOptions): Promise<RateLimitR
     }
     return { ok: false, retryAfter, count, blocked: escalate };
   } catch (error) {
-    console.error("[rate-limit] check failed, allowing request:", error instanceof Error ? error.message : error);
-    return { ok: true, retryAfter: 0, count: 0, blocked: false };
+    console.error("[rate-limit] check failed:", error instanceof Error ? error.message : error);
+    return { ok: !opts.failClosed, retryAfter: opts.failClosed ? 60 : 0, count: 0, blocked: false };
   }
 }
 

@@ -9,6 +9,7 @@ export type GuardOptions = {
   name: string;
   limit: number;
   windowSec: number;
+  failClosed?: boolean;
 };
 
 /**
@@ -18,7 +19,7 @@ export type GuardOptions = {
 export async function guardRequest(request: NextRequest, opts: GuardOptions): Promise<NextResponse | null> {
   const ip = clientIp(request.headers);
   const key = `api:${opts.name}:ip:${ip ?? "unknown"}`;
-  const result = await checkRateLimit({ key, limit: opts.limit, windowSec: opts.windowSec });
+  const result = await checkRateLimit({ key, limit: opts.limit, windowSec: opts.windowSec, failClosed: opts.failClosed });
   if (result.ok) return null;
 
   await logSecurityEvent({

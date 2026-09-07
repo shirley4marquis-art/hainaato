@@ -13,3 +13,10 @@ Auto-Shop
 #  - the business-verification PDF (serve from a gated route instead)
 public/vehicle-images/*.zip
 public/HAINA_AUTO_Verificacion_Empresarial_*.pdf
+
+# Company masters and local verification artifacts are stored privately in CRM.
+private-documents
+tmp
+.deploy-*
+.env*
+debug.log

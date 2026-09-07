@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/sales", label: "Sales", icon: TrendingUp },
   { href: "/admin/contracts", label: "Contracts", icon: FileSignature },
+  { href: "/admin/documents", label: "Documents", icon: FileSignature },
 ] as const;
 
 const DESKTOP_LINKS = [

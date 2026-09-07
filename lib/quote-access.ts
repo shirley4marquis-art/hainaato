@@ -11,6 +11,7 @@ export function createQuoteAccessToken(ref: string): string {
 }
 
 export function verifyQuoteAccessToken(ref: string, token: string): boolean {
+  if (!/^[A-Z0-9-]{1,32}$/i.test(ref)) return false;
   if (!token || token.length > 128) return false;
   const expected = createQuoteAccessToken(ref);
   const actualBuffer = Buffer.from(token);

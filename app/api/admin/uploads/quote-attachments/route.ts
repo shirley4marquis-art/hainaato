@@ -1,9 +1,12 @@
+import { guardAdminRequest } from "../../../../../lib/security/admin";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
 const MAX_BLOB_ATTACHMENT_BYTES = 100 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<NextResponse> {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   let body: HandleUploadBody;
   try {
     body = (await request.json()) as HandleUploadBody;

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
-import { renderPagePdf } from "../../../lib/render-page-pdf";
+import { generateVehicleSpecificationPdf } from "../../../lib/documents/service";
+import { DOCUMENT_LANGUAGES, type DocumentLanguage } from "../../../lib/documents/types";
+import { documentFailure, pdfResponse } from "../../../lib/documents/http";
+import { guardRequest } from "../../../lib/security/http";
 
 export const maxDuration = 300;
 
@@ -9,6 +12,8 @@ function safeFilename(value: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const limited = await guardRequest(request, { name: "vehicle-specification-pdf", limit: 6, windowSec: 10 * 60, failClosed: true });
+  if (limited) return limited;
   const slug = (request.nextUrl.searchParams.get("slug") || "").trim();
   if (!slug) return NextResponse.json({ ok: false, error: "Missing vehicle slug." }, { status: 400 });
 
@@ -16,18 +21,11 @@ export async function GET(request: NextRequest) {
   if (!vehicle) return NextResponse.json({ ok: false, error: "Vehicle not found." }, { status: 404 });
 
   try {
-    const pdf = await renderPagePdf(`/vehicles/${encodeURIComponent(slug)}/specification`, request.url);
-    return new NextResponse(new Uint8Array(pdf), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="HainaAuto-Specification-${safeFilename(slug)}.pdf"`,
-        "Content-Length": String(pdf.length),
-        "Cache-Control": "no-store",
-      },
-    });
+    const lang = request.nextUrl.searchParams.get("language") ?? "es";
+    const language: DocumentLanguage = Object.hasOwn(DOCUMENT_LANGUAGES, lang) ? lang as DocumentLanguage : "es";
+    const pdf = await generateVehicleSpecificationPdf(vehicle, language);
+    return pdfResponse(pdf, `HainaAuto-Vehicle-Specification-${safeFilename(slug)}-${language.toUpperCase()}.pdf`, true);
   } catch (error) {
-    console.error(`[vehicle-specification-pdf] render failed for ${slug}:`, error);
-    return NextResponse.json({ ok: false, error: "Specification PDF generation failed. Please try again shortly." }, { status: 500 });
+    return documentFailure(error);
   }
 }

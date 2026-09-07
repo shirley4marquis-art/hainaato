@@ -25,6 +25,17 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   // Don't advertise the framework (spec §12).
   poweredByHeader: false,
+  serverExternalPackages: ["@embedpdf/pdfium", "subset-font"],
+  outputFileTracingIncludes: {
+    "/api/admin/document-templates/*": ["./node_modules/@embedpdf/pdfium/dist/pdfium.wasm", "./assets/fonts/*"],
+    "/api/admin/document-templates": ["./node_modules/@embedpdf/pdfium/dist/pdfium.wasm"],
+    "/api/admin/documents": ["./assets/fonts/*"],
+    "/api/admin/quotes/*/pdf": ["./assets/fonts/*"],
+    "/api/admin/quotes/*/resend": ["./assets/fonts/*"],
+    "/api/quote-pdf": ["./assets/fonts/*"],
+    "/api/quote-requests": ["./assets/fonts/*"],
+    "/api/vehicle-specification-pdf": ["./assets/fonts/*"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

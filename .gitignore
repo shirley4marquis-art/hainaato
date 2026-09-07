@@ -51,6 +51,7 @@ yarn-error.log*
 # public/ is served directly to any site visitor with no access control.
 # Move these to a private location; never commit/deploy them from here.
 /public/Commercial_Invoice_*
+/private-documents/
 /public/table.csv
 # Business-verification PDF and raw upscaled-image zips — not meant to be
 # world-readable from public/. Serve verification docs from a gated route.
@@ -64,3 +65,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Private generation test artifacts and tool caches
+/tmp/

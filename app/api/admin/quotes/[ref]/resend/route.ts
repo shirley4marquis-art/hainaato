@@ -1,9 +1,12 @@
+import { guardAdminRequest } from "../../../../../../lib/security/admin";
 import { NextRequest, NextResponse } from "next/server";
 import { adminGetQuote, recordQuoteEmail } from "../../../../../../lib/crm";
 import { renderQuotePdfWithRetry } from "../../../../../../lib/render-quote-pdf";
 import { customQuoteEmailHtml, sendEmail, type EmailAttachment } from "../../../../../../lib/email";
 import { buildQuoteEmailDraft, type QuoteEmailDraftType } from "../../../../../../lib/quote-email-drafts";
 import { isLikelyRealEmail } from "../../../../../../lib/valid-email";
+import { readJsonObject } from "../../../../../../lib/security/request-body";
+import { safeEmailUrl } from "../../../../../../lib/security/generation";
 
 // Re-renders the PDF from the quote's *current* data and re-sends it to the
 // customer — this is both "resend" and "regenerate a revised version" in one
@@ -34,6 +37,8 @@ function safeAttachmentName(name: string): string {
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ ref: string }> }) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   const { ref } = await params;
   const quote = await adminGetQuote(ref);
   if (!quote) return NextResponse.json({ ok: false, error: "Quote not found." }, { status: 404 });
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ ok: true, sentTo: recipients });
   }
 
-  const body = (await request.json().catch(() => null)) as {
+  const body = (await readJsonObject(request).catch(() => null)) as {
     mode?: string;
     toEmail?: string;
     subject?: string;
@@ -107,7 +112,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     uploadedFiles?: UploadedQuoteFile[];
     draftType?: QuoteEmailDraftType;
   } | null;
+  if (!body || [body.mode, body.toEmail, body.subject, body.message, body.draftType].some((value) => value != null && typeof value !== "string")) return NextResponse.json({ ok: false, error: "Invalid email request." }, { status: 400 });
   if (body?.mode === "custom_links") {
+    if (body.uploadedFiles && (!Array.isArray(body.uploadedFiles) || body.uploadedFiles.length > MAX_ATTACHMENT_COUNT || body.uploadedFiles.some((file) => !file || typeof file.name !== "string" || typeof file.url !== "string" || !safeEmailUrl(file.url)))) return NextResponse.json({ ok: false, error: "Provide up to 5 files with valid HTTP or HTTPS download links." }, { status: 400 });
     const recipients = parseRecipients(body.toEmail || quote.customer.email || "");
     const invalidRecipients = recipients.filter((email) => !isLikelyRealEmail(email));
     if (recipients.length === 0) {

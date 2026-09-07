@@ -1,8 +1,11 @@
+import { guardAdminRequest } from "../../../../lib/security/admin";
 import { NextRequest, NextResponse } from "next/server";
 import { adminListQuotes, adminSaveQuote, type AdminQuoteInput } from "../../../../lib/crm";
 import { sendQuoteCreatedSalesNotification } from "../../../../lib/email";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   try {
     const quotes = await adminListQuotes();
     return NextResponse.json({ ok: true, quotes });
@@ -13,6 +16,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await guardAdminRequest(request);
+  if (denied) return denied;
   let body: AdminQuoteInput;
   try {
     body = await request.json();
