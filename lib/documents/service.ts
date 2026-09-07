@@ -5,6 +5,7 @@ import { getVehicleIndexEntryBySlug } from "../vehicles";
 import { pdfOrigin } from "../security/generation";
 import { documentData } from "./data";
 import { generatePdf } from "./pdf";
+import { appendQuotationGallery, loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
 import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
 
@@ -33,7 +34,9 @@ async function build(quoteRef: string, template: TemplateFile, number: string, o
       data.images.push(cache.get(source) ?? null);
     }
   }
-  return { pdf: await generatePdf(template.prepared, template.mapping, data), data };
+  const galleries = template.type === "quotation" ? await loadQuotationPhotos(quote.items, catalogueImage) : null;
+  const base = await generatePdf(template.prepared, template.mapping, data);
+  return { pdf: galleries ? await appendQuotationGallery(base, data, galleries) : base, data };
 }
 export async function generateQuoteTemplatePdf(ref: string): Promise<Buffer> {
   const quote = await adminGetQuote(ref);
