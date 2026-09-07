@@ -20,7 +20,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
   };
   const vehicles: DocumentValues[] = quote.items.map(item => {
     if (!Number.isSafeInteger(item.qty) || item.qty < 1 || item.qty > 10000) throw new DocumentError("Vehicle quantity must be a positive whole number.");
-    const unit = moneyNumber(item.fobFinal, "unit price"), vin = cleanValue(vins[String(item.id)] ?? "").trim().toUpperCase();
+    const unit = moneyNumber(item.fobFinal, "unit price"), vin = cleanValue(vins[String(item.id)] ?? item.vin ?? "").trim().toUpperCase();
     if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) throw new DocumentError("Vehicle VIN must contain 17 valid letters and digits.");
     return { vehicle_brand: item.make, vehicle_model: item.model, vehicle_year: item.year ?? "", vehicle_condition: item.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado"), vehicle_color: item.exteriorColor ?? "", vin, engine: item.engine ?? "", fuel: item.fuelType ?? "", transmission: item.transmission ?? "", mileage: item.mileageKm ?? "", quantity: item.qty, unit_price: amount(unit), vehicle_total: amount(unit * item.qty), notes: item.specSummary ?? "" };
   });
@@ -45,7 +45,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     estimated_grand_total: quote.dutyEstimate == null ? "" : amount(cif + moneyNumber(quote.dutyEstimate, "customs estimate")),
     shipping_insurance: costDisplay(shipping + insurance),
     initial_payment: amount(initial), initial_payment_percentage: percent, remaining_balance: amount(cif - initial), remaining_percentage: 100 - percent,
-    payment_method: "", payment_terms: "", seller_name: "HAINA AUTO EXPORT", sales_manager: "", company_name: "HAINA AUTO EXPORT",
+    payment_method: "", payment_terms: quote.paymentTerms ?? "", seller_name: "HAINA AUTO EXPORT", sales_manager: "", company_name: "HAINA AUTO EXPORT",
     company_address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China", company_phone: "+86 150 3217 8759", company_email: "sales@nindgeauto.com", company_website: "nindgeauto.com",
     notes: quote.notes ?? "", vehicle_summary: vehicles.map(v => [v.quantity, "×", v.vehicle_year, v.vehicle_brand, v.vehicle_model, v.vin].filter(Boolean).join(" ")).join("\n"),
   };

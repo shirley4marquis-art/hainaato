@@ -21,7 +21,7 @@ export function DocumentCenter({ initialRef = "", initialType = "quotation" }: {
   }, []);
   useEffect(() => {
     const controller = new AbortController();
-    if (quoteRef) fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}`, { signal: controller.signal }).then(r => r.json()).then(data => { if (data.ok) setItems(data.quote.items); else setError(data.error); }).catch(cause => { if (!controller.signal.aborted) setError(cause.message); });
+    if (quoteRef) fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}`, { signal: controller.signal }).then(r => r.json()).then(data => { if (data.ok) { setItems(data.quote.items); setVins(Object.fromEntries(data.quote.items.map((item: { id: number; vin?: string | null }) => [item.id, item.vin ?? ""]))); setOverrides({ payment_terms: data.quote.paymentTerms ?? "" }); } else setError(data.error); }).catch(cause => { if (!controller.signal.aborted) setError(cause.message); });
     return () => controller.abort();
   }, [quoteRef]);
   const available = templates.filter(t => t.active && t.mapping.reviewed && t.type === type && t.language === language);

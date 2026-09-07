@@ -6,7 +6,8 @@ import { reserveDocumentNumber } from "./documents/numbering";
 // Vercel's serverless functions, and mixed two different businesses' data in
 // one database. See supabase/crm-schema.sql for the schema this talks to.
 import { Pool, type PoolClient, types } from "pg";
-import { quoteNationalizationCifValue, quotePriceType } from "./quote-document";
+import { quotePriceType } from "./quote-document";
+import { computeQuoteTotals } from "./quote-totals";
 import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
 
 // pg's default DATE parser builds a JS Date at local-timezone midnight, then
@@ -65,30 +66,21 @@ async function recalc(client: PoolClient, ref: string): Promise<void> {
   const quote = (await client.query("SELECT * FROM quotes WHERE ref = $1", [ref])).rows[0] as Row | undefined;
   if (!quote) throw new Error(`no quote with ref ${ref}`);
   const items = (await client.query("SELECT * FROM quote_items WHERE quote_id = $1", [quote.id])).rows as Row[];
-  const itemsSubtotal = items.reduce((sum, it) => sum + (it.fob_final as number) * (it.qty as number), 0);
-  const priceType = quotePriceType((quote.incoterm as string | null) ?? null);
-  const cifTotal = priceType === "CIF"
-    ? itemsSubtotal
-    : itemsSubtotal +
-      (quote.inland_transport_cost as number) +
-      (quote.export_documentation_cost as number) +
-      (quote.freight_cost as number) +
-      (quote.insurance_cost as number);
-  const depositAmount = cifTotal * ((quote.deposit_pct as number) / 100);
-  const balanceAmount = cifTotal - depositAmount;
-  const dutyPct = quote.duty_pct as number | null;
-  const dutyBase = quoteNationalizationCifValue({
+  const totals = computeQuoteTotals({
     incoterm: (quote.incoterm as string | null) ?? null,
+    items: items.map((it) => ({ fobFinal: it.fob_final as number, qty: it.qty as number })),
+    inlandTransportCost: quote.inland_transport_cost as number,
+    exportDocumentationCost: quote.export_documentation_cost as number,
     freightCost: quote.freight_cost as number,
     insuranceCost: quote.insurance_cost as number,
-    items: items.map((it) => ({ fobFinal: it.fob_final as number, qty: it.qty as number })),
+    depositPct: quote.deposit_pct as number,
+    dutyPct: quote.duty_pct as number | null,
+    dutyEstimateOverride: quote.duty_estimate_override as number | null,
   });
-  const dutyEstimate = (quote.duty_estimate_override as number | null) ?? (dutyPct != null ? dutyBase * (dutyPct / 100) : null);
-  const grandTotal = cifTotal + (dutyEstimate ?? 0);
   await client.query(
     `UPDATE quotes SET cif_total = $1, deposit_amount = $2, balance_amount = $3, duty_estimate = $4,
      grand_total_reference = $5, updated_at = now() WHERE ref = $6`,
-    [cifTotal, depositAmount, balanceAmount, dutyEstimate, grandTotal, ref]
+    [totals.cifTotal, totals.depositAmount, totals.balanceAmount, totals.customsEstimate, totals.grandTotal, ref]
   );
 }
 
@@ -272,6 +264,7 @@ export type AdminQuoteItemPhotoInput = { url: string; caption?: string | null };
 
 export type AdminQuoteItemInput = {
   unitLabel?: string | null;
+  vin?: string | null;
   make: string;
   model: string;
   year?: number | null;
@@ -304,6 +297,7 @@ export type AdminQuoteInput = {
   destinationCountry: string;
   incoterm?: string | null;
   deliveryEstimate?: string | null;
+  paymentTerms?: string | null;
   inlandTransportCost?: number;
   exportDocumentationCost?: number;
   freightCost?: number;
@@ -388,8 +382,8 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           (ref, document_number, customer_id, quote_date, valid_until, destination_port, destination_country,
            incoterm, delivery_estimate, inland_transport_cost, export_documentation_cost, freight_cost,
            insurance_cost, deposit_pct, duty_pct, duty_estimate_override, currency, language, status, notes,
-           public_consent, source)
-         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
+           public_consent, source, payment_terms)
+         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)`,
         [
           ref,
           documentNumber,
@@ -413,6 +407,7 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           input.notes ?? null,
           input.publicConsent === true,
           input.source ?? null,
+          input.paymentTerms?.trim() || null,
         ]
       );
     } else {
@@ -422,8 +417,9 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
            quote_date=COALESCE($3,quote_date), valid_until=$4, destination_port=$5, destination_country=$6,
            incoterm=$7, delivery_estimate=$8, inland_transport_cost=$9, export_documentation_cost=$10,
            freight_cost=$11, insurance_cost=$12, deposit_pct=$13, duty_pct=$14, duty_estimate_override=$15,
-           currency=$16, language=$17, status=$18, notes=$19, public_consent=$20, updated_at=now()
-         WHERE ref=$21`,
+           currency=$16, language=$17, status=$18, notes=$19, public_consent=$20, payment_terms=$21,
+           updated_at=now()
+         WHERE ref=$22`,
         [
           documentNumber,
           customerId,
@@ -445,6 +441,7 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           input.status ?? "quoted",
           input.notes ?? null,
           input.publicConsent === true,
+          input.paymentTerms?.trim() || null,
           ref,
         ]
       );
@@ -467,8 +464,8 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
         `INSERT INTO quote_items
            (quote_id, unit_label, make, model, year, condition, mileage_km, fuel_type, engine, power_hp,
             transmission, drivetrain, exterior_color, interior_color, capacity, history_notes, spec_summary,
-            qty, fob_original, discount, fob_final, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+            qty, fob_original, discount, fob_final, sort_order, vin)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
          RETURNING id`,
         [
           quoteId,
@@ -493,6 +490,7 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           item.discount ?? 0,
           item.fobFinal,
           i,
+          item.vin?.trim() || null,
         ]
       );
       const itemId = itemRows[0].id;
@@ -526,6 +524,8 @@ export type AdminQuoteSummary = {
   currency: string;
   cifTotal: number;
   status: string;
+  language: QuoteLanguage;
+  destinationPort: string;
   source: string | null;
   createdAt: string;
 };
@@ -533,8 +533,8 @@ export type AdminQuoteSummary = {
 export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
   const { rows } = await getPool().query(`
     SELECT q.ref, q.document_number, c.name AS customer_name, c.email AS customer_email,
-           q.destination_country, q.currency, q.cif_total,
-           q.status, q.source, q.created_at,
+           q.destination_country, q.destination_port, q.currency, q.cif_total,
+           q.status, q.language, q.source, q.created_at,
            (SELECT string_agg(make || ' ' || model, ', ' ORDER BY sort_order) FROM quote_items WHERE quote_id = q.id) AS vehicle_summary
     FROM quotes q JOIN customers c ON c.id = q.customer_id
     ORDER BY q.created_at DESC
@@ -545,11 +545,13 @@ export async function adminListQuotes(): Promise<AdminQuoteSummary[]> {
     customerName: r.customer_name as string,
     customerEmail: (r.customer_email as string) ?? null,
     destinationCountry: r.destination_country as string,
+    destinationPort: (r.destination_port as string) ?? "",
     vehicleSummary: (r.vehicle_summary as string) ?? "—",
     source: (r.source as string) ?? null,
     currency: r.currency as string,
     cifTotal: r.cif_total as number,
     status: r.status as string,
+    language: normalizeQuoteLanguage(r.language),
     createdAt: (r.created_at as Date).toISOString(),
   }));
 }
@@ -730,6 +732,7 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
     destinationCountry: q.destination_country as string,
     incoterm: (q.incoterm as string) ?? null,
     deliveryEstimate: (q.delivery_estimate as string) ?? null,
+    paymentTerms: (q.payment_terms as string) ?? null,
     inlandTransportCost: q.inland_transport_cost as number,
     exportDocumentationCost: q.export_documentation_cost as number,
     freightCost: q.freight_cost as number,
@@ -751,6 +754,7 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
     items: (itemRows as Row[]).map((r) => ({
       id: r.id as number,
       unitLabel: (r.unit_label as string) ?? null,
+      vin: (r.vin as string) ?? null,
       make: r.make as string,
       model: r.model as string,
       year: (r.year as number) ?? null,
