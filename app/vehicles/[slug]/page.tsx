@@ -350,7 +350,7 @@ export default async function VehicleDetail({
             </span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-            <a href="mailto:sales@nindgeauto.com">sales@nindgeauto.com</a>
+            <a href="mailto:info@nindgeauto.com">info@nindgeauto.com</a>
             <p>We typically respond within 24 hours.</p>
           </div>
           <div className="side-card">

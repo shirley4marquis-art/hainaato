@@ -7,7 +7,7 @@
 //   RESEND_API_KEY   - API key from resend.com
 //   LEADS_FROM_EMAIL - a sender address verified with Resend (e.g. leads@nindgeauto.com,
 //                       or onboarding@resend.dev while testing without a verified domain)
-//   LEADS_TO_EMAIL   - optional, defaults to sales@nindgeauto.com
+//   LEADS_TO_EMAIL   - optional, defaults to info@nindgeauto.com
 import type { WebLead } from "./crm";
 import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
 import { isSingleEmail, safeEmailUrl } from "./security/generation";
@@ -42,7 +42,7 @@ function senderEmailAddress(value: string | null | undefined): string | null {
 }
 
 function brandedCustomerSender(value: string | null | undefined): string {
-  const email = senderEmailAddress(value) || "sales@nindgeauto.com";
+  const email = senderEmailAddress(value) || "info@nindgeauto.com";
   return `${CUSTOMER_SENDER_NAME} <${email}>`;
 }
 
@@ -66,7 +66,7 @@ export function customSalesEmailHtml(params: {
   const downloads = params.downloadLinks?.length
     ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0;border:1px solid #DCE3EC;border-radius:12px;background:#F7F9FC"><tr><td style="padding:18px 20px"><div style="margin-bottom:10px;color:#082F63;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Download files</div>${params.downloadLinks.map((link) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #E3E8EF"><tr><td style="padding:12px 0;color:#44536A;font-size:13px;font-weight:700">${escapeHtml(link.label)}${link.size ? ` <span style="color:#7B879A;font-weight:400">(${escapeHtml(link.size)})</span>` : ""}</td><td align="right" style="padding:12px 0"><a href="${escapeHtml(link.url)}" style="display:inline-block;padding:8px 11px;border-radius:7px;background:#082F63;color:#fff;text-decoration:none;font-size:11px;font-weight:800">Download</a></td></tr></table>`).join("")}</td></tr></table>`
     : "";
-  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${downloads}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:sales@nindgeauto.com" style="color:#082F63">sales@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:#082F63">nindgeauto.com</a></td></tr></table></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${downloads}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">HainaAuto Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:info@nindgeauto.com" style="color:#082F63">info@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:#082F63">nindgeauto.com</a></td></tr></table></td></tr></table></body></html>`;
 }
 
 export function customQuoteEmailHtml(params: {
@@ -143,7 +143,7 @@ function leadNotificationHtml(lead: WebLead, ref: string): string {
     <tr>
       <td style="background:#f4f5f9;padding:18px 28px;text-align:center;font-size:11px;color:#858ea9;line-height:1.6">
         HAINA AUTO EXPORT · 11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br/>
-        Tel +86 150 3217 8759 · sales@nindgeauto.com · nindgeauto.com
+        Tel +86 150 3217 8759 · info@nindgeauto.com · nindgeauto.com
       </td>
     </tr>
   </table>
@@ -154,7 +154,7 @@ function leadNotificationHtml(lead: WebLead, ref: string): string {
 export async function sendLeadNotification(lead: WebLead, ref: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.LEADS_FROM_EMAIL;
-  const to = process.env.LEADS_TO_EMAIL || "sales@nindgeauto.com";
+  const to = process.env.LEADS_TO_EMAIL || "info@nindgeauto.com";
 
   if (!apiKey || !from) {
     console.warn(`[leads] Email not sent for ${ref} — set RESEND_API_KEY and LEADS_FROM_EMAIL to enable notifications.`);
@@ -265,7 +265,7 @@ export function quoteCreatedSalesEmailHtml(params: {
       <tr>
         <td style="padding:20px 30px 28px"><div style="height:1px;background:#E3E8EF;margin-bottom:18px"></div><div style="font-size:11px;color:#7B879A;line-height:1.7">
           <b style="color:${NAVY}">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
-          <a href="mailto:sales@nindgeauto.com" style="color:${NAVY}">sales@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:${NAVY}">nindgeauto.com</a>
+          <a href="mailto:info@nindgeauto.com" style="color:${NAVY}">info@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:${NAVY}">nindgeauto.com</a>
         </div>
         </td>
       </tr>
@@ -289,8 +289,8 @@ export async function sendQuoteCreatedSalesNotification(params: {
   message?: string | null;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.LEADS_FROM_EMAIL || process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <sales@nindgeauto.com>";
-  const to = process.env.LEADS_TO_EMAIL || process.env.SALES_TO_EMAIL || "sales@nindgeauto.com";
+  const from = process.env.LEADS_FROM_EMAIL || process.env.CUSTOMER_FROM_EMAIL || "HainaAuto Sales <info@nindgeauto.com>";
+  const to = process.env.LEADS_TO_EMAIL || process.env.SALES_TO_EMAIL || "info@nindgeauto.com";
 
   if (!apiKey) {
     console.warn(`[quotes] Sales notification not sent for ${params.ref} — RESEND_API_KEY is not configured.`);
@@ -308,7 +308,7 @@ export async function sendQuoteCreatedSalesNotification(params: {
       body: JSON.stringify({
         from,
         to,
-        reply_to: "sales@nindgeauto.com",
+        reply_to: "info@nindgeauto.com",
         subject,
         text,
         html,
@@ -415,7 +415,7 @@ export function customerQuoteEmailHtml(params: {
           <td width="33.33%" valign="top" style="padding:0 0 0 8px"><div style="font-size:12px;font-weight:800;color:${NAVY}">${escapeHtml(copy.steps[2][0])}</div><div style="font-size:11px;line-height:1.5;color:#7B879A;margin-top:4px">${escapeHtml(copy.steps[2][1])}</div></td>
         </tr></table>
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px"><tr>
-          <td bgcolor="${CORAL}" style="background:${CORAL};border-radius:8px"><a href="mailto:sales@nindgeauto.com?subject=Quotation%20${encodeURIComponent(docRef)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(copy.reply)}</a></td>
+          <td bgcolor="${CORAL}" style="background:${CORAL};border-radius:8px"><a href="mailto:info@nindgeauto.com?subject=Quotation%20${encodeURIComponent(docRef)}" style="display:inline-block;padding:13px 20px;color:#fff;text-decoration:none;font-size:13px;font-weight:800">${escapeHtml(copy.reply)}</a></td>
           <td width="10"></td>
           <td style="border:1px solid #CBD5E1;border-radius:8px"><a href="https://wa.me/8615032178759" style="display:inline-block;padding:12px 18px;color:${NAVY};text-decoration:none;font-size:13px;font-weight:800">WhatsApp</a></td>
         </tr></table>
@@ -425,7 +425,7 @@ export function customerQuoteEmailHtml(params: {
     <tr>
       <td style="padding:20px 30px 28px"><div style="height:1px;background:#E3E8EF;margin-bottom:18px"></div><div style="font-size:11px;color:#7B879A;line-height:1.7">
         <b style="color:${NAVY}">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
-        <a href="mailto:sales@nindgeauto.com" style="color:${NAVY}">sales@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:${NAVY}">nindgeauto.com</a>
+        <a href="mailto:info@nindgeauto.com" style="color:${NAVY}">info@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:${NAVY}">nindgeauto.com</a>
       </div>
       </td>
     </tr>
@@ -477,7 +477,7 @@ export async function sendEmail(params: {
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from,
-        reply_to: "sales@nindgeauto.com",
+        reply_to: "info@nindgeauto.com",
         to: params.to,
         subject: params.subject,
         html: params.html,

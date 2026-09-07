@@ -47,7 +47,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     shipping_insurance: costDisplay(shipping + insurance),
     initial_payment: amount(initial), initial_payment_percentage: percent, remaining_balance: amount(cif - initial), remaining_percentage: 100 - percent,
     payment_method: "", payment_method_summary: "", payment_terms: quote.paymentTerms ?? "", seller_name: "HAINA AUTO EXPORT", sales_manager: "", company_name: "HAINA AUTO EXPORT",
-    company_address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China", company_phone: "+86 150 3217 8759", company_email: "sales@nindgeauto.com", company_website: "nindgeauto.com",
+    company_address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China", company_phone: "+86 150 3217 8759", company_email: "info@nindgeauto.com", company_website: "nindgeauto.com",
     notes: quote.notes ?? "", vehicle_summary: vehicles.map(v => [v.quantity, "×", v.vehicle_year, v.vehicle_brand, v.vehicle_model, v.vin].filter(Boolean).join(" ")).join("\n"),
   };
   // Only auxiliary fields can be edited here. Prices, quantities and identity

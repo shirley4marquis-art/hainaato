@@ -44,7 +44,7 @@ export type QuoteEmailDraft = {
 };
 
 const EMAIL_LOGO_CID = "hainaauto-logo";
-const SALES_EMAIL = "sales@nindgeauto.com";
+const SALES_EMAIL = "info@nindgeauto.com";
 const WHATSAPP_URL = "https://wa.me/8615032178759";
 
 function escapeHtml(value: string): string {

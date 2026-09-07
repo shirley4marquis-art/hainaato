@@ -178,7 +178,7 @@ for(const filename of (await fs.readdir(dir)).filter(n=>n.endsWith('.json'))){
   f.label(1,'Ningde Haina Baichuan Automobile Sales Co., Ltd.\n91350902MA31JKK5XF\n11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China',39,309,508,90,{fontSize:11,maxLines:5});
   box(page,430,120,C.pale);
   f.label(1,f.tr('Los documentos originales de verificación se adjuntan a continuación.','The original verification documents are attached on the following pages.',"原始核验文件附于以下页面。"),44,451,496,60,{fontSize:12,maxLines:4});
-  f.label(1,'sales@nindgeauto.com · nindgeauto.com',39,588,508,20,{fontSize:11,maxLines:1});
+  f.label(1,'info@nindgeauto.com · nindgeauto.com',39,588,508,20,{fontSize:11,maxLines:1});
   const evidence=await PDFDocument.load(await fs.readFile(root+'/HAINA_AUTO_Verificacion_Empresarial_ES.pdf'));
   for(const p of await pdf.copyPages(evidence,evidence.getPageIndices()))pdf.addPage(p);
   result={bytes:await pdf.save(),mapping:{...structuredClone(EMPTY_MAPPING),fields:f.fields,lockedPages:evidence.getPageIndices().map(i=>i+2)}};
