@@ -5,6 +5,7 @@ import { getVehicleIndexEntryBySlug } from "../vehicles";
 import { pdfOrigin } from "../security/generation";
 import { documentData } from "./data";
 import { generatePdf } from "./pdf";
+import { optimizeDocumentPhoto } from "./photo";
 import { appendQuotationGallery, loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
 import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
@@ -16,8 +17,7 @@ async function catalogueImage(source?: string): Promise<Buffer | null> {
     if (!response.ok || Number(response.headers.get("content-length")) > 10 * 1024 * 1024) return null;
     const reader = response.body!.getReader(), chunks: Uint8Array[] = []; let size = 0;
     try { while (true) { const next = await reader.read(); if (next.done) break; size += next.value.length; if (size > 10 * 1024 * 1024) return null; chunks.push(next.value); } } finally { await reader.cancel(); }
-    const sharp = (await import("sharp")).default;
-    return await sharp(Buffer.concat(chunks), { limitInputPixels: 40_000_000 }).rotate().png().toBuffer();
+    return await optimizeDocumentPhoto(Buffer.concat(chunks));
   } catch { return null; }
 }
 async function build(quoteRef: string, template: TemplateFile, number: string, overrides: DocumentValues, vins: Record<string, string>, existingQuote?: AdminQuoteDetail) {
