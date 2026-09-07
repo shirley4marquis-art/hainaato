@@ -1,6 +1,7 @@
 import type { AdminQuoteDetail } from "../crm";
 import { DocumentError, type DocumentData, type DocumentLanguage, type DocumentType, type DocumentValues } from "./types";
 import { cleanValue } from "./mapping";
+import { paymentMethodSummary } from "./payment-methods";
 
 export function moneyNumber(value: unknown, label: string): number {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1e12) throw new DocumentError(`Invalid numeric value for ${label}.`);
@@ -45,7 +46,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     estimated_grand_total: quote.dutyEstimate == null ? "" : amount(cif + moneyNumber(quote.dutyEstimate, "customs estimate")),
     shipping_insurance: costDisplay(shipping + insurance),
     initial_payment: amount(initial), initial_payment_percentage: percent, remaining_balance: amount(cif - initial), remaining_percentage: 100 - percent,
-    payment_method: "", payment_terms: quote.paymentTerms ?? "", seller_name: "HAINA AUTO EXPORT", sales_manager: "", company_name: "HAINA AUTO EXPORT",
+    payment_method: "", payment_method_summary: "", payment_terms: quote.paymentTerms ?? "", seller_name: "HAINA AUTO EXPORT", sales_manager: "", company_name: "HAINA AUTO EXPORT",
     company_address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China", company_phone: "+86 150 3217 8759", company_email: "sales@nindgeauto.com", company_website: "nindgeauto.com",
     notes: quote.notes ?? "", vehicle_summary: vehicles.map(v => [v.quantity, "×", v.vehicle_year, v.vehicle_brand, v.vehicle_model, v.vin].filter(Boolean).join(" ")).join("\n"),
   };
@@ -53,6 +54,9 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
   // are sourced from the order; change the order to change those values.
   const editable = new Set(["buyer_company", "payment_method", "payment_terms", "sales_manager", "contract_terms", "inspection_notes", "export_documents", "notes"]);
   for (const [key, value] of Object.entries(overrides)) if (editable.has(key)) values[key] = cleanValue(value).slice(0, 30000);
+  // Derived from the final payment_method so the contract cover chip and the
+  // full payment block stay in lock-step (see lib/documents/payment-methods.ts).
+  values.payment_method_summary = paymentMethodSummary(String(values.payment_method ?? ""), language);
   if (type === "contract" && !values.payment_terms) throw new DocumentError("Payment terms are required for a contract.");
   return { values, vehicles, images: [], language };
 }

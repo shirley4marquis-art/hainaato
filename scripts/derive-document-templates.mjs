@@ -78,9 +78,13 @@ for(const type of Object.keys(labels))for(const language of ['es','en','zh','es-
  [['engine',tr('Motor','Engine','发动机')],['fuel',tr('Combustible','Fuel','燃料')],['transmission',tr('Transmisión','Transmission','变速箱')],['mileage',tr('Kilometraje','Mileage','里程')]].forEach(([key,name],i)=>{const y=[402,419,437,454][i];label(2,name,39,y,360,17);add(2,key,410,y,137,17,{align:'right'});});
  label(3,tr('Condiciones y aceptación','Terms and acceptance','条件及确认'),39,30,515,19,{fontSize:13,fontWeight:'bold'});
  add(3,'document_number',39,55,515,17);
- const terms=[['destination_country',tr('País de destino','Destination country','目的国')],['destination_port',tr('Puerto de destino','Destination port','目的港')],['payment_method',tr('Forma de pago','Payment method','付款方式')],['expiry_date',tr('Validez','Validity','有效期')],['customs_estimate',tr('Estimación aduanera','Customs estimate','海关费用估算')],['total_amount',tr('Total comercial','Commercial total','交易总额')]];
+ const terms=[['destination_country',tr('País de destino','Destination country','目的国')],['destination_port',tr('Puerto de destino','Destination port','目的港')],['payment_method_summary',tr('Forma de pago','Payment method','付款方式')],['expiry_date',tr('Validez','Validity','有效期')],['customs_estimate',tr('Estimación aduanera','Customs estimate','海关费用估算')],['total_amount',tr('Total comercial','Commercial total','交易总额')]];
  terms.forEach(([key,name],i)=>{const y=[105,123,140,158,175,210][i];label(3,name,39,y,360,17);add(3,key,405,y,142,17,{align:'right'});});
- add(3,'payment_terms',39,256,515,49,{maxLines:5});
+ // Full approved payment details (wallet address etc.) — security-sensitive,
+ // kept byte-identical across documents via lib/documents/payment-methods.ts.
+ // Sits below the terms table (last row y210) and clears its dark total band.
+ add(3,'payment_method',39,248,515,66,{maxLines:6});
+ add(3,'payment_terms',39,320,515,52,{maxLines:4});
  add(3,type==='inspection'?'inspection_notes':type==='export'?'export_documents':'notes',39,473,515,280,{maxLines:28,overflow:{page:3,x:39,y:473,width:515,height:280,insertBefore:3}});
  label(3,tr('Por el exportador','For the exporter','出口商'),39,385,250,17,{fontWeight:'bold'});
  label(3,'HAINA AUTO EXPORT',39,409,250,17,{fontWeight:'bold',fontSize:12});

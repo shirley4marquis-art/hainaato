@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { DOCUMENT_LANGUAGES, DOCUMENT_TYPES, type DocumentLanguage, type DocumentType, type GeneratedDocument, type Template } from "../../../lib/documents/types";
+import { APPROVED_PAYMENT_METHODS, paymentMethodBlock } from "../../../lib/documents/payment-methods";
 import { PdfViewer } from "./pdf-viewer";
 import styles from "./documents.module.css";
 
@@ -11,6 +12,9 @@ export function DocumentCenter({ initialRef = "", initialType = "quotation" }: {
   const [type, setType] = useState<DocumentType>(Object.hasOwn(DOCUMENT_TYPES, initialType) ? initialType as DocumentType : "quotation"), [language, setLanguage] = useState<DocumentLanguage>("es"), [templateId, setTemplateId] = useState(""), [quoteRef, setQuoteRef] = useState(initialRef);
   const [vins, setVins] = useState<Record<string, string>>({}), [items, setItems] = useState<{ id: number; make: string; model: string }[]>([]);
   const [overrides, setOverrides] = useState<Record<string, string>>({}), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  // Payment method is chosen from the approved list, never typed — the wallet
+  // address is security-sensitive and must be byte-identical on every document.
+  const [paymentMethodId, setPaymentMethodId] = useState(APPROVED_PAYMENT_METHODS[0]?.id ?? "");
   const [preview, setPreview] = useState<GeneratedDocument | null>(null), [page, setPage] = useState(1), [pageCount, setPageCount] = useState(1);
   const [downloading, setDownloading] = useState(false);
   const generating = useRef(false), requestIdentity = useRef<{ fingerprint: string; key: string } | null>(null);
@@ -21,9 +25,17 @@ export function DocumentCenter({ initialRef = "", initialType = "quotation" }: {
   }, []);
   useEffect(() => {
     const controller = new AbortController();
-    if (quoteRef) fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}`, { signal: controller.signal }).then(r => r.json()).then(data => { if (data.ok) { setItems(data.quote.items); setVins(Object.fromEntries(data.quote.items.map((item: { id: number; vin?: string | null }) => [item.id, item.vin ?? ""]))); setOverrides({ payment_terms: data.quote.paymentTerms ?? "" }); } else setError(data.error); }).catch(cause => { if (!controller.signal.aborted) setError(cause.message); });
+    if (quoteRef) fetch(`/api/admin/quotes/${encodeURIComponent(quoteRef)}`, { signal: controller.signal }).then(r => r.json()).then(data => { if (data.ok) { setItems(data.quote.items); setVins(Object.fromEntries(data.quote.items.map((item: { id: number; vin?: string | null }) => [item.id, item.vin ?? ""]))); setOverrides(previous => ({ ...previous, payment_terms: data.quote.paymentTerms ?? "" })); } else setError(data.error); }).catch(cause => { if (!controller.signal.aborted) setError(cause.message); });
     return () => controller.abort();
   }, [quoteRef]);
+  // Keep the payment_method override in sync with the chosen method and the
+  // document language; blank when "add manually" is selected.
+  const manualPaymentMethod = paymentMethodId === "";
+  useEffect(() => {
+    if (manualPaymentMethod) return;
+    const block = paymentMethodBlock(paymentMethodId, language) ?? "";
+    setOverrides(previous => (previous.payment_method === block ? previous : { ...previous, payment_method: block }));
+  }, [paymentMethodId, language, manualPaymentMethod]);
   const available = templates.filter(t => t.active && t.mapping.reviewed && t.type === type && t.language === language);
   const selected = available.find(t => t.id === templateId) ?? available.find(t => t.isDefault) ?? available[0];
   async function generate(event: React.FormEvent) {
@@ -62,7 +74,10 @@ export function DocumentCenter({ initialRef = "", initialType = "quotation" }: {
       {!available.length && <p>No active template for this document and language. <Link href="/admin/documents/templates">Upload or activate one.</Link></p>}
       <label>Client / order<select value={quoteRef} onChange={e => { setQuoteRef(e.target.value); setItems([]); setVins({}); }} required><option value="">Select a client’s order</option>{orders.map(q => <option key={q.ref} value={q.ref}>{q.customerName} · {q.documentNumber ?? q.ref} · {q.vehicleSummary}</option>)}</select></label>
       {items.length > 0 && <fieldset><legend>Selected vehicles</legend>{items.map((item, i) => <label key={item.id}>{i + 1}. {item.make} {item.model} — VIN<input value={vins[item.id] ?? ""} onChange={e => setVins(previous => ({ ...previous, [item.id]: e.target.value.toUpperCase() }))} maxLength={17} minLength={17} pattern="[A-HJ-NPR-Z0-9]{17}" required={selected?.mapping.requiredFields.includes("vin")} title="VIN must contain 17 letters and digits, excluding I, O and Q" placeholder="VIN, if assigned" /></label>)}</fieldset>}
-      <label>Payment method<input required={selected?.mapping.requiredFields.includes("payment_method")} value={overrides.payment_method ?? ""} onChange={e => setOverrides(previous => ({ ...previous, payment_method: e.target.value }))} placeholder="Use the approved payment method" /></label>
+      <label>Payment method<select value={paymentMethodId} onChange={e => setPaymentMethodId(e.target.value)}>{APPROVED_PAYMENT_METHODS.map(method => <option key={method.id} value={method.id}>{method.menuLabel}</option>)}<option value="">Add manually…</option></select></label>
+      {manualPaymentMethod
+        ? <label>Payment method text<textarea required={selected?.mapping.requiredFields.includes("payment_method")} value={overrides.payment_method ?? ""} onChange={e => setOverrides(previous => ({ ...previous, payment_method: e.target.value }))} placeholder="Type the exact payment method and wallet details" rows={4} /></label>
+        : <pre className={styles.methodPreview} aria-label="Payment details written to the document">{overrides.payment_method}</pre>}
       <label>Payment terms<textarea required={type === "contract"} value={overrides.payment_terms ?? ""} onChange={e => setOverrides(previous => ({ ...previous, payment_terms: e.target.value }))} placeholder="Contract payment schedule and conditions" rows={3} /></label>
       <details><summary>Additional document information</summary>{["buyer_company", "sales_manager", "contract_terms", "inspection_notes", "export_documents", "notes"].map(key => <label key={key}>{key.replaceAll("_", " ")}<textarea value={overrides[key] ?? ""} onChange={e => setOverrides(previous => ({ ...previous, [key]: e.target.value }))} rows={3} /></label>)}</details>
       <button className={styles.button} disabled={busy || !selected || !quoteRef}>{busy ? "Generating PDF…" : "Generate & preview"}</button>

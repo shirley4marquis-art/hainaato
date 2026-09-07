@@ -106,7 +106,13 @@ for(const language of ['es','en','zh']){
  set(26,'3. PAGO\n{{payment_method}}\n{{payment_terms}}','3. PAYMENT\n{{payment_method}}\n{{payment_terms}}','3. 付款\n{{payment_method}}\n{{payment_terms}}');
  set(28,'VIN y unidades:\n{{vehicle_summary}}\nDetalle completo en Anexo B.','Vehicles and VINs:\n{{vehicle_summary}}\nComplete list in Annex B.','车辆及VIN：\n{{vehicle_summary}}\n完整清单见附件B。');
  set(29,'{{initial_payment_percentage}}% al firmar; {{remaining_percentage}}% restante.\n{{payment_terms}}','{{initial_payment_percentage}}% on signing; {{remaining_percentage}}% balance.\n{{payment_terms}}','签署时支付 {{initial_payment_percentage}}%；尾款 {{remaining_percentage}}%。\n{{payment_terms}}');
- set(30,'13. MÉTODO DE PAGO\n{{payment_method}}\nNingún cambio de pago es válido sin confirmación oficial de HAINA AUTO.','13. PAYMENT METHOD\n{{payment_method}}\nNo payment change is valid without official confirmation from HAINA AUTO.','13. 付款方式\n{{payment_method}}\n未经 HAINA AUTO 正式确认的收款信息变更无效。');
+ set(30,'13. MÉTODO DE PAGO\n{{payment_method}}','13. PAYMENT METHOD\n{{payment_method}}','13. 付款方式\n{{payment_method}}');
+ // payment_method now carries the full approved block (method, network, wallet
+ // address, "no change without confirmation" — see lib/documents/payment-methods.ts),
+ // so the cover chip shows only the short summary and §3/§13 get room to breathe.
+ mapping.fields[6].field='payment_method_summary';
+ mapping.fields[26].maxLines=12;
+ mapping.fields[30].height=80;mapping.fields[30].maxLines=8;
  set(33,'VIN: ver Anexo B','VIN: see Annex B','VIN：见附件B');
  set(34,'ANEXO B — VEHÍCULOS Y VIN','ANNEX B — VEHICLES AND VINS','附件B — 车辆及VIN');
  set(35,'Unidades de {{document_number}} / {{buyer_name}}','Vehicles for {{document_number}} / {{buyer_name}}','{{document_number}} 车辆 / {{buyer_name}}');

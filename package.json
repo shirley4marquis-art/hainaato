@@ -17,6 +17,7 @@
     "data:carfromjapan-hiluxes": "node scripts/import-carfromjapan-hiluxes.mjs",
     "data:made-in-china:publish": "node scripts/publish-made-in-china-listings.mjs",
     "audit:routes": "node scripts/debug-static-routes.mjs",
+    "documents:build": "node scripts/build-document-library.mjs",
     "security:check-secrets": "node scripts/check-secrets.mjs",
     "test:proxy": "node --test proxy.test.mjs",
     "test:i18n": "node --test lib/i18n/regions.test.mjs",

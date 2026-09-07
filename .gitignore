@@ -72,3 +72,6 @@ next-env.d.ts
 # Local deployment worktrees and debug output
 /.deploy-*/
 /debug.log
+
+# Local document review artifacts
+/output/

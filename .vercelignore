@@ -20,3 +20,5 @@ tmp
 .deploy-*
 .env*
 debug.log
+
+output

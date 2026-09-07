@@ -1,7 +1,7 @@
 import { PDFDocument, PDFDict, PDFName, PDFArray, PDFPage, PDFFont, rgb, pushGraphicsState, popGraphicsState, concatTransformationMatrix, setCharacterSpacing, beginText, endText } from "pdf-lib";
 import { DocumentError, type DocumentData, type FieldMapping, type PageInfo, type TemplateMapping } from "./types";
 import { bindField, cleanValue, validateMapping } from "./mapping";
-import { DocumentFonts } from "./fonts";
+import { DocumentFonts, fontVerticalMetrics } from "./fonts";
 
 export const MAX_TEMPLATE_BYTES = 20 * 1024 * 1024;
 export async function inspectPdf(bytes: Uint8Array): Promise<PageInfo[]> {
@@ -86,9 +86,9 @@ function lineMetrics(text: string, size: number, field: FieldMapping, fontFor: F
   const fonts = new Set([...text].filter(c => c !== "\n").map(fontFor));
   let ascent = size, descent = 0;
   for (const font of fonts) {
-    const top = font.heightAtSize(size, { descender: false });
-    ascent = Math.max(ascent, top);
-    descent = Math.max(descent, font.heightAtSize(size) - top);
+    const metrics = fontVerticalMetrics(font, size);
+    ascent = Math.max(ascent, metrics.ascent);
+    descent = Math.max(descent, metrics.descent);
   }
   return { ascent, height: ascent + descent, advance: Math.max(size * field.lineHeight, ascent + descent) };
 }

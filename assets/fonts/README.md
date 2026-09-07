@@ -11,3 +11,5 @@ Latin characters and Chinese use this fallback. HarfBuzz (subset-font) creates
 one valid TrueType subset per generated PDF; pdf-lib embeds it without running
 fontkit's subsetter. Visual tests found missing Chinese outlines with fontkit
 subsetting, even when text extraction succeeded.
+
+LiberationSans-Regular.ttf and LiberationSans-Bold.ttf: upstream Liberation Fonts 2.1.5, used to match the official contract. License: LICENSE-Liberation.txt. Source: https://github.com/liberationfonts/liberation-fonts/releases/tag/2.1.5
