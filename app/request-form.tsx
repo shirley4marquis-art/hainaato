@@ -89,10 +89,10 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
   return <form id="quote-form" translate={spanish?"no":undefined} lang={spanish?"es":undefined} className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
     <div className="quote-form-intro">
       <div className="quote-brand-mark" aria-hidden="true">
-        <Image src="/hainaauto-logo.webp" alt="HainaAuto logo" width={30} height={30} />
+        <Image src="/images/KkwGH.png" alt="Nindge Automobile logo" width={30} height={30} />
       </div>
       <div>
-        <span>HAINA AUTO</span>
+        <span>NINDGE AUTOMOBILE</span>
         <p><QuoteCopy en="Get a quote in minutes" es="Cotiza en pocos minutos"/></p>
       </div>
     </div>

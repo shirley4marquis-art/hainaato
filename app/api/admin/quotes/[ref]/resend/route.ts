@@ -180,7 +180,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     to: quote.customer.email,
     subject: draft.subject,
     html: draft.html,
-    attachment: pdfBuffer ? { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer } : undefined,
+    attachment: pdfBuffer ? { filename: `Nindge Automobile-Quote-${ref}.pdf`, content: pdfBuffer } : undefined,
   });
   await recordQuoteEmail(ref, {
     toEmail: quote.customer.email,

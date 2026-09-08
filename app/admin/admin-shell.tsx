@@ -76,10 +76,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <header className={styles.nav}>
-        <Link className={styles.navBrand} href="/admin" aria-label="HainaAuto admin dashboard">
-          <Image src="/hainaauto-logo.webp" alt="" width={31} height={31} className={styles.navBrandMark} />
+        <Link className={styles.navBrand} href="/admin" aria-label="Nindge Automobile admin dashboard">
+          <Image src="/images/KkwGH.png" alt="" width={31} height={31} className={styles.navBrandMark} />
           <span className={styles.navBrandText}>
-            <b>HainaAuto</b>
+            <b>Nindge Automobile</b>
             <span className={styles.navBrandRibbon}>Admin</span>
           </span>
         </Link>

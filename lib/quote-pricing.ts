@@ -1,4 +1,4 @@
-// Optional fallback figures for explicitly FOB quotes only. HAINA AUTO's
+// Optional fallback figures for explicitly FOB quotes only. NINDGE AUTOMOBILE's
 // normal website/admin quotations default to CIF, where the entered unit price
 // already includes vehicle, international ocean freight and marine insurance.
 import type { QuoteLanguage } from "./quote-language";

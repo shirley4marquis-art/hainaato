@@ -88,7 +88,7 @@ export default function ExportProcess() {
             <span>EXPORT PROCESS</span>
             <h1>How to Import a Vehicle from China</h1>
             <p>
-              A clear sequence for buying a vehicle through HainaAuto: quotation, contract, 40% confirmation
+              A clear sequence for buying a vehicle through Nindge Automobile: quotation, contract, 40% confirmation
               payment, export from China, shipment to Venezuela, and final 60% payment before release.
             </p>
             <div className="export-process-actions">
@@ -99,7 +99,7 @@ export default function ExportProcess() {
           <div className="export-process-visual" aria-label="Export process overview">
             <Image
               src="/images/contact-export-desk.png"
-              alt="HainaAuto export desk coordinating vehicle shipment documents"
+              alt="Nindge Automobile export desk coordinating vehicle shipment documents"
               width={900}
               height={650}
               priority

@@ -53,7 +53,7 @@ function LoginForm() {
   return (
     <div className={styles.loginPage}>
       <div className={styles.loginBrand}>
-        <p>HAINAAUTO ADMIN</p>
+        <p>NINDGE AUTOMOBILE ADMIN</p>
         <h1>Quotes &amp; orders,<br />handled in one place.</h1>
         <span>Draft quotes, track status from first inquiry through delivery, and generate the documents your buyers sign.</span>
         <div>

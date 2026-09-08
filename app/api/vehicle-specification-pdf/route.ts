@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const lang = request.nextUrl.searchParams.get("language") ?? "es";
     const language: DocumentLanguage = Object.hasOwn(DOCUMENT_LANGUAGES, lang) ? lang as DocumentLanguage : "es";
     const pdf = await generateVehicleSpecificationPdf(vehicle, language);
-    return pdfResponse(pdf, `HainaAuto-Vehicle-Specification-${safeFilename(slug)}-${language.toUpperCase()}.pdf`, true);
+    return pdfResponse(pdf, `Nindge Automobile-Vehicle-Specification-${safeFilename(slug)}-${language.toUpperCase()}.pdf`, true);
   } catch (error) {
     return documentFailure(error);
   }

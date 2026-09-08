@@ -115,8 +115,8 @@ function brandedEmail(params: {
       <tr>
         <td bgcolor="${NAVY}" style="background:${NAVY};padding:24px 28px">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-            <td width="74" valign="middle"><img src="cid:${EMAIL_LOGO_CID}" width="62" height="62" alt="Haina Auto" style="display:block;width:62px;height:62px;border:0;border-radius:10px;background:#fff"></td>
-            <td valign="middle"><div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em">HAINA AUTO EXPORT</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">${escapeHtml(params.eyebrow)}</div></td>
+            <td width="74" valign="middle"><img src="cid:${EMAIL_LOGO_CID}" width="62" height="62" alt="Nindge Automobile" style="display:block;width:62px;height:62px;border:0;border-radius:10px;background:#fff"></td>
+            <td valign="middle"><div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em">NINDGE AUTOMOBILE</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">${escapeHtml(params.eyebrow)}</div></td>
           </tr></table>
         </td>
       </tr>
@@ -129,17 +129,17 @@ function brandedEmail(params: {
           ${steps}
           ${factRows ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:12px;margin-top:20px"><tr><td style="padding:16px 20px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${factRows}</table></td></tr></table>` : ""}
           ${cta}
-          <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:${NAVY}">HainaAuto Sales Team</b></p>
+          <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:${NAVY}">Nindge Automobile Sales Team</b></p>
         </td>
       </tr>
       <tr>
         <td style="padding:20px 30px 28px"><div style="height:1px;background:#E3E8EF;margin-bottom:18px"></div><div style="font-size:11px;color:#7B879A;line-height:1.7">
-          <b style="color:${NAVY}">HAINA AUTO EXPORT</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
+          <b style="color:${NAVY}">NINDGE AUTOMOBILE</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br>
           <a href="mailto:${SALES_EMAIL}" style="color:${NAVY}">${SALES_EMAIL}</a> · <a href="https://www.nindgeauto.com" style="color:${NAVY}">nindgeauto.com</a>
         </div></td>
       </tr>
     </table>
-    <p style="margin:16px 0 0;font-size:10px;line-height:1.5;color:#98A2B3;text-align:center">You received this message because you are working with Haina Auto on a vehicle quotation.</p>
+    <p style="margin:16px 0 0;font-size:10px;line-height:1.5;color:#98A2B3;text-align:center">You received this message because you are working with Nindge Automobile on a vehicle quotation.</p>
   </td></tr></table>
 </body>
 </html>`;
@@ -185,13 +185,13 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
       type,
       label: "Quotation follow-up",
       eyebrow: "After quote",
-      subject: `Your next steps for HainaAuto quotation ${ref}`,
+      subject: `Your next steps for Nindge Automobile quotation ${ref}`,
       html: brandedEmail({
         customerName,
         docRef: ref,
         eyebrow: "Quotation follow-up",
         heading: "Ready to move forward with your vehicle?",
-        preheader: `Review and complete the next steps for Haina Auto quotation ${ref}.`,
+        preheader: `Review and complete the next steps for Nindge Automobile quotation ${ref}.`,
         paragraphs: [
           "We hope you received the quotation prepared for you. To secure your selected vehicle and keep the export process moving, please follow the steps below.",
         ],
@@ -222,10 +222,10 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
         docRef: ref,
         eyebrow: "Contract and deposit",
         heading: "We are ready to prepare your sales contract",
-        preheader: `Next step for Haina Auto quotation ${ref}: sales contract and deposit.`,
+        preheader: `Next step for Nindge Automobile quotation ${ref}: sales contract and deposit.`,
         paragraphs: [
           `If the quotation is approved, the next step is to prepare the sales contract for your review and signature.`,
-          `After the contract is reviewed and signed, the ${quote.depositPct}% initial payment confirms the unit and allows Haina Auto to begin the export process from China. The remaining ${100 - quote.depositPct}% is paid after shipment, before vehicle release at the destination port.`,
+          `After the contract is reviewed and signed, the ${quote.depositPct}% initial payment confirms the unit and allows Nindge Automobile to begin the export process from China. The remaining ${100 - quote.depositPct}% is paid after shipment, before vehicle release at the destination port.`,
         ],
         facts: quoteFacts,
         ctaLabel: "Confirm contract details",
@@ -240,7 +240,7 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
       type,
       label: "Export documentation",
       eyebrow: "Export process",
-      subject: `Export documentation process for HainaAuto quotation ${ref}`,
+      subject: `Export documentation process for Nindge Automobile quotation ${ref}`,
       html: brandedEmail({
         customerName,
         docRef: ref,
@@ -263,13 +263,13 @@ export function buildQuoteEmailDraft(quote: AdminQuoteDetail, type: QuoteEmailDr
     type,
     label: "Arrival & balance",
     eyebrow: "Before release",
-    subject: `Arrival and balance payment reminder for HainaAuto order ${ref}`,
+    subject: `Arrival and balance payment reminder for Nindge Automobile order ${ref}`,
     html: brandedEmail({
       customerName,
       docRef: ref,
       eyebrow: "Arrival and balance",
       heading: "Balance payment before destination release",
-      preheader: `Balance payment reminder for Haina Auto quotation ${ref}.`,
+      preheader: `Balance payment reminder for Nindge Automobile quotation ${ref}.`,
       paragraphs: [
         `When the vehicle arrives at ${dest || "the destination port"}, the remaining ${100 - quote.depositPct}% balance is completed before release.`,
         "After the balance is completed, the customer or appointed customs broker can continue with port release, customs clearance, registration and other local destination-country procedures.",

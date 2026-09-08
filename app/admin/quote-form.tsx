@@ -179,7 +179,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
     const urls = vehicleUrlsFromText(text);
     if (!urls.length) {
       setDetectionNotice(null);
-      setError("Paste one or more HainaAuto vehicle links from the catalogue.");
+      setError("Paste one or more Nindge Automobile vehicle links from the catalogue.");
       return;
     }
     setDetecting(true); setError(null); setDetectionNotice(null);
@@ -284,7 +284,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   return (
     <div className={styles.form}>
       {!initial && <div className={styles.intakePanel}>
-        <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste client inquiry</h2><p>Paste an email, WhatsApp message, or enquiry containing client details and HainaAuto vehicle links.</p></div></div>
+        <div className={styles.intakeHeading}><span><ClipboardPaste size={17}/></span><div><h2>Paste client inquiry</h2><p>Paste an email, WhatsApp message, or enquiry containing client details and Nindge Automobile vehicle links.</p></div></div>
         <textarea rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder={"Client name: Maria Perez\nEmail: maria@example.com\nDestination port: La Guaira\nCountry: Venezuela\nVehicle: https://www.nindgeauto.com/vehicles/vehicle-slug"}/>
         <div className={styles.intakeActions}><button type="button" className={styles.btn} onClick={detectPastedInquiry} disabled={detecting || !pasteText.trim()}><WandSparkles size={14}/>{detecting ? "Detecting details…" : "Detect and fill quotation"}</button><small>Nothing is saved until you review and click Create quote.</small></div>
         {detectionNotice && <p className={styles.formSuccess}>{detectionNotice}</p>}
@@ -377,7 +377,7 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
           <div><dt>Vehicle subtotal</dt><dd>{money(liveTotals.itemsSubtotal)}</dd></div>
           {!isCif && <div><dt>Freight</dt><dd>{money(liveTotals.freight)}</dd></div>}
           {!isCif && <div><dt>Marine insurance</dt><dd>{money(liveTotals.insurance)}</dd></div>}
-          <div className={styles.totalsStrong}><dt>CIF total (payable to HAINA AUTO EXPORT)</dt><dd>{money(liveTotals.cifTotal)}</dd></div>
+          <div className={styles.totalsStrong}><dt>CIF total (payable to NINDGE AUTOMOBILE)</dt><dd>{money(liveTotals.cifTotal)}</dd></div>
           {liveTotals.customsEstimate != null && (
             <div><dt>Est. customs / nationalization</dt><dd>{money(liveTotals.customsEstimate)}</dd></div>
           )}

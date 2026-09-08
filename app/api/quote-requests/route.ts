@@ -4,7 +4,7 @@
 // the same adminSaveQuote() the staff editor uses (so it's immediately
 // visible in /admin), renders the PDF, and emails it to the customer —
 // synchronously, so the response only returns once all of that either
-// succeeded or definitively failed. HAINA AUTO website quotes default to CIF:
+// succeeded or definitively failed. NINDGE AUTOMOBILE website quotes default to CIF:
 // the entered unit price already includes vehicle, ocean freight and marine
 // insurance to the agreed destination port.
 import { after, NextRequest, NextResponse } from "next/server";
@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
       to: email,
       subject,
       html,
-      attachment: { filename: `HainaAuto-Quote-${ref}.pdf`, content: pdfBuffer },
+      attachment: { filename: `Nindge Automobile-Quote-${ref}.pdf`, content: pdfBuffer },
     });
     await recordQuoteEmail(ref, {
       toEmail: email,

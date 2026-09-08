@@ -10,8 +10,6 @@ import {imagePath} from "../lib/format";
 import {ResilientVehicleImage} from "./vehicle-image";
 import {Price} from "./price";
 import {logoPathFor} from "../lib/brand-logos";
-import {CompanyStrengthSlider} from "./company-strength-slider";
-
 const trustCountries=[["ve","Venezuela"],["pe","Peru"],["ae","UAE"],["sa","Saudi Arabia"],["ru","Russia"],["kz","Kazakhstan"],["ng","Nigeria"],["ke","Kenya"],["cl","Chile"],["mx","Mexico"],["uz","Uzbekistan"]] as const;
 const years=Array.from({length:16},(_,i)=>2026-i);
 const prices=[20000,50000,80000,120000,180000,250000,350000,500000];
@@ -63,10 +61,8 @@ const destinationMarkers=[
   ["🇷🇺","Russia",70,23],["🇰🇿","Kazakhstan",69,36],["🇺🇿","Uzbekistan",66,43],
   ["🇵🇭","Philippines",84,59],["🇮🇩","Indonesia",82,72],
 ] as const;
-const companyPhotos=["https://cntransit.cn/uploads/visit_5c856c9cdfaec3e8.jpg","https://cntransit.cn/uploads/visit_e4c2d879f81cda1d.jpg","https://cntransit.cn/uploads/visit_03e6f0c1a20573b5.jpg","https://cntransit.cn/uploads/visit_f702494f5cd6dcad.jpg","https://cntransit.cn/uploads/visit_28a26165a6c45538.jpg","https://cntransit.cn/uploads/visit_e65ff07f4cdc1547.jpg"] as const;
-const guides=[["https://img.hainaauto.com/vehicle/art_4c1be6c6236b9184.webp","Xpeng GX: The Smart Electric SUV Redefining China Export to Russia","A closer look at the technology, range and export appeal of China's new-generation electric SUV.","/news"],["https://img.hainaauto.com/vehicle/art_e3a5e0b9a31760d7.webp","China's Auto Export Surge to Russia: A Practical Guide for Importers","Market trends, shipping choices, documentation and practical steps for international vehicle buyers.","/news"]] as const;
-const testimonials=[["https://cntransit.cn/images/avatars/client-1.png","Ahmed","Dubai, UAE","I purchased 12 BYD vehicles from HainaAuto. The communication was excellent and the vehicles arrived on time. Highly recommended!"],["https://cntransit.cn/images/avatars/client-2.png","Ivan Petrov","Moscow, Russia","Professional team and very fast response. The inspection report was detailed and the shipping was smooth."],["https://cntransit.cn/images/avatars/client-3.png","Carlos Gomez","Santiago, Chile","Great experience working with HainaAuto. They handled everything perfectly from inspection to delivery."]] as const;
-const faqs=[["What is HainaAuto?","A China-based vehicle export platform connecting international buyers with inspected new and used vehicles."],["How do I reserve a vehicle?","Note the stock ID or link, then request confirmation of availability, specification and export terms."],["Can I inspect a vehicle before purchase?","Yes. On-site or third-party inspection can be arranged before booking and shipment."],["How long does shipping take?","Typically 2–6 weeks after departure, depending on destination and RoRo or container routing."],["What payment methods do you accept?","T/T, L/C and other agreed secure settlement methods."],["Can you help with customs clearance?","Yes — our team prepares full export documentation and coordinates with your customs broker."]];
+const testimonials=[["Ahmed","Dubai, UAE","I purchased 12 BYD vehicles from Nindge Automobile. The communication was excellent and the vehicles arrived on time. Highly recommended!"],["Ivan Petrov","Moscow, Russia","Professional team and very fast response. The inspection report was detailed and the shipping was smooth."],["Carlos Gomez","Santiago, Chile","Great experience working with Nindge Automobile. They handled everything perfectly from inspection to delivery."]] as const;
+const faqs=[["What is Nindge Automobile?","A China-based vehicle export platform connecting international buyers with inspected new and used vehicles."],["How do I reserve a vehicle?","Note the stock ID or link, then request confirmation of availability, specification and export terms."],["Can I inspect a vehicle before purchase?","Yes. On-site or third-party inspection can be arranged before booking and shipment."],["How long does shipping take?","Typically 2–6 weeks after departure, depending on destination and RoRo or container routing."],["What payment methods do you accept?","T/T, L/C and other agreed secure settlement methods."],["Can you help with customs clearance?","Yes — our team prepares full export documentation and coordinates with your customs broker."]];
 
 const homeBrandLogo:Record<string,string>={"Jietu":"jetour","Jetour":"jetour","Li":"li-auto","Li Auto":"li-auto","Mercedes-Benz":"mercedes-benz","Lynk":"lynk-co","Lynk & Co":"lynk-co","Great":"great-wall","Great Wall":"great-wall","Xpeng":"xpeng","XPeng":"xpeng","JiKrypton":"zeekr"};
 const brandLogoSlug=(brand:string)=>homeBrandLogo[brand]??brand.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
@@ -156,7 +152,7 @@ export default function Home(){
     <section className="export-hub"><div className="container">
       <div className="hub-grid">
         <div className="hub-card reveal">
-          <h3>Why Choose HainaAuto</h3>
+          <h3>Why Choose Nindge Automobile</h3>
           <div><ul className="hub-why-list">{whyChoose.map(([Icon,title,desc])=><li key={title}><span className="hub-why-icon"><Icon size={14}/></span><div><b>{title}</b><p>{desc}</p></div></li>)}</ul></div>
         </div>
         <div className="hub-card reveal">
@@ -174,7 +170,7 @@ export default function Home(){
         <div className="hub-card reveal">
           <h3>Export Destinations</h3>
           <div><div className="hub-dest">
-            <div className="hub-dest-map" role="img" aria-label="Map of HainaAuto export destinations from China">
+            <div className="hub-dest-map" role="img" aria-label="Map of Nindge Automobile export destinations from China">
               <span className="hub-map-origin" style={{left:"78%",top:"43%"}}><i/>China</span>
               {destinationMarkers.map(([flag,country,left,top])=><span className="hub-map-marker" style={{left:`${left}%`,top:`${top}%`}} title={country} aria-label={country} key={country}><span aria-hidden="true">{flag}</span></span>)}
               <span className="hub-map-caption">Export routes from China</span>
@@ -185,17 +181,13 @@ export default function Home(){
       </div>
     </div></section>
 
-    <section className="gold-partner"><div className="container"><div><span>HAINAAUTO EXPORT NETWORK</span><h2>China auto export gold partner</h2><p>New &amp; used tracking · Safe pay workflow · Join the export flow</p></div><Link href="/vehicles">View listings →</Link></div></section>
+    <section className="gold-partner"><div className="container"><div><span>NINDGE AUTOMOBILE EXPORT NETWORK</span><h2>China auto export gold partner</h2><p>New &amp; used tracking · Safe pay workflow · Join the export flow</p></div><Link href="/vehicles">View listings →</Link></div></section>
 
     <section className="client-strength"><div className="container">
       <div className="client-strength-grid">
         <div>
           <h3>What Our Clients Say</h3>
-          <div className="mini-testimonials">{testimonials.map(([avatar,name,place,quote])=><article className="mini-testimonial reveal" key={name}><div className="mini-testimonial-head"><img src={avatar} alt=""/><div><b>{name}</b><span>{place}</span></div></div><div className="mini-testimonial-stars">★★★★★</div><p>&ldquo;{quote}&rdquo;</p></article>)}</div>
-        </div>
-        <div>
-          <h3>Company Strength</h3>
-          <CompanyStrengthSlider images={companyPhotos}/>
+          <div className="mini-testimonials">{testimonials.map(([name,place,quote])=><article className="mini-testimonial reveal" key={name}><div className="mini-testimonial-head"><span className="testimonial-initials" aria-hidden="true">{name.split(" ").map(part=>part[0]).join("")}</span><div><b>{name}</b><span>{place}</span></div></div><div className="mini-testimonial-stars">★★★★★</div><p>&ldquo;{quote}&rdquo;</p></article>)}</div>
         </div>
       </div>
     </div></section>
@@ -222,11 +214,6 @@ export default function Home(){
         </div>
         <HomeRequestForm/>
       </div>
-    </div></section>
-
-    <section className="section home-news-guides"><div className="container">
-      <div className="section-head row"><div><span className="eyebrow">BUYER RESOURCES</span><h2>Latest export guides</h2></div><Link className="text-link" href="/news">View all guides →</Link></div>
-      <div className="news-grid">{guides.map((g,i)=><article className={i===0?"news featured reveal":"news reveal"} key={g[1]}><img src={g[0]} alt=""/><div><span className="eyebrow">EXPORT GUIDE</span><h2>{g[1]}</h2><p>{g[2]}</p><Link href={g[3]}>Read more →</Link></div></article>)}</div>
     </div></section>
 
     <section className="home-faq section"><div className="container">

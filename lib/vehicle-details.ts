@@ -8,7 +8,7 @@ const VEHICLE_SLUG_PATTERN = /^[a-z]+-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // Keep this in sync with the catalogue revision in lib/vehicles.ts. Changing
 // the loader invalidates deployment caches when a curated detail is added.
-export const VEHICLE_DETAIL_REVISION = "2026-09-03-escalade-v";
+export const VEHICLE_DETAIL_REVISION = "2026-09-08-local-listing-links";
 
 function detailShardForSlug(slug: string): number {
   let hash = 2166136261;
@@ -35,5 +35,7 @@ export function getVehicleBySlug(slug: string): Vehicle | null {
     shard = JSON.parse(fs.readFileSync(shardPath, "utf8"));
     detailShardCache.set(shardNumber, shard!);
   }
-  return shard![slug] ?? null;
+  const vehicle = shard![slug];
+  // Never expose an imported supplier URL as this listing's public address.
+  return vehicle ? { ...vehicle, url: `/vehicles/${encodeURIComponent(slug)}` } : null;
 }

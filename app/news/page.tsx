@@ -17,7 +17,7 @@ async function getStories(): Promise<NewsStory[]> {
   return articles.map((article) => ({
     title: article.title,
     link: article.link,
-    image: article.image ?? "/hainaauto-logo.webp",
+    image: article.image ?? "/images/KkwGH.png",
     date: dateFormatter.format(new Date(article.published_at)),
     source: article.source,
   }));

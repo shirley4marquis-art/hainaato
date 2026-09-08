@@ -4,7 +4,7 @@ import type { NewsArticle } from "./types";
 
 const MAX_ITEMS_PER_SOURCE = 10;
 const REQUEST_TIMEOUT_MS = 8000;
-const FALLBACK_IMAGE = "/hainaauto-logo.webp";
+const FALLBACK_IMAGE = "/nindge-mark.png";
 
 function decodeEntities(value: string): string {
   return value

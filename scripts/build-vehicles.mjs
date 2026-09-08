@@ -112,7 +112,7 @@ function normalize(raw, site) {
     slug,
     site,
     id: String(raw.id),
-    url: raw.url ?? null,
+    url: `/vehicles/${encodeURIComponent(slug)}`,
     title: raw.title ?? "Untitled vehicle",
     year: raw.year ?? null,
     priceCNY: override ? Math.round(override.priceCNY * CURRENT_PRICE_REDUCTION) : formulaPriceCNY,

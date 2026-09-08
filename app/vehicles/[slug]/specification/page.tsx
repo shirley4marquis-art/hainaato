@@ -10,13 +10,13 @@ import { buildVehicleConfigurationRows } from "../../../../lib/vehicle-document-
 import styles from "./specification.module.css";
 
 const COMPANY = {
-  name: "HAINA AUTO EXPORT",
+  name: "NINDGE AUTOMOBILE",
   tag: "CHINA AUTO EXPORT",
   address: "11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China",
   phone: "+86 150 3217 8759",
   email: "info@nindgeauto.com",
   website: "nindgeauto.com",
-  logo: "/hainaauto-logo.webp",
+  logo: "/images/KkwGH.png",
 };
 
 function money(cny: number | null): string {
@@ -141,7 +141,7 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
         <section className={`${styles.section} ${styles.notes}`}>
           <div className={styles.noteBox}>
             <b>CIF quotation basis</b>
-            Vehicle, international ocean freight and marine insurance are included in HAINA AUTO quotations unless the written quotation is explicitly marked FOB.
+            Vehicle, international ocean freight and marine insurance are included in NINDGE AUTOMOBILE quotations unless the written quotation is explicitly marked FOB.
           </div>
           <div className={styles.noteBox}>
             <b>Destination charges</b>

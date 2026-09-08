@@ -99,7 +99,7 @@ export async function generateMetadata({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
   const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
-  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de HainaAuto.`;
+  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de Nindge Automobile.`;
   const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
   const heroFile = rankVehicleImages(vehicle.images)[0];
   const shareImage = heroFile
@@ -111,7 +111,7 @@ export async function generateMetadata({
     alternates: { canonical: canonicalUrl },
     openGraph: {
       type: "website",
-      siteName: "HainaAuto",
+      siteName: "Nindge Automobile",
       locale: "es_VE",
       alternateLocale: ["es_CO", "es_PE", "es_CL", "es_EC", "es_AR", "pt_BR", "zh_CN"],
       url: canonicalUrl,
@@ -194,7 +194,7 @@ export default async function VehicleDetail({
           )}
 
           <span className="vehicle-title">
-            {vehicle.site === "cntransit" ? "PARTNER LISTING" : "HAINAAUTO LISTING"}
+            {vehicle.site === "cntransit" ? "PARTNER LISTING" : "NINDGE AUTOMOBILE LISTING"}
           </span>
           <h1>{vehicle.title}</h1>
           <div className="vehicle-meta">{metaLine}</div>
@@ -214,7 +214,7 @@ export default async function VehicleDetail({
             <div className="sale">
               <Price cny={vehicle.priceCNY}/>
             </div>
-            <p className="cif-price-note"><b>CIF included</b> Vehicle, international ocean freight and marine insurance are included in HAINA AUTO quotations unless marked FOB.</p>
+            <p className="cif-price-note"><b>CIF included</b> Vehicle, international ocean freight and marine insurance are included in NINDGE AUTOMOBILE quotations unless marked FOB.</p>
             <p className="cif-price-note"><b>Fuel choice</b> Diesel and Gasoline are shown by the actual vehicle configuration; Hybrid and Electric remain separate categories.</p>
           </div>
 
@@ -346,8 +346,8 @@ export default async function VehicleDetail({
         <div id="request">
           <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel} />
           <div className="side-card specialist-card">
-            <span className="avatar" aria-label="HainaAuto export team">
-              <Image src="/hainaauto-logo.webp" alt="HainaAuto logo" width={32} height={32} />
+            <span className="avatar" aria-label="Nindge Automobile export team">
+              <Image src="/images/KkwGH.png" alt="Nindge Automobile logo" width={32} height={32} />
             </span>
             <h3>Talk to Our Export Team</h3>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -355,7 +355,7 @@ export default async function VehicleDetail({
             <p>We typically respond within 24 hours.</p>
           </div>
           <div className="side-card">
-            <h3>Why Buy From HainaAuto</h3>
+            <h3>Why Buy From Nindge Automobile</h3>
             <ul className="why-buy-list">
               <li>
                 <b>✓</b>

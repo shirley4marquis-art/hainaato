@@ -57,7 +57,7 @@ export async function setTemplateActive(id: string, active: boolean) {
 export { reserveDocumentNumber as nextDocumentNumber } from "./numbering";
 export function documentFilename(type: DocumentType, number: string, language: DocumentLanguage) {
   const label = { quotation: "Quotation", contract: "Contrato", proforma: "Proforma", invoice: "Invoice", specification: "Vehicle-Specification" }[type as "quotation"] ?? type;
-  return `HainaAuto-${label}-${number}-${language.toUpperCase()}.pdf`.replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 180);
+  return `Nindge Automobile-${label}-${number}-${language.toUpperCase()}.pdf`.replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 180);
 }
 export function generatedMetadata(r: Row): GeneratedDocument { return { id: String(r.id), number: String(r.document_number), filename: String(r.filename), type: r.document_type as DocumentType, language: r.language as DocumentLanguage, quoteRef: String(r.quote_ref), templateId: String(r.template_id), createdAt: new Date(r.created_at as string).toISOString() }; }
 export async function listDocuments(quoteRef?: string) {

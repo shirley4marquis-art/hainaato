@@ -20,8 +20,8 @@ export function QuoteSuccessClient({quoteRef,token}:{quoteRef:string;token:strin
   if(!quoteRef||!token)return <main className="section"><div className="container quote-success-card"><h1>Quotation unavailable</h1><p>This quotation link is incomplete.</p><Link className="btn primary" href="/vehicles">Browse vehicles</Link></div></main>;
   if(error)return <main className="section"><div className="container quote-success-card"><h1>Quotation unavailable</h1><p>{error}</p><Link className="btn primary" href="/vehicles">Browse vehicles</Link></div></main>;
   if(!quote)return <main className="section"><div className="container quote-success-card"><p>Preparing your quotation…</p></div></main>;
-  const approveText=`Hello HainaAuto, I approve quotation ${quote.ref} and would like the sales contract and payment instructions.`;
-  const changeText=`Hello HainaAuto, I would like to request changes to quotation ${quote.ref}.`;
+  const approveText=`Hello Nindge Automobile, I approve quotation ${quote.ref} and would like the sales contract and payment instructions.`;
+  const changeText=`Hello Nindge Automobile, I would like to request changes to quotation ${quote.ref}.`;
   const approveEmail=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent(`Approve quotation ${quote.ref}`)}&body=${encodeURIComponent(approveText)}`;
   const whatsapp=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(approveText)}`;
   const deliveryCopy=quote.deliveryStatus==="sent"?"The PDF has been sent to your email.":quote.deliveryStatus==="failed"?"The email could not be delivered; download your PDF below.":quote.deliveryStatus==="whatsapp-only"?"No email was supplied. Download the PDF or continue on WhatsApp.":"Your quote is ready. The PDF email is being prepared in the background.";

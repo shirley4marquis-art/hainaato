@@ -34,7 +34,7 @@ export type QuoteTotals = {
   freight: number;
   /** Marine insurance charged as a separate line (0 on CIF quotes). */
   insurance: number;
-  /** Total payable to HAINA AUTO EXPORT — the CIF value at the destination port. */
+  /** Total payable to NINDGE AUTOMOBILE — the CIF value at the destination port. */
   cifTotal: number;
   /** CIF value customs duty is assessed against (vehicle + freight + insurance). */
   customsBaseCifValue: number;

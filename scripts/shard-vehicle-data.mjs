@@ -18,7 +18,7 @@ function shardForSlug(slug) {
 const details = JSON.parse(fs.readFileSync(input, "utf8"));
 const shards = Array.from({ length: shardCount }, () => ({}));
 for (const [slug, vehicle] of Object.entries(details)) {
-  shards[shardForSlug(slug)][slug] = vehicle;
+  shards[shardForSlug(slug)][slug] = { ...vehicle, url: `/vehicles/${encodeURIComponent(slug)}` };
 }
 
 fs.mkdirSync(output, { recursive: true });

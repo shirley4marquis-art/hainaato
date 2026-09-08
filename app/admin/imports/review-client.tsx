@@ -130,7 +130,7 @@ export function ImportReviewClient({ initialListings, initialLogs, initialConfig
         <div>
           <span className={styles.eyebrow}>Supplier discovery</span>
           <h1>Made-in-China Imports</h1>
-          <p>Approve qualified supplier listings, then publish them into the public Haina Auto vehicle catalog.</p>
+          <p>Approve qualified supplier listings, then publish them into the public Nindge Automobile vehicle catalog.</p>
         </div>
         <button className={styles.btn} type="button" onClick={runImport} disabled={busy === "import"}>
           <RefreshCw size={14} /> {busy === "import" ? "Running..." : "Run discovery"}

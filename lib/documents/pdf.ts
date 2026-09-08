@@ -140,7 +140,14 @@ export async function generatePdf(prepared: Uint8Array, mapping: TemplateMapping
   const pdf = await PDFDocument.load(prepared, { updateMetadata: false });
   const originals = pdf.getPages();
   const bound = (field: FieldMapping) => field.itemIndex != null && !data.vehicles[field.itemIndex] ? "" : field.kind === "vehicles" ? vehicleText(data, field) : bindField(field, { ...data.values, ...(field.itemIndex != null ? data.vehicles[field.itemIndex] : {}) });
-  const fonts = new DocumentFonts(pdf, mapping.fields.filter(f => f.kind !== "image").map(bound).join("\n"));
+  const appendixLabel = data.language === "en" ? "Transmission details" : data.language === "zh" ? "变速箱详情" : data.language === "es-zh" ? "Transmisión / 变速箱详情" : "Detalle de transmisión";
+  const appendixRef = data.language === "en" ? "Appendix" : data.language === "zh" ? "附页" : "Anexo";
+  const vehicleContext = (field: FieldMapping) => {
+    const item = data.vehicles[field.itemIndex ?? 0] ?? data.values;
+    return [item.vehicle_year, item.vehicle_brand, item.vehicle_model, item.vin].map(cleanValue).filter(Boolean).join(" · ");
+  };
+  const fonts = new DocumentFonts(pdf, [mapping.fields.filter(f => f.kind !== "image").map(bound).join("\n"), appendixLabel, appendixRef, "T0123456789 ·", cleanValue(data.values.document_number), ...mapping.fields.map(vehicleContext)].join("\n"));
+  const transmissionAppendices = new Map<string, string>();
   const continuations: { before: number; page: PDFPage }[] = [];
   for (const field of mapping.fields) {
     const page = originals[field.page - 1], info = pages[field.page - 1];
@@ -158,7 +165,45 @@ export async function generatePdf(prepared: Uint8Array, mapping: TemplateMapping
     const text = field.kind === "vehicles" ? vehicleText(data, field) : bindField(field, { ...data.values, ...(field.itemIndex != null ? data.vehicles[field.itemIndex] : {}) });
     if (!text) continue;
     const fontFor = await fonts.prepare(text, field);
-    const layout = fitText(text, field, fontFor);
+    let layout: ReturnType<typeof fitText>;
+    try {
+      layout = fitText(text, field, fontFor);
+    } catch (error) {
+      // Legacy templates often reserve one short line for a gearbox name.
+      // Preserve the full specification on a new unsigned page when that line
+      // cannot fit, rather than clipping it or expanding over adjacent artwork.
+      if (field.field !== "transmission" || field.overflow || !(error instanceof DocumentError) || !error.message.includes("too long")) throw error;
+      const appendixKey = vehicleContext(field) + "\n" + text;
+      const existingReference = transmissionAppendices.get(appendixKey);
+      const reference = existingReference ?? appendixRef + " T" + (transmissionAppendices.size + 1);
+      const referenceFont = await fonts.prepare(reference, field);
+      const referenceLayout = fitText(reference, field, referenceFont);
+      drawLines(page, info, field, referenceLayout.lines, referenceLayout.size, referenceFont);
+      if (existingReference) continue;
+      transmissionAppendices.set(appendixKey, reference);
+      const appendixInfo: PageInfo = { width: 595, height: 842, rotation: 0, mediaBox: { x: 0, y: 0, width: 595, height: 842 }, cropBox: { x: 0, y: 0, width: 595, height: 842 } };
+      const area = { page: 1, x: 40, y: 100, width: 515, height: 682, insertBefore: 1 };
+      const body: FieldMapping = { ...field, ...area, fontSize: 11, minFontSize: 11, fontWeight: "normal", color: "#241611", align: "left", wrap: true, lineHeight: 1.4, maxLines: 1000, autoShrink: false, characterSpacing: 0, overflow: area };
+      const heading: FieldMapping = { ...body, y: 36, height: 54, fontSize: 14, fontWeight: "bold", maxLines: 3, overflow: undefined };
+      const headingText = reference + " · " + appendixLabel;
+      const headingFont = await fonts.prepare(headingText, heading);
+      const headingLayout = fitText(headingText, heading, headingFont);
+      let remaining = [cleanValue(data.values.document_number), vehicleContext(field), text].filter(Boolean).join("\n\n");
+      const bodyFont = await fonts.prepare(remaining, body);
+      // Keep signed final pages final. Do not copy or draw over their artwork.
+      const before = Math.min(originals.length + 1, ...mapping.lockedPages, ...(mapping.protectedRegions.some(r => r.page === originals.length) ? [originals.length] : []));
+      while (remaining) {
+        if (continuations.length >= 50) throw new DocumentError("Document exceeds the 50-page continuation limit.");
+        const continuation = pdf.addPage([595, 842]);
+        pdf.removePage(pdf.getPageCount() - 1);
+        drawLines(continuation, appendixInfo, heading, headingLayout.lines, headingLayout.size, headingFont);
+        const segment = fitText(remaining, body, bodyFont);
+        drawLines(continuation, appendixInfo, body, segment.lines, segment.size, bodyFont);
+        continuations.push({ before, page: continuation });
+        remaining = segment.remaining.join("\n");
+      }
+      continue;
+    }
     drawLines(page, info, field, layout.lines, layout.size, fontFor);
     if (layout.remaining.length && field.overflow) {
       const area = field.overflow;

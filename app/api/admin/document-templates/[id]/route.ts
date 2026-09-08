@@ -9,7 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const denied = await guardAdminRequest(request); if (denied) return denied;
   try {
     const t = await getTemplate((await params).id), mode = new URL(request.url).searchParams.get("file");
-    if (mode) return pdfResponse(mode === "original" ? t.original : t.prepared, `HainaAuto-Template-${t.id}.pdf`);
+    if (mode) return pdfResponse(mode === "original" ? t.original : t.prepared, `Nindge Automobile-Template-${t.id}.pdf`);
     const { original: _original, prepared: _prepared, ...template } = t;
     void _original; void _prepared;
     return Response.json({ ok: true, template }, { headers: { "Cache-Control": "private, no-store" } });

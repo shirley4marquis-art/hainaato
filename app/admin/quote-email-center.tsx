@@ -36,7 +36,7 @@ export function QuoteEmailCenter({
   const [busyType, setBusyType] = useState<QuoteEmailDraftType | null>(null);
   const [customBusy, setCustomBusy] = useState(false);
   const [customTo, setCustomTo] = useState(customerEmail ?? "");
-  const [customSubject, setCustomSubject] = useState(`Regarding your HainaAuto quotation ${quoteRef}`);
+  const [customSubject, setCustomSubject] = useState(`Regarding your Nindge Automobile quotation ${quoteRef}`);
   const [customMessage, setCustomMessage] = useState("");
   const [customFiles, setCustomFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);

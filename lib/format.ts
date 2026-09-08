@@ -98,7 +98,7 @@ export function normalizeColor(color: string): string {
 // vehicles when the source data is re-scraped; without the id in the URL, a
 // stale cached response for a reused filename would silently serve the wrong
 // vehicle's photo. The route also verifies file actually belongs to that
-// vehicle's own image list before redirecting to the upstream CDN.
+// vehicle's own image list before fetching the image server-side.
 export function imagePath(site: VehicleSite, id: string, file: string): string {
   if ((site === "hainaauto" && id.startsWith("manual-")) || site === "hendrick" || site === "hongyu" || site === "madeinchina" || site === "carfromjapan") {
     return `/vehicle-images/${site}/${encodeURIComponent(id)}/${encodeURIComponent(file)}`;

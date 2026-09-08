@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="HainaAuto-Quote-${ref}.pdf"`,
+        "Content-Disposition": `attachment; filename="Nindge Automobile-Quote-${ref}.pdf"`,
         "Content-Length": String(pdf.length),
         "Cache-Control": "no-store",
       },

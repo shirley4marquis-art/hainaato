@@ -74,7 +74,7 @@ export default function SouthAmericaImportPage() {
         <article className="container legal">
           <h2>Un solo proceso desde la selección hasta el embarque</h2>
           <p>
-            HainaAuto ayuda a compradores particulares, concesionarios e importadores a seleccionar vehículos en China,
+            Nindge Automobile ayuda a compradores particulares, concesionarios e importadores a seleccionar vehículos en China,
             verificar su condición y preparar la documentación necesaria para el transporte internacional.
           </p>
           <p>

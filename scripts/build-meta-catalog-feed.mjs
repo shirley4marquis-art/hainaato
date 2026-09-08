@@ -2,7 +2,7 @@
 // (https://www.facebook.com/business/help/120325381656392) covering a
 // curated selection of the catalogue, capped at TOTAL_CAP vehicles and
 // weighted toward 4x4 trucks (see below). Point Commerce Manager's
-// scheduled data feed at https://hainaauto.com/meta-catalog-feed.csv to
+// scheduled data feed at https://www.nindgeauto.com/meta-catalog-feed.csv to
 // sync it into the catalog linked to the WhatsApp Business Account, which
 // drives the WhatsApp catalog tab.
 //

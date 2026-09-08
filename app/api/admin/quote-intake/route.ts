@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const urls = [...new Set((body?.urls ?? []).filter((url): url is string => typeof url === "string"))].slice(0, 10);
   const vehicles = urls.map((sourceUrl) => {
     const slug = slugFromVehicleUrl(sourceUrl);
-    if (!slug) return { sourceUrl, error: "Not a valid HainaAuto vehicle link." };
+    if (!slug) return { sourceUrl, error: "Not a valid Nindge Automobile vehicle link." };
     const vehicle = getVehicleBySlug(slug);
     if (!vehicle) return { sourceUrl, error: "Vehicle was not found in the current catalogue." };
     const indexEntry = getVehicleIndexEntryBySlug(slug);

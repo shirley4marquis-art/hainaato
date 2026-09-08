@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         url: VEHICLES_SHARE_IMAGE,
         width: 1920,
         height: 1080,
-        alt: "Vehículos preparados para exportación internacional con HainaAuto",
+        alt: "Vehículos preparados para exportación internacional con Nindge Automobile",
       },
     ],
   },

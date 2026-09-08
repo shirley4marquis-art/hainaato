@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       kind: "cookie",
       cookieHeader: request.headers.get("cookie") ?? "",
     });
-    return pdfResponse(pdf, `HainaAuto-Quotation-${ref}.pdf`, request.nextUrl.searchParams.get("preview") !== "1");
+    return pdfResponse(pdf, `Nindge Automobile-Quotation-${ref}.pdf`, request.nextUrl.searchParams.get("preview") !== "1");
   } catch (error) {
     return documentFailure(error);
   }
