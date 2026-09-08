@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import {FormEvent,useState} from "react";
+import {QuoteCopy,useSpanish} from "./quote-copy";
+import {FormEvent,useState,useEffect,useRef} from "react";
 import {useRouter} from "next/navigation";
 import {submitLead} from "./submit-lead";
 import {submitQuoteRequest} from "./submit-quote-request";
@@ -52,14 +53,18 @@ export function HomeRequestForm(){
 
 export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehicleSlug:string;vehicleTitle:string;vehicleFuel?:string|null}){
   const router=useRouter();
+  const spanish=useSpanish();
+  const contactRef=useRef<HTMLInputElement>(null);
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
   const [step,setStep]=useState<1|2>(1);
+  useEffect(()=>{if(step===2)contactRef.current?.focus()},[step]);
   const defaultFuel=normalizeFuelPreference(vehicleFuel);
   function continueToContact(form:HTMLFormElement){
+    if(!form.reportValidity())return;
     const data=new FormData(form);
     if(!field(data,"destination")||!field(data,"destinationPort")){
-      setError("Choose a destination country and port to continue.");
+      setError(spanish?"Elige el país y el puerto de destino para continuar.":"Choose a destination country and port to continue.");
       return;
     }
     setError(null);setStep(2);
@@ -67,59 +72,62 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(state==="sending")return;
+    if(step===1){continueToContact(event.currentTarget);return;}
     const form=event.currentTarget;
     const data=new FormData(form);
     setState("sending");setError(null);
     const email=field(data,"email");
     const phone=field(data,"whatsapp");
-    if(!email&&!phone){setError("Enter an email address or WhatsApp number.");setState("error");return}
+    if(!email&&!phone){setError(spanish?"Introduce tu correo electrónico o número de WhatsApp.":"Enter an email address or WhatsApp number.");setState("error");return}
     const fuelPreference=field(data,"fuelPreference") ?? defaultFuel;
-    const result=await submitQuoteRequest({name:field(data,"name"),email,phone,country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference}]});
+    try {
+    const result=await submitQuoteRequest({name:field(data,"name"),email,phone,country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),language:spanish?"es":undefined,vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference}]});
     if(result.ok){router.push(`/quote/success?ref=${encodeURIComponent(result.ref)}&token=${encodeURIComponent(result.accessToken)}`)}
     else{setError(result.error);setState("error")}
+    } catch {setError(spanish?"No pudimos enviar la solicitud. Inténtalo de nuevo; tus datos siguen aquí.":"We could not send your request. Please try again; your details are still here.");setState("error")}
   }
-  return <form id="quote-form" className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
+  return <form id="quote-form" translate={spanish?"no":undefined} lang={spanish?"es":undefined} className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
     <div className="quote-form-intro">
       <div className="quote-brand-mark" aria-hidden="true">
         <Image src="/hainaauto-logo.webp" alt="HainaAuto logo" width={30} height={30} />
       </div>
       <div>
         <span>HAINA AUTO</span>
-        <p>Get a quote in minutes</p>
+        <p><QuoteCopy en="Get a quote in minutes" es="Cotiza en pocos minutos"/></p>
       </div>
     </div>
-    <h2>Get an Instant Vehicle Quote</h2>
-    <div className="quote-wizard-progress"><span className={step===1?"active":"complete"}>1 · Delivery</span><span className={step===2?"active":""}>2 · Contact</span></div>
+    <h2><QuoteCopy en="Get an Instant Vehicle Quote" es="Solicitar cotización"/></h2>
+    <div className="quote-wizard-progress"><span className={step===1?"active":"complete"}><QuoteCopy en="1 · Delivery" es="1 · Destino"/></span><span className={step===2?"active":""}><QuoteCopy en="2 · Contact" es="2 · Contacto"/></span></div>
     <div className="form-grid quote-step" hidden={step!==1}>
-      <span className="wide quote-form-section" role="heading" aria-level={3}>Your vehicle</span>
-      <label htmlFor="rv-vehicle">Vehicle</label>
+      <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Your vehicle" es="Tu vehículo"/></span>
+      <label htmlFor="rv-vehicle"><QuoteCopy en="Vehicle" es="Vehículo"/></label>
       <input id="rv-vehicle" name="vehicle" defaultValue={vehicleTitle} readOnly/>
-      <label htmlFor="rv-quantity">Quantity</label>
-      <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1}/>
-      <label htmlFor="rv-fuelPreference">Preferred fuel</label>
+      <label htmlFor="rv-quantity"><QuoteCopy en="Quantity" es="Cantidad"/></label>
+      <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1} required/>
+      <label htmlFor="rv-fuelPreference"><QuoteCopy en="Preferred fuel" es="Combustible preferido"/></label>
       <select id="rv-fuelPreference" name="fuelPreference" defaultValue={defaultFuel}>
-        {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+        {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{spanish?({Diesel:"Diésel",Gasoline:"Gasolina",Hybrid:"Híbrido",Electric:"Eléctrico"}[value]):label}</option>)}
       </select>
-      <span className="wide quote-form-section" role="heading" aria-level={3}>Delivery destination</span>
+      <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Delivery destination" es="Destino de entrega"/></span>
       <DestinationPortFields countryName="destination" idPrefix="rv"/>
-      <label htmlFor="rv-cityState">City / State</label>
+      <label htmlFor="rv-cityState"><QuoteCopy en="City / State" es="Ciudad / Estado"/></label>
       <input id="rv-cityState" name="cityState" autoComplete="address-level2"/>
     </div>
     <div className="form-grid quote-step" hidden={step!==2}>
-      <span className="wide quote-form-section" role="heading" aria-level={3}>Your contact details</span>
-      <label htmlFor="rv-name">Full name</label>
-      <input id="rv-name" name="name" autoComplete="name"/>
-      <label htmlFor="rv-email">Email</label>
-      <input id="rv-email" name="email" type="email" autoComplete="email"/>
-      <label htmlFor="rv-whatsapp">Phone / WhatsApp</label>
+      <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Your contact details" es="Tus datos de contacto"/></span>
+      <label htmlFor="rv-name"><QuoteCopy en="Full name" es="Nombre completo"/></label>
+      <input ref={contactRef} id="rv-name" name="name" autoComplete="name"/>
+      <label htmlFor="rv-email"><QuoteCopy en="Email" es="Correo electrónico"/></label>
+      <input id="rv-email" name="email" type="email" autoComplete="email" disabled={step!==2}/>
+      <label htmlFor="rv-whatsapp"><QuoteCopy en="Phone / WhatsApp" es="Teléfono / WhatsApp"/></label>
       <input id="rv-whatsapp" name="whatsapp" type="tel" placeholder="+58..." autoComplete="tel"/>
-      <p className="wide quote-contact-note">Enter at least one contact method. Email receives the PDF automatically; WhatsApp can be used for sales follow-up.</p>
-      <span className="wide quote-form-section" role="heading" aria-level={3}>Anything else?</span>
-      <label className="wide" htmlFor="rv-message">Additional requirements</label>
-      <textarea className="wide" id="rv-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
-      <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> {CONSENT_LABEL}</label>
+      <p className="wide quote-contact-note"><QuoteCopy en="Enter at least one contact method. Email receives the PDF automatically; WhatsApp can be used for sales follow-up." es="Indica al menos un medio de contacto. Recibirás el PDF por correo electrónico; el equipo comercial puede contactarte por WhatsApp."/></p>
+      <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Anything else?" es="¿Algo más?"/></span>
+      <label className="wide" htmlFor="rv-message"><QuoteCopy en="Additional requirements" es="Requisitos adicionales"/></label>
+      <textarea className="wide" id="rv-message" name="message" rows={3} placeholder={spanish?"Color, plazo de entrega, condiciones de envío…":"Color, timeline, incoterms…"}/>
+      <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> <QuoteCopy en={CONSENT_LABEL} es="Permitir una actualización anónima del estado (solo referencia, destino y estado; nunca tu nombre ni tus datos de contacto) en las novedades de envíos de este sitio."/></label>
     </div>
-    {step===1?<button type="button" className="btn primary" onClick={(event)=>continueToContact(event.currentTarget.form!)}>Continue to contact →</button>:<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}>← Back</button><button className="btn primary" disabled={state==="sending"}>{state==="sending"?"Creating your quote…":"Create My CIF Quote"}</button></div>}
+    {step===1?<button type="button" className="btn primary" onClick={(event)=>continueToContact(event.currentTarget.form!)}><QuoteCopy en="Continue to contact →" es="Continuar con mis datos →"/></button>:<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}><QuoteCopy en="← Back" es="← Volver"/></button><button className="btn primary" disabled={state==="sending"}><QuoteCopy en={state==="sending"?"Creating your quote…":"Create My CIF Quote"} es={state==="sending"?"Preparando tu cotización…":"Obtener mi cotización CIF"}/></button></div>}
     <div role="status" aria-live="polite">{error&&<p className="form-error" role="alert">{error}</p>}</div>
   </form>
 }

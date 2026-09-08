@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import {QuoteCopy} from "../../quote-copy";
 import {
   Calendar,
   Car,
@@ -231,7 +232,7 @@ export default async function VehicleDetail({
 
           <div className="detail-actions">
             <Link className="btn primary" href="#request">
-              Get Quote
+              <QuoteCopy en="Request a quote" es="Solicitar cotización"/>
             </Link>
             <a className="btn ghost" href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
               <Download size={16} /> Download Specs

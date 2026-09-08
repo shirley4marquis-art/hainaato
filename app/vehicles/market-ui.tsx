@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
+import {QuoteCopy} from "../quote-copy";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { BusFront, Car, CarFront, Copy, FileText, MapPin, ShoppingCart, Truck } from "lucide-react";
+import { BusFront, Car, CarFront, Copy, MapPin, ShoppingCart, Truck } from "lucide-react";
 import {TELEGRAM_URL,WECHAT_CONTACT_URL,TelegramIcon,WeChatIcon} from "../contact-links";
 import {
   buildListUrl,
@@ -112,7 +113,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-cif-note"><span>CIF</span> Freight + marine insurance included</div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
-          <Link className="is-quote" href={href} aria-label="Preview this vehicle"><FileText/></Link>
+
           <button
             type="button"
             className="is-cart"
@@ -125,7 +126,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <Link className="vlist-inquire" href={href}><FileText aria-hidden="true"/>Inquire Now</Link>
+        <div className="vehicle-browse-actions"><Link className="vlist-view" href={href}><QuoteCopy en="View vehicle" es="Ver vehículo"/></Link><Link className="vlist-inquire" href={`/quote?vehicle=${encodeURIComponent(v.slug)}`}><QuoteCopy en="Request a quote" es="Solicitar cotización"/></Link></div>
       </div>
     </article>
   );
