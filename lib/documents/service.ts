@@ -13,7 +13,12 @@ import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, t
 async function catalogueImage(source?: string): Promise<Buffer | null> {
   if (!source || !/^\/(?:api\/vehicle-image|vehicle-images)\/[^?\\]+$/.test(source) || source.includes("..")) return null;
   try {
-    const response = await fetch(new URL(source, pdfOrigin("http://localhost:3000")), { redirect: "error", signal: AbortSignal.timeout(12000) });
+    const internalSecret = process.env.INTERNAL_PDF_SECRET;
+    const response = await fetch(new URL(source, pdfOrigin("http://localhost:3000")), {
+      redirect: "error",
+      headers: internalSecret ? { "x-internal-pdf-secret": internalSecret } : undefined,
+      signal: AbortSignal.timeout(12000),
+    });
     if (!response.ok || Number(response.headers.get("content-length")) > 10 * 1024 * 1024) return null;
     const reader = response.body!.getReader(), chunks: Uint8Array[] = []; let size = 0;
     try { while (true) { const next = await reader.read(); if (next.done) break; size += next.value.length; if (size > 10 * 1024 * 1024) return null; chunks.push(next.value); } } finally { await reader.cancel(); }
