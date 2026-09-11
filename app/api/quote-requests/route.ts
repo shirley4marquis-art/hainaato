@@ -275,6 +275,9 @@ export async function POST(request: NextRequest) {
       html,
       attachment: { filename: `Nindge Automobile-Quote-${ref}.pdf`, content: pdfBuffer },
     });
+    if (!sendResult.ok) {
+      console.error(`[quote-requests] Customer email failed for ${ref} (${email}): ${sendResult.error}`);
+    }
     await recordQuoteEmail(ref, {
       toEmail: email,
       subject,

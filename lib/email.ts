@@ -13,16 +13,12 @@ import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
 import { isSingleEmail, safeEmailUrl } from "./security/generation";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const EMAIL_LOGO_CID = "hainaauto-logo";
 const EMAIL_LOGO_URL = "https://www.nindgeauto.com/nindge-mark.png";
-const CUSTOMER_SENDER_NAME = "NINDGE AUTOMOBILE | 海纳百川国际汽贸";
-
-function logoAttachment() {
-  return { filename: "hainaauto-logo.png", path: EMAIL_LOGO_URL, content_id: EMAIL_LOGO_CID };
-}
+const CUSTOMER_SENDER_NAME = process.env.CUSTOMER_SENDER_NAME || "Ventas Nindge Automobile";
+const REPLY_TO_EMAIL = "info@nindgeauto.com";
 
 function logoImg(width = 62, height = 62): string {
-  return `<img src="cid:${EMAIL_LOGO_CID}" width="${width}" height="${height}" alt="Nindge Automobile" style="display:block;width:${width}px;height:${height}px;border:0;border-radius:10px;background:#fff">`;
+  return `<img src="${EMAIL_LOGO_URL}" width="${width}" height="${height}" alt="Nindge Automobile" style="display:block;width:${width}px;height:${height}px;border:0;border-radius:10px;background:#fff">`;
 }
 
 function escapeHtml(value: string): string {
@@ -44,6 +40,45 @@ function senderEmailAddress(value: string | null | undefined): string | null {
 function brandedCustomerSender(value: string | null | undefined): string {
   const email = senderEmailAddress(value) || "info@nindgeauto.com";
   return `${CUSTOMER_SENDER_NAME} <${email}>`;
+}
+
+type ResendPayload = {
+  from: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  reply_to?: string;
+  attachments?: Array<{ filename: string; content: string; content_type?: string }>;
+};
+
+async function sendResend(payload: ResendPayload): Promise<{ id: string | null }> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("RESEND_API_KEY is not configured.");
+  const sender = senderEmailAddress(payload.from);
+  if (!sender || !isSingleEmail(sender)) throw new Error("Email sender is not configured with a valid address.");
+
+  const response = await fetch(RESEND_API_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(30_000),
+  });
+  const body = await response.text().catch(() => "");
+  if (!response.ok) {
+    let detail = body;
+    try {
+      const parsed = JSON.parse(body) as { message?: string; name?: string };
+      detail = parsed.message || parsed.name || body;
+    } catch { /* keep the provider's raw response */ }
+    throw new Error(`Resend API error ${response.status}: ${detail}`);
+  }
+  try {
+    const parsed = JSON.parse(body) as { id?: string };
+    return { id: parsed.id ?? null };
+  } catch {
+    return { id: null };
+  }
 }
 
 export function customSalesEmailHtml(params: {
@@ -152,11 +187,10 @@ function leadNotificationHtml(lead: WebLead, ref: string): string {
 }
 
 export async function sendLeadNotification(lead: WebLead, ref: string): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.LEADS_FROM_EMAIL;
   const to = process.env.LEADS_TO_EMAIL || "info@nindgeauto.com";
 
-  if (!apiKey || !from) {
+  if (!from) {
     console.warn(`[leads] Email not sent for ${ref} — set RESEND_API_KEY and LEADS_FROM_EMAIL to enable notifications.`);
     return;
   }
@@ -176,26 +210,14 @@ export async function sendLeadNotification(lead: WebLead, ref: string): Promise<
     lead.message ? `Message:\n${lead.message}` : null,
   ].filter((line): line is string => Boolean(line));
 
-  const response = await fetch(RESEND_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
+  await sendResend({
+      from: brandedCustomerSender(from),
       to,
+      reply_to: REPLY_TO_EMAIL,
       subject: `New Nindge Automobile lead ${ref} — ${lead.name}`,
       text: lines.join("\n"),
       html: leadNotificationHtml(lead, ref),
-      attachments: [logoAttachment()],
-    }),
   });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Resend API error ${response.status}: ${body}`);
-  }
 }
 
 export function quoteCreatedSalesEmailHtml(params: {
@@ -288,38 +310,24 @@ export async function sendQuoteCreatedSalesNotification(params: {
   vehicleSummary: string;
   message?: string | null;
 }): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.LEADS_FROM_EMAIL || process.env.CUSTOMER_FROM_EMAIL || "Nindge Automobile Sales <info@nindgeauto.com>";
   const to = process.env.LEADS_TO_EMAIL || process.env.SALES_TO_EMAIL || "info@nindgeauto.com";
 
-  if (!apiKey) {
+  if (!process.env.RESEND_API_KEY) {
     console.warn(`[quotes] Sales notification not sent for ${params.ref} — RESEND_API_KEY is not configured.`);
     return;
   }
 
   try {
     const { subject, text, html } = quoteCreatedSalesEmailHtml(params);
-    const response = await fetch(RESEND_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
+    await sendResend({
+        from: brandedCustomerSender(from),
         to,
-        reply_to: "info@nindgeauto.com",
+        reply_to: REPLY_TO_EMAIL,
         subject,
         text,
         html,
-        attachments: [logoAttachment()],
-      }),
     });
-
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new Error(`Resend API error ${response.status}: ${body}`);
-    }
   } catch (error) {
     console.error(`[quotes] Sales notification failed for ${params.ref}:`, error);
   }
@@ -472,25 +480,15 @@ export async function sendEmail(params: {
       ...(attachment.contentType ? { content_type: attachment.contentType } : {}),
     }));
 
-    const response = await fetch(RESEND_API_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await sendResend({
         from,
-        reply_to: "info@nindgeauto.com",
+        reply_to: REPLY_TO_EMAIL,
         to: params.to,
         subject: params.subject,
         html: params.html,
-        attachments: [...attachments, logoAttachment()],
-      }),
+        attachments,
     });
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      console.error(`[email] Resend API error ${response.status} sending "${params.subject}" to ${Array.isArray(params.to) ? params.to.join(", ") : params.to}: ${body}`);
-      return { ok: false, error: `Resend API error ${response.status}: ${body}` };
-    }
-    const data = (await response.json().catch(() => null)) as { id?: string } | null;
-    return { ok: true, providerMessageId: data?.id ?? null };
+    return { ok: true, providerMessageId: result.id };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }

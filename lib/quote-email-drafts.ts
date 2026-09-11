@@ -45,6 +45,7 @@ export type QuoteEmailDraft = {
 
 const EMAIL_LOGO_CID = "hainaauto-logo";
 const SALES_EMAIL = "info@nindgeauto.com";
+const SALES_NAME = "Ventas Nindge Automobile";
 const WHATSAPP_URL = "https://wa.me/8615032178759";
 
 function escapeHtml(value: string): string {
@@ -129,7 +130,7 @@ function brandedEmail(params: {
           ${steps}
           ${factRows ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#F7F9FC" style="background:#F7F9FC;border:1px solid #E0E6EF;border-radius:12px;margin-top:20px"><tr><td style="padding:16px 20px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">${factRows}</table></td></tr></table>` : ""}
           ${cta}
-          <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:${NAVY}">Nindge Automobile Sales Team</b></p>
+          <p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Saludos cordiales,<br><b style="color:${NAVY}">${SALES_NAME}</b></p>
         </td>
       </tr>
       <tr>
