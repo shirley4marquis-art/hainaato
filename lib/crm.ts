@@ -22,11 +22,11 @@ const CONNECTION_STRING = process.env.CRM_DATABASE_URL;
 
 let pool: Pool | null = null;
 
-function getPool(): Pool {
+export function getPool(): Pool {
   if (!CONNECTION_STRING) {
     throw new Error("CRM_DATABASE_URL is not set — the CRM database connection string is required.");
   }
-  if (!pool) pool = new Pool({ connectionString: CONNECTION_STRING });
+  if (!pool) pool = new Pool({ connectionString: CONNECTION_STRING, max: 5, connectionTimeoutMillis: 10000, idleTimeoutMillis: 30000 });
   return pool;
 }
 
@@ -288,6 +288,9 @@ export type AdminQuoteItemInput = {
 };
 
 export type AdminQuoteInput = {
+  paymentTerms?: string | null;
+  requestId?: string;
+  expectedUpdatedAt?: string;
   ref?: string | null; // omit to create a new quote; pass to update an existing one
   documentNumber?: string | null; // omit on create to auto-generate HA-QT-{year}-####
   customer: AdminCustomerInput;
@@ -297,7 +300,6 @@ export type AdminQuoteInput = {
   destinationCountry: string;
   incoterm?: string | null;
   deliveryEstimate?: string | null;
-  paymentTerms?: string | null;
   inlandTransportCost?: number;
   exportDocumentationCost?: number;
   freightCost?: number;
@@ -330,6 +332,16 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
   const client = await getPool().connect();
   try {
     await client.query("BEGIN");
+    if (input.requestId && !input.ref) {
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [input.requestId]);
+      const existing = await client.query("SELECT ref FROM quotes WHERE request_id=$1", [input.requestId]);
+      if (existing.rows[0]) { await client.query("COMMIT"); return existing.rows[0].ref; }
+    }
+    if (input.ref) {
+      const current = await client.query("SELECT updated_at FROM quotes WHERE ref=$1 FOR UPDATE", [input.ref]);
+      if (!current.rows[0]) throw new Error("Quote not found.");
+      if (input.expectedUpdatedAt && new Date(current.rows[0].updated_at).toISOString() !== input.expectedUpdatedAt) throw new Error("Quote changed by another admin. Reload before saving.");
+    }
 
     let customerId: number;
     if (input.customer.id) {
@@ -382,8 +394,8 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           (ref, document_number, customer_id, quote_date, valid_until, destination_port, destination_country,
            incoterm, delivery_estimate, inland_transport_cost, export_documentation_cost, freight_cost,
            insurance_cost, deposit_pct, duty_pct, duty_estimate_override, currency, language, status, notes,
-           public_consent, source, payment_terms)
-         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)`,
+           public_consent, source)
+         VALUES ($1,$2,$3,COALESCE($4,CURRENT_DATE),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
         [
           ref,
           documentNumber,
@@ -407,7 +419,6 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           input.notes ?? null,
           input.publicConsent === true,
           input.source ?? null,
-          input.paymentTerms?.trim() || null,
         ]
       );
     } else {
@@ -417,9 +428,8 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
            quote_date=COALESCE($3,quote_date), valid_until=$4, destination_port=$5, destination_country=$6,
            incoterm=$7, delivery_estimate=$8, inland_transport_cost=$9, export_documentation_cost=$10,
            freight_cost=$11, insurance_cost=$12, deposit_pct=$13, duty_pct=$14, duty_estimate_override=$15,
-           currency=$16, language=$17, status=$18, notes=$19, public_consent=$20, payment_terms=$21,
-           updated_at=now()
-         WHERE ref=$22`,
+           currency=$16, language=$17, status=$18, notes=$19, public_consent=$20, updated_at=now()
+         WHERE ref=$21`,
         [
           documentNumber,
           customerId,
@@ -441,7 +451,6 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
           input.status ?? "quoted",
           input.notes ?? null,
           input.publicConsent === true,
-          input.paymentTerms?.trim() || null,
           ref,
         ]
       );
@@ -503,6 +512,8 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
       }
     }
 
+    if (input.paymentTerms !== undefined) await client.query("UPDATE quotes SET payment_terms=$1 WHERE ref=$2", [input.paymentTerms,ref]);
+    if (input.requestId) await client.query("UPDATE quotes SET request_id=COALESCE(request_id,$1) WHERE ref=$2", [input.requestId,ref]);
     await recalc(client, ref);
     await client.query("COMMIT");
     return ref;
@@ -667,6 +678,7 @@ export async function listClientEmails(limit = 100): Promise<AdminMailRecord[]> 
 
 export type AdminQuoteDetail = Omit<AdminQuoteInput, "currency" | "language" | "depositPct" | "items"> & {
   ref: string;
+  updatedAt?: string;
   documentNumber: string | null;
   quoteDate: string;
   currency: string;
@@ -715,6 +727,8 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
 
   return {
     ref: q.ref as string,
+    paymentTerms: q.payment_terms as string | null,
+    updatedAt: new Date(q.updated_at as string).toISOString(),
     documentNumber: (q.document_number as string) ?? null,
     customer: {
       id: q.c_id as number,
@@ -732,7 +746,6 @@ export async function adminGetQuote(ref: string): Promise<AdminQuoteDetail | nul
     destinationCountry: q.destination_country as string,
     incoterm: (q.incoterm as string) ?? null,
     deliveryEstimate: (q.delivery_estimate as string) ?? null,
-    paymentTerms: (q.payment_terms as string) ?? null,
     inlandTransportCost: q.inland_transport_cost as number,
     exportDocumentationCost: q.export_documentation_cost as number,
     freightCost: q.freight_cost as number,

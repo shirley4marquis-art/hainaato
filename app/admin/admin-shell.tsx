@@ -42,6 +42,11 @@ const MORE_ROUTES = [
   "/admin/imports",
   "/admin/mail",
   "/admin/security",
+  "/admin/operations",
+  "/admin/settings",
+  "/admin/users",
+  "/admin/activity",
+  "/admin/website",
 ];
 
 const DESKTOP_LINKS: NavItem[] = [
@@ -99,7 +104,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className={styles.body}>{children}</div>
+      <main className={styles.body}><form action="/admin/search" className={styles.searchBar} role="search"><input name="q" type="search" placeholder="Search customers, VIN, documents…" aria-label="Global admin search" minLength={2}/><button type="submit">Search</button></form>{children}</main>
 
       <nav className={styles.bottomNav} aria-label="Admin navigation">
         <div className={styles.bottomNavInner}>

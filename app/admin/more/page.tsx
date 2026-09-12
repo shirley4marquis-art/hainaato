@@ -34,9 +34,9 @@ const GROUPS: { title: string; items: Item[] }[] = [
     items: [
       { label: "Customers", desc: "Profiles, orders and history", href: "/admin/clients", icon: Users },
       { label: "Orders", desc: "Every quote-to-delivery record", href: "/admin/quotes", icon: ClipboardList },
-      { label: "Payments", desc: "Deposits and balance confirmations", icon: CreditCard },
-      { label: "Shipping", desc: "Bookings, vessels and tracking", icon: Ship },
-      { label: "Customs", desc: "Nationalization and clearance", icon: Truck },
+      { label: "Payments", desc: "Deposits and balance confirmations", href: "/admin/operations?kind=payment", icon: CreditCard },
+      { label: "Shipping", desc: "Bookings, vessels and tracking", href: "/admin/operations?kind=shipment", icon: Ship },
+      { label: "Customs", desc: "Nationalization and clearance", href: "/admin/operations?kind=customs", icon: Truck },
     ],
   },
   {
@@ -51,10 +51,10 @@ const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: "Administration",
     items: [
-      { label: "Website management", desc: "Catalogue and public content", icon: Building2 },
-      { label: "Admin users", desc: "Staff accounts and roles", icon: ShieldCheck },
-      { label: "Activity logs", desc: "Security and audit trail", href: "/admin/security", icon: Activity },
-      { label: "Settings", desc: "Company and document defaults", icon: Settings },
+      { label: "Website management", desc: "Catalogue and public content", href: "/admin/website", icon: Building2 },
+      { label: "Admin users", desc: "Staff accounts and roles", href: "/admin/users", icon: ShieldCheck },
+      { label: "Activity logs", desc: "Security and audit trail", href: "/admin/activity", icon: Activity },
+      { label: "Settings", desc: "Company and document defaults", href: "/admin/settings", icon: Settings },
     ],
   },
 ];
