@@ -8,7 +8,7 @@ import {submitLead} from "./submit-lead";
 import {submitQuoteRequest} from "./submit-quote-request";
 import {clearCart} from "./cart-store";
 import {DestinationPortFields} from "./destination-port-fields";
-import {FUEL_OPTIONS,normalizeFuelPreference} from "../lib/fuel-options";
+import {fuelOptionsForVehicle,normalizeFuelPreference} from "../lib/fuel-options";
 
 type Status="idle"|"sending"|"sent"|"error";
 
@@ -60,6 +60,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
   const [step,setStep]=useState<1|2>(1);
   useEffect(()=>{if(step===2)contactRef.current?.focus()},[step]);
   const defaultFuel=normalizeFuelPreference(vehicleFuel);
+  const fuelOptions=fuelOptionsForVehicle(vehicleFuel);
   function continueToContact(form:HTMLFormElement){
     if(!form.reportValidity())return;
     const data=new FormData(form);
@@ -79,9 +80,8 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
     const email=field(data,"email");
     const phone=field(data,"whatsapp");
     if(!email&&!phone){setError(spanish?"Introduce tu correo electrónico o número de WhatsApp.":"Enter an email address or WhatsApp number.");setState("error");return}
-    const fuelPreference=field(data,"fuelPreference") ?? defaultFuel;
     try {
-    const result=await submitQuoteRequest({name:field(data,"name"),email,phone,country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),language:spanish?"es":undefined,vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1,fuelPreference}]});
+    const result=await submitQuoteRequest({name:field(data,"name"),email,phone,country:field(data,"destination"),cityState:field(data,"cityState"),destinationPort:field(data,"destinationPort"),message:field(data,"message"),publicConsent:checked(data,"publicConsent"),language:spanish?"es":undefined,vehicles:[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1}]});
     if(result.ok){router.push(`/quote/success?ref=${encodeURIComponent(result.ref)}&token=${encodeURIComponent(result.accessToken)}`)}
     else{setError(result.error);setState("error")}
     } catch {setError(spanish?"No pudimos enviar la solicitud. Inténtalo de nuevo; tus datos siguen aquí.":"We could not send your request. Please try again; your details are still here.");setState("error")}
@@ -104,9 +104,9 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
       <input id="rv-vehicle" name="vehicle" defaultValue={vehicleTitle} readOnly/>
       <label htmlFor="rv-quantity"><QuoteCopy en="Quantity" es="Cantidad"/></label>
       <input id="rv-quantity" name="quantity" type="number" min={1} max={50} defaultValue={1} required/>
-      <label htmlFor="rv-fuelPreference"><QuoteCopy en="Preferred fuel" es="Combustible preferido"/></label>
-      <select id="rv-fuelPreference" name="fuelPreference" defaultValue={defaultFuel}>
-        {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{spanish?({Diesel:"Diésel",Gasoline:"Gasolina",Hybrid:"Híbrido",Electric:"Eléctrico"}[value]):label}</option>)}
+      <label htmlFor="rv-fuelPreference"><QuoteCopy en="Standard fuel" es="Combustible estándar"/></label>
+      <select id="rv-fuelPreference" name="fuelPreference" defaultValue={defaultFuel} disabled>
+        {fuelOptions.map(({value,label})=><option key={value} value={value}>{spanish?({Diesel:"Diésel",Gasoline:"Gasolina",Hybrid:"Híbrido",Electric:"Eléctrico"}[value]):label}</option>)}
       </select>
       <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Delivery destination" es="Destino de entrega"/></span>
       <DestinationPortFields countryName="destination" idPrefix="rv"/>
@@ -149,9 +149,8 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
   const [error,setError]=useState<string|null>(null);
   const [step,setStep]=useState<1|2>(1);
   const [quantities,setQuantities]=useState<Record<string,number>>({});
-  const [fuelPreferences,setFuelPreferences]=useState<Record<string,string>>({});
   const qtyFor=(slug:string)=>quantities[slug]??1;
-  const fuelFor=(vehicle:{slug:string;fuel?:string|null})=>fuelPreferences[vehicle.slug] ?? normalizeFuelPreference(vehicle.fuel);
+  const fuelFor=(vehicle:{slug:string;fuel?:string|null})=>normalizeFuelPreference(vehicle.fuel);
 
   function continueToContact(form:HTMLFormElement){
     const data=new FormData(form);
@@ -176,7 +175,7 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
       destinationPort:field(data,"destinationPort"),
       message:field(data,"message"),
       publicConsent:checked(data,"publicConsent"),
-      vehicles:vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug),fuelPreference:fuelFor(v)})),
+      vehicles:vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug)})),
     });
     if(result.ok){router.push(`/quote/success?ref=${encodeURIComponent(result.ref)}&token=${encodeURIComponent(result.accessToken)}`);clearCart()}
     else{setError(result.error);setState("error")}
@@ -198,10 +197,9 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
                 onChange={(e)=>setQuantities((q)=>({...q,[v.slug]:Math.max(1,Number(e.target.value)||1)}))}/>
             </label>
             <label style={{display:"flex",alignItems:"center",gap:6,fontWeight:400,margin:0}}>
-              Fuel
-              <select value={fuelFor(v)} style={{width:82}}
-                onChange={(e)=>setFuelPreferences((current)=>({...current,[v.slug]:e.target.value}))}>
-                {FUEL_OPTIONS.map(({value,label})=><option key={value} value={value}>{label}</option>)}
+              Standard fuel
+              <select value={fuelFor(v)} style={{width:82}} disabled>
+                {fuelOptionsForVehicle(v.fuel).map(({value,label})=><option key={value} value={value}>{label}</option>)}
               </select>
             </label>
           </div>

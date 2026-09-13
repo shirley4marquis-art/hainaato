@@ -27,7 +27,7 @@ import {
   qualifiesForCataloguePromotion,
 } from "../../../lib/quote-pricing";
 import { normalizeQuoteLanguage } from "../../../lib/quote-language";
-import { normalizeFuelPreference, type FuelPreference } from "../../../lib/fuel-options";
+import { normalizeFuelPreference } from "../../../lib/fuel-options";
 import { isLikelyRealEmail } from "../../../lib/valid-email";
 import { CUSTOM_COLOR_SURCHARGE_USD, supportsCustomColor } from "../../../lib/vehicle-customization";
 import { buildVehicleConfigurationRows, buildVehicleFactRows, formatRowsForHistory } from "../../../lib/vehicle-document-details";
@@ -39,7 +39,7 @@ import { checkRateLimit } from "../../../lib/security/rate-limit";
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 300;
 
-type RequestedVehicle = { slug: string; qty: number; fuelPreference: FuelPreference; customColor: boolean; customColorName: string | null };
+type RequestedVehicle = { slug: string; qty: number; customColor: boolean; customColorName: string | null };
 
 function str(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -56,12 +56,11 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
     const slug = str((entry as Record<string, unknown>).slug);
     const qtyRaw = (entry as Record<string, unknown>).qty;
     const qty = Math.min(50, Math.max(1, Math.round(Number(qtyRaw) || 1)));
-    const fuelPreference = normalizeFuelPreference((entry as Record<string, unknown>).fuelPreference);
     const customColor = (entry as Record<string, unknown>).customColor === true;
     const customColorName = str((entry as Record<string, unknown>).customColorName) ?? null;
     if (slug && !seen.has(slug)) {
       seen.add(slug);
-      out.push({ slug, qty, fuelPreference, customColor, customColorName });
+      out.push({ slug, qty, customColor, customColorName });
     }
   }
   return out.slice(0, CART_MAX);
@@ -73,10 +72,13 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
 // submit) so the caller can skip it rather than fail the whole request.
 type BuiltListingItem = { item: AdminQuoteItemInput; cataloguePriceUsd: number };
 
-function buildItemFromListing({ slug, qty, fuelPreference, customColor, customColorName }: RequestedVehicle): BuiltListingItem | null {
+function buildItemFromListing({ slug, qty, customColor, customColorName }: RequestedVehicle): BuiltListingItem | null {
   const indexEntry = getVehicleIndexEntryBySlug(slug);
   const detail = getVehicleBySlug(slug);
   if (!indexEntry || !detail || detail.priceCNY == null) return null;
+  // Checkout requests must always quote the listing's actual configuration,
+  // not an arbitrary fuel selection supplied by the browser.
+  const selectedFuel = normalizeFuelPreference(detail.fuel ?? indexEntry.fuel);
   const includeCustomColor = customColor && supportsCustomColor(detail.bodyType);
 
   const images = rankVehicleImages(detail.images)
@@ -93,7 +95,7 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
     detail.mileageKm != null ? `${detail.mileageKm.toLocaleString("en-US")} km` : null,
     detail.color,
     colorLabel,
-    `Fuel requested: ${fuelPreference}`,
+    `Fuel requested: ${selectedFuel}`,
     indexEntry.transmission,
     detail.driveType,
     detail.bodyType,
@@ -112,7 +114,7 @@ function buildItemFromListing({ slug, qty, fuelPreference, customColor, customCo
     year: detail.year,
     condition: indexEntry.condition,
     mileageKm: detail.mileageKm,
-    fuelType: fuelPreference,
+    fuelType: selectedFuel,
     engine: detail.specs.Displacement ?? detail.specs.Engine ?? null,
     transmission: indexEntry.transmission,
     drivetrain: detail.driveType,
