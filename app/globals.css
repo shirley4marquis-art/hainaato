@@ -653,3 +653,6 @@ body{background:#fbf8ee}
 .spotlight-image,.news-spotlight-noimage{background:#eee8d8}
 .mobile-social-rail .telegram,.vlist-contact a.is-tg{background:#229ed9}
 .testimonial-initials{display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:50%;background:#f4e6b9;color:#594016;font-size:14px;font-weight:700}
+
+/* Header search icons submit the same GET form on touch and keyboard. */
+.mobile-header-search button{order:2;flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;border-radius:999px;cursor:pointer}.mobile-header-search:focus-within{outline:2px solid #b51f09;outline-offset:2px}.ah-header-search button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;cursor:pointer}.ah-header-search button:focus-visible,.mobile-header-search button:focus-visible{outline:2px solid #b51f09;outline-offset:2px}

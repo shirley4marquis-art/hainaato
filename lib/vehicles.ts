@@ -147,10 +147,12 @@ export function searchVehicles(params: VehicleSearchParams) {
 
   if (q) {
     const needle = q.trim().toLowerCase();
+    const terms = needle.split(/\s+/).filter(Boolean);
     if (needle) {
       results = results.filter((v) => {
         const source = v.site === "hendrick" ? "hendrick hendrick toyota" : v.site;
-        return `${v.title} ${v.stockCode} ${source}`.toLowerCase().includes(needle);
+        const searchable = `${v.title} ${v.brand} ${v.model} ${v.stockCode} ${v.color ?? ""} ${source}`.toLowerCase();
+        return terms.every(term => searchable.includes(term));
       });
     }
   }
