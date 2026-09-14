@@ -42,6 +42,12 @@ export function cleanValue(value: unknown): string {
   return value.replace(/\{\{[^{}]*\}\}/g, "").replace(/\b(?:undefined|null|NaN)\b|\[object Object\]/g, "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").normalize("NFC");
 }
 export function bindField(field: FieldMapping, values: DocumentValues): string {
-  const value = field.text != null ? field.text.replace(/\{\{([^{}]+)\}\}/g, (_, key: string) => cleanValue(values[key.trim()])) : cleanValue(values[field.field]);
+  // Remove optional description lines whose values are all absent. Static
+  // contract text and numeric zero remain intact.
+  const copy = field.text?.split("\n").filter(line => {
+    const keys = [...line.matchAll(/\{\{([^{}]+)\}\}/g)].map(match => match[1].trim());
+    return !keys.length || keys.some(key => cleanValue(values[key]).trim());
+  }).join("\n");
+  const value = copy != null ? copy.replace(/\{\{([^{}]+)\}\}/g, (_, key: string) => cleanValue(values[key.trim()])) : cleanValue(values[field.field]);
   return cleanValue(value);
 }

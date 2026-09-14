@@ -23,7 +23,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     if (!Number.isSafeInteger(item.qty) || item.qty < 1 || item.qty > 10000) throw new DocumentError("Vehicle quantity must be a positive whole number.");
     const unit = moneyNumber(item.fobFinal, "unit price"), vin = cleanValue(vins[String(item.id)] ?? item.vin ?? "").trim().toUpperCase();
     if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) throw new DocumentError("Vehicle VIN must contain 17 valid letters and digits.");
-    return { vehicle_brand: item.make, vehicle_model: item.model, vehicle_year: item.year ?? "", vehicle_condition: item.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado"), vehicle_color: item.exteriorColor ?? "", vin, engine: item.engine ?? "", fuel: item.fuelType ?? "", transmission: item.transmission ?? "", mileage: item.mileageKm ?? "", quantity: item.qty, unit_price: amount(unit), vehicle_total: amount(unit * item.qty), notes: item.specSummary ?? "" };
+    return { vehicle_brand: item.make, vehicle_model: item.model, vehicle_year: item.year ?? "", vehicle_condition: !item.condition ? "" : item.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado"), vehicle_color: item.exteriorColor ?? "", vin, engine: item.engine ?? "", fuel: item.fuelType ?? "", transmission: item.transmission ?? "", mileage: item.mileageKm ?? "", quantity: item.qty, unit_price: amount(unit), vehicle_total: amount(unit * item.qty), notes: item.specSummary ?? "" };
   });
   const subtotal = quote.items.reduce((total, item) => total + moneyNumber(item.fobFinal, "unit price") * item.qty, 0);
   const shipping = moneyNumber(quote.freightCost, "shipping"), insurance = moneyNumber(quote.insuranceCost, "insurance");
@@ -42,6 +42,7 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     buyer_address: [quote.customer.address, quote.customer.city].filter(Boolean).join(", "), buyer_country: quote.customer.country ?? "",
     destination_country: quote.destinationCountry, destination_port: quote.destinationPort, incoterm: quote.incoterm ?? "CIF", currency,
     quantity: quote.items.reduce((sum, item) => sum + item.qty, 0), subtotal: amount(subtotal), shipping_cost: costDisplay(shipping), insurance_cost: costDisplay(insurance),
+    inland_cost: costDisplay(moneyNumber(quote.inlandTransportCost, "inland transport")), documentation_cost: costDisplay(moneyNumber(quote.exportDocumentationCost, "export documentation")),
     cif_price: amount(cif), customs_estimate: quote.dutyEstimate == null ? "" : amount(moneyNumber(quote.dutyEstimate, "customs estimate")), total_amount: amount(cif),
     estimated_grand_total: quote.dutyEstimate == null ? "" : amount(cif + moneyNumber(quote.dutyEstimate, "customs estimate")),
     shipping_insurance: costDisplay(shipping + insurance),

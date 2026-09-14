@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { imagePath, type Vehicle } from "../format";
 import { adminGetQuote, type AdminQuoteDetail } from "../crm";
 import { getVehicleIndexEntryBySlug } from "../vehicles";
 import { pdfOrigin } from "../security/generation";
 import { documentData } from "./data";
+import { generateQuotationLayout, publicSpecificationNotes } from "./quotation-layout";
+import { getVehicleBySlug } from "../vehicle-details";
 import { generatePdf } from "./pdf";
+import { cleanValue } from "./mapping";
 import { optimizeDocumentPhoto } from "./photo";
-import { appendQuotationGallery, loadQuotationPhotos } from "./quotation-gallery";
+import { loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
 import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
 
@@ -27,44 +29,6 @@ async function catalogueImage(source?: string): Promise<Buffer | null> {
   } catch { return null; }
 }
 
-async function appendSpecificationPhotoPage(pdf: Uint8Array, photos: Buffer[], title: string): Promise<Buffer> {
-  const document = await PDFDocument.load(pdf);
-  const page = document.addPage([595.28, 841.89]);
-  const headingFont = await document.embedFont(StandardFonts.HelveticaBold);
-  const labelFont = await document.embedFont(StandardFonts.Helvetica);
-  const { width, height } = page.getSize();
-  const margin = 42;
-  const availableHeight = height - 144;
-  const slotHeight = availableHeight / photos.length;
-
-  page.drawRectangle({ x: 0, y: height - 76, width, height: 76, color: rgb(0.04, 0.12, 0.22) });
-  page.drawText(title, { x: margin, y: height - 48, size: 18, font: headingFont, color: rgb(1, 1, 1) });
-
-  for (const [index, bytes] of photos.entries()) {
-    const image = bytes[0] === 0x89 ? await document.embedPng(bytes) : await document.embedJpg(bytes);
-    const maxWidth = width - margin * 2;
-    const maxHeight = slotHeight - 28;
-    const scale = Math.min(maxWidth / image.width, maxHeight / image.height);
-    const imageWidth = image.width * scale;
-    const imageHeight = image.height * scale;
-    const top = height - 96 - index * slotHeight;
-    const y = top - imageHeight;
-
-    page.drawRectangle({
-      x: margin,
-      y: top - maxHeight,
-      width: maxWidth,
-      height: maxHeight,
-      borderColor: rgb(0.85, 0.87, 0.9),
-      borderWidth: 0.5,
-    });
-    page.drawImage(image, { x: (width - imageWidth) / 2, y: y - (maxHeight - imageHeight) / 2, width: imageWidth, height: imageHeight });
-    page.drawText(`${index + 1}`, { x: margin, y: top - maxHeight - 14, size: 8, font: labelFont, color: rgb(0.4, 0.45, 0.52) });
-  }
-
-  return Buffer.from(await document.save());
-}
-
 async function build(quoteRef: string, template: TemplateFile, number: string, overrides: DocumentValues, vins: Record<string, string>, existingQuote?: AdminQuoteDetail) {
   const quote = existingQuote ?? await adminGetQuote(quoteRef);
   if (!quote) throw new DocumentError("Quotation not found.", 404);
@@ -82,8 +46,22 @@ async function build(quoteRef: string, template: TemplateFile, number: string, o
       data.images.push(cache.get(source) ?? null);
     }
   }
-  const base = await generatePdf(template.prepared, template.mapping, data);
-  return { pdf: galleries ? await appendQuotationGallery(base, data, galleries) : base, data };
+  if (galleries) {
+    if (template.mapping.allowedIncoterms && !template.mapping.allowedIncoterms.includes(String(data.values.incoterm))) throw new DocumentError("Select a quotation template matching the order trade terms.");
+    for (const key of new Set([...template.mapping.requiredFields, ...template.mapping.fields.filter(field => field.required).map(field => field.field)])) {
+      if (key === "vehicles" || key === "vehicle_image") continue;
+      if (key === "vin" ? data.vehicles.some(vehicle => !cleanValue(vehicle.vin)) : !cleanValue(data.values[key])) throw new DocumentError(key.replaceAll("_", " ") + " is required for this template.");
+    }
+    data.vehicles.forEach((vehicle, index) => {
+      const item = quote.items[index];
+      const slug = item.historyNotes?.match(/https:\/\/(?:www\.)?(?:nindgeauto\.com|hainautocn\.com)\/vehicles\/([a-z0-9-]+)/i)?.[1];
+      const catalogue = slug ? getVehicleBySlug(slug) : null;
+      Object.assign(vehicle, { interior_color: item.interiorColor ?? "", drivetrain: item.drivetrain ?? "", power: item.powerHp ?? "", capacity: item.capacity ?? "", body_type: catalogue?.bodyType ?? "", stock_id: catalogue?.id ?? "" });
+      vehicle.notes = [vehicle.notes, catalogue ? publicSpecificationNotes(catalogue.specs) : ""].filter(Boolean).join("\n");
+    });
+    return { pdf: await generateQuotationLayout(data, galleries), data };
+  }
+  return { pdf: await generatePdf(template.prepared, template.mapping, data), data };
 }
 export async function generateQuoteTemplatePdf(ref: string): Promise<Buffer> {
   const quote = await adminGetQuote(ref);
@@ -92,22 +70,17 @@ export async function generateQuoteTemplatePdf(ref: string): Promise<Buffer> {
   return (await build(ref, template, quote.documentNumber ?? ref, {}, {}, quote)).pdf;
 }
 export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language: DocumentLanguage) {
-  const template = await defaultTemplate("specification", language);
   const values: DocumentValues = Object.fromEntries(FIELD_NAMES.map(key => [key, ""]));
   const index = getVehicleIndexEntryBySlug(vehicle.slug);
   Object.assign(values, { document_number: `HA-SP-${vehicle.id}`, vehicle_brand: index?.brand ?? "", vehicle_model: index?.model ?? vehicle.title, vehicle_year: vehicle.year ?? "", vehicle_color: vehicle.color ?? "", fuel: vehicle.fuel ?? "", transmission: vehicle.gearbox ?? "", mileage: vehicle.mileageKm ?? "", engine: vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "", quantity: 1, company_name: "NINDGE AUTOMOBILE", company_email: "info@nindgeauto.com", vehicle_summary: vehicle.title, notes: Object.entries(vehicle.specs).filter(([key,value]) => value && !/price|precio|seller|selling|margin|profit|adjustment|cost|价格|成本|利润/i.test(key)).map(([key, value]) => `${key}: ${value}`).join("\n") });
   const photoSources = vehicle.images.slice(0, 3).map(file => imagePath(vehicle.site, vehicle.id, file));
   const photos = (await Promise.all(photoSources.map(catalogueImage))).filter((photo): photo is Buffer => photo !== null);
-  const hasMappedImage = template.mapping.fields.some(field => field.kind === "image");
-  const pdf = await generatePdf(template.prepared, template.mapping, {
-    values,
-    vehicles: [values],
-    images: hasMappedImage ? [photos[0] ?? null] : [],
-    language,
-  });
-
-  if (photos.length === 0) return pdf;
-  return appendSpecificationPhotoPage(pdf, photos, language === "en" ? "VEHICLE PHOTOS" : "FOTOGRAFIAS DEL VEHICULO");
+  values.notes = publicSpecificationNotes(vehicle.specs);
+  values.drivetrain = vehicle.driveType ?? "";
+  values.body_type = vehicle.bodyType ?? "";
+  values.stock_id = index?.stockCode ?? vehicle.id;
+  values.vehicle_condition = index?.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : index?.condition === "used" ? (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado") : "";
+  return generateQuotationLayout({ values, vehicles: [values], images: [], language }, [photos], true);
 }
 export async function createDocument(input: { quoteRef: string; templateId?: string; type: DocumentType; language: DocumentLanguage; idempotencyKey: string; overrides?: DocumentValues; vins?: Record<string, string> }) {
   if (!/^[a-f0-9-]{36}$/i.test(input.idempotencyKey)) throw new DocumentError("Invalid generation request ID.", 400);
