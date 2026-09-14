@@ -12,7 +12,7 @@ const {Client}=require('pg');
   await client.query(`CREATE SCHEMA "${schema}"`);
   await client.query(`SET LOCAL search_path TO "${schema}"`);
   await client.query(readFileSync('supabase/crm-schema.sql','utf8'));
-  const migration=readFileSync('supabase/migrations/202609070001_operations.sql','utf8').replace(/^BEGIN;\s*/,'').replace(/COMMIT;\s*$/,'');
+  const migration=readFileSync('supabase/migrations/202609070004_operations.sql','utf8').replace(/^BEGIN;\s*/,'').replace(/COMMIT;\s*$/,'');
   await client.query(migration);
   await client.query(migration);
   const c=await client.query("INSERT INTO customers(name) VALUES('Verification only') RETURNING id");

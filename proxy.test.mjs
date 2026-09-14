@@ -12,9 +12,10 @@ const sources = await Promise.all(
   sourceFiles.map(async (file) => [file, await readFile(new URL(`./${file}`, import.meta.url), "utf8")]),
 );
 
-test("request handling does not resolve visitor location", () => {
+test("request handling avoids location lookups; only the proxy reads country headers", () => {
   for (const [file, source] of sources) {
-    assert.doesNotMatch(source, /resolveCountry|cf-ipcountry|x-vercel-ip-country/, file);
+    assert.doesNotMatch(source, /resolveCountry/, file);
+    if (file !== "proxy.ts") assert.doesNotMatch(source, /cf-ipcountry|x-vercel-ip-country/, file);
   }
 });
 
