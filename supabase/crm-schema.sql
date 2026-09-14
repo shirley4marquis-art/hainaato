@@ -132,6 +132,11 @@ ALTER TABLE quotes ADD COLUMN IF NOT EXISTS source TEXT;
 -- deposit/balance clauses (also added by migration 202609070001_operations).
 ALTER TABLE quotes ADD COLUMN IF NOT EXISTS payment_terms TEXT;
 
+-- Idempotency key supplied by the admin quotation form. Keep this in the base
+-- schema as well as the migration so newly provisioned CRM databases can save
+-- a quotation without first encountering a missing-column error.
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS request_id UUID UNIQUE;
+
 -- Vehicle identification number for a specific unit in a quote/order — surfaced
 -- on invoices, contracts and shipping documents. Optional at the quotation
 -- stage (a unit may not be assigned yet), required for later document types.

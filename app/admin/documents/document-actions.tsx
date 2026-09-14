@@ -1,0 +1,12 @@
+"use client";
+import {useState} from "react";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
+import {DOCUMENT_STATUSES,type BusinessDocument} from "../../../lib/documents/model";
+import styles from "../admin.module.css";
+export function DocumentActions({document:d}:{document:BusinessDocument}){
+ const router=useRouter();const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [status,setStatus]=useState(d.status);
+ async function share(){setError("");setBusy(true);try{const r=await fetch(`/api/admin/documents/${d.id}/pdf`);if(!r.ok)throw new Error("PDF could not be generated. Retry.");const file=new File([await r.blob()],`${d.number}.pdf`,{type:"application/pdf"});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file],title:d.number});else{const url=URL.createObjectURL(file);const a=window.document.createElement("a");a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}catch(e){if(!(e instanceof DOMException&&e.name==="AbortError"))setError(e instanceof Error?e.message:"Sharing failed. Retry.");}finally{setBusy(false);}}
+ async function save(){setBusy(true);setError("");try{const r=await fetch(`/api/admin/documents/${d.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status,updatedAt:d.updated_at})});const data=await r.json();if(!r.ok)throw new Error(data.error);router.refresh();}catch(e){setError(e instanceof Error?e.message:"Save failed.");}finally{setBusy(false);}}
+ return <><div className={styles.formActions}><a className={styles.btn} href={`/api/admin/documents/${d.id}/pdf`}>Download PDF</a><button className={styles.btnGhost} disabled={busy} onClick={share}>{busy?"Working…":"Share PDF"}</button><Link className={styles.btnGhost} href={`/admin/documents/new?ref=${d.quote_ref}`}>New revision / language</Link><Link className={styles.btnGhost} href={`/admin/quotes/${d.quote_ref}`}>Edit order</Link></div><details className={styles.actionSheet}><summary>More actions</summary><div className={styles.form}><label>Document status<select value={status} onChange={e=>setStatus(e.target.value as typeof status)}>{DOCUMENT_STATUSES.map(s=><option key={s}>{s}</option>)}</select></label><p>Update after verifying delivery, signature or payment. Sharing alone does not mark a document sent.</p><button className={styles.btn} disabled={busy||status===d.status} onClick={save}>Save status</button></div></details>{error&&<p role="alert" className={styles.formError}>{error}</p>}</>;
+}

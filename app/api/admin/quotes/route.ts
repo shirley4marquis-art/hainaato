@@ -1,5 +1,7 @@
 import { guardAdminRequest } from "../../../../lib/security/admin";
-import { NextRequest, NextResponse } from "next/server";
+import { apiError, validId } from "../../../../lib/admin-api";
+import { validateQuote } from "../../../../lib/quote-validation";
+import { after, NextRequest, NextResponse } from "next/server";
 import { adminListQuotes, adminSaveQuote, type AdminQuoteInput } from "../../../../lib/crm";
 import { sendQuoteCreatedSalesNotification } from "../../../../lib/email";
 
@@ -24,14 +26,13 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request body." }, { status: 400 });
   }
-  if (!body?.customer?.name || !body.destinationPort || !body.destinationCountry) {
-    return NextResponse.json({ ok: false, error: "Customer name, destination port and country are required." }, { status: 400 });
-  }
+  const invalid = validateQuote(body);
+  if (invalid || (body.requestId && !validId(body.requestId))) return NextResponse.json({ok:false,error:invalid || "Invalid request ID"},{status:400});
   try {
     const ref = await adminSaveQuote(body);
     const vehicleSummary = body.items?.map((item) => `${item.make || "Vehicle"} ${item.model || ""}`.trim()).filter(Boolean).join("; ") || "Vehicle quote";
 
-    await sendQuoteCreatedSalesNotification({
+    if (!body.ref) after(async () => { try { await sendQuoteCreatedSalesNotification({
       ref,
       documentNumber: null,
       customerName: body.customer?.name ?? "Customer",
@@ -41,11 +42,11 @@ export async function POST(request: NextRequest) {
       destinationPort: body.destinationPort ?? null,
       vehicleSummary,
       message: body.notes ?? null,
-    });
+    }); } catch (error) { console.error("[admin/quotes] notification failed after successful save", error); } });
 
     return NextResponse.json({ ok: true, ref });
   } catch (error) {
     console.error("[admin/quotes] save failed:", error);
-    return NextResponse.json({ ok: false, error: "Could not save the quote." }, { status: 500 });
+    return apiError(error);
   }
 }

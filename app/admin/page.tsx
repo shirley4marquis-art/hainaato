@@ -1,3 +1,4 @@
+import {operationStats} from "../../lib/admin-store";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import {
@@ -30,7 +31,7 @@ const IN_TRANSIT = new Set(["shipped", "departed_port", "arrived_port", "customs
 const CLOSED = new Set(["lost", "delivered"]);
 
 export default async function AdminDashboard() {
-  const [quotes, customers] = await Promise.all([adminListQuotes(), adminListCustomers()]);
+  const [quotes, customers, operations] = await Promise.all([adminListQuotes(), adminListCustomers(), operationStats()]);
 
   const totalVehicles = getTotalVehicleCount();
   const availableVehicles = searchVehicles({ availability: "available", pageSize: 1 }).total;
@@ -43,7 +44,7 @@ export default async function AdminDashboard() {
   const inTransit = by((s) => IN_TRANSIT.has(s));
   const activeCustomers = customers.filter((c) => c.quoteCount > 0).length;
   const pipelineValue = quotes
-    .filter((q) => !CLOSED.has(q.status))
+    .filter((q) => !CLOSED.has(q.status) && q.currency === "USD")
     .reduce((sum, q) => sum + (q.cifTotal ?? 0), 0);
 
   const recent = quotes.slice(0, 8);
@@ -56,10 +57,13 @@ export default async function AdminDashboard() {
     hint?: string;
     tone?: "warn" | "active";
   }[] = [
+    { label: "Pending documents", value: operations.pending_documents, href: "/admin/documents", icon: FileText },
+    { label: "Recently generated documents", value: operations.recent_documents, href: "/admin/documents", icon: FilePlus2, hint: "Last 7 days" },
+    { label: "Payments awaiting confirmation", value: operations.pending_payments, href: "/admin/operations?kind=payment", icon: Wallet },
     { label: "Total vehicles", value: totalVehicles, href: "/admin/vehicles", icon: Car },
     { label: "Available vehicles", value: availableVehicles, href: "/admin/vehicles", icon: CheckCircle2, hint: `${totalVehicles - availableVehicles} reserved / sold` },
     { label: "New inquiries", value: newInquiries, href: "/admin/quotes", icon: Inbox, hint: newInquiries ? "Needs a first quote" : undefined, tone: newInquiries ? "warn" : undefined },
-    { label: "In negotiation", value: negotiating, href: "/admin/quotes?group=quote", icon: Handshake },
+    { label: "Pending quotations", value: negotiating, href: "/admin/quotes?group=quotes", icon: Handshake },
     { label: "Active customers", value: activeCustomers, href: "/admin/clients", icon: Users, hint: `${customers.length} on file` },
     { label: "Deposits paid", value: depositsPaid, href: "/admin/quotes", icon: Wallet, tone: depositsPaid ? "active" : undefined },
     { label: "Awaiting shipping", value: awaitingShipping, href: "/admin/quotes", icon: Package, tone: awaitingShipping ? "warn" : undefined },
@@ -67,12 +71,12 @@ export default async function AdminDashboard() {
   ];
 
   const quickActions = [
-    { label: "Add vehicle", href: "/admin/imports", icon: Car },
-    { label: "Add customer", href: "/admin/clients", icon: UserPlus },
+    { label: "Add vehicle", href: "/admin/operations?kind=vehicle&new=1", icon: Car },
+    { label: "Add customer", href: "/admin/clients/new", icon: UserPlus },
     { label: "Create quote", href: "/admin/quotes/new", icon: FileText },
-    { label: "Generate document", href: "/admin/documents", icon: FilePlus2 },
-    { label: "Add shipment", href: "/admin/quotes", icon: Truck },
-    { label: "Record payment", href: "/admin/quotes", icon: CreditCard },
+    { label: "Generate document", href: "/admin/documents/new", icon: FilePlus2 },
+    { label: "Add shipment", href: "/admin/operations?kind=shipment&new=1", icon: Truck },
+    { label: "Record payment", href: "/admin/operations?kind=payment&new=1", icon: CreditCard },
   ] as const;
 
   return (
@@ -119,7 +123,7 @@ export default async function AdminDashboard() {
             <Wallet size={18} />
           </span>
           <div>
-            <p className={styles.statLabel}>Open pipeline value</p>
+            <p className={styles.statLabel}>Open pipeline value (USD only)</p>
             <p className={styles.statValue}>${Math.round(pipelineValue).toLocaleString()}</p>
           </div>
         </div>

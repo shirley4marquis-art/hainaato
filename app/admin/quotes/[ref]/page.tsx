@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import Link from "next/link";
+import { TransactionTimeline } from "../../transaction-timeline";
 import { AdminShell } from "../../admin-shell";
 import { QuoteForm } from "../../quote-form";
 import { QuoteEmailCenter } from "../../quote-email-center";
@@ -35,6 +36,14 @@ export default async function EditQuote({ params }: { params: Promise<{ ref: str
           Source: {SOURCE_LABELS[quote.source]}
         </p>
       )}
+      <details className={styles.actionSheet}><summary>More actions</summary><div className={styles.formActions}>
+        <Link href={`/admin/clients/${quote.customer.id}`}>Customer profile</Link>
+        <Link href={`/admin/documents?ref=${ref}`}>Document history</Link>
+        <Link href={`/admin/operations?kind=payment&new=1&ref=${ref}`}>Record payment</Link>
+        <Link href={`/admin/operations?kind=shipment&new=1&ref=${ref}`}>Add shipment</Link>
+        <Link href={`/admin/operations?kind=customs&new=1&ref=${ref}`}>Customs</Link>
+      </div></details>
+      <TransactionTimeline quoteRef={ref} status={quote.status || "quoted"}/>
       <QuoteForm initial={quote} />
       <QuoteEmailCenter
         quoteRef={ref}
