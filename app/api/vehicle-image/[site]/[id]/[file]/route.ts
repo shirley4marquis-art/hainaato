@@ -46,7 +46,7 @@ async function resolveViaDoH(hostname: string): Promise<string | null> {
     `https://cloudflare-dns.com/dns-query?name=${hostname}&type=A`,
   ]) {
     try {
-      const res = await fetch(endpoint, { headers: { accept: "application/dns-json" } });
+      const res = await fetch(endpoint, { headers: { accept: "application/dns-json" }, signal: AbortSignal.timeout(1500) });
       if (!res.ok) continue;
       const data = (await res.json()) as { Answer?: { type: number; data: string }[] };
       const ip = data.Answer?.find((record) => record.type === 1)?.data;
@@ -89,7 +89,10 @@ function requestUpstream(urlStr: string, resolvedIp: string | null, timeoutMs: n
       })
     );
     const timer = setTimeout(() => req.destroy(new Error("Upstream request timed out")), timeoutMs);
-    req.on("response", () => clearTimeout(timer));
+    req.on("response", (res) => {
+      res.on("end", () => clearTimeout(timer));
+      res.on("close", () => clearTimeout(timer));
+    });
     req.on("error", (error) => { clearTimeout(timer); reject(error); });
     req.end();
   });
@@ -100,36 +103,30 @@ async function fetchUpstreamWithFallback(urlStr: string, hostname: string): Prom
   // cached DoH IP instead of re-paying the failed-lookup timeout every time.
   const cached = dohIpCache.get(hostname);
   if (cached && cached.expires > Date.now()) {
-    return requestUpstream(urlStr, cached.ip, 8000);
+    try { return await requestUpstream(urlStr, cached.ip, 4000); }
+    catch { dohIpCache.delete(hostname); }
   }
   try {
     return await requestUpstream(urlStr, null, 4000);
   } catch {
     const ip = await resolveViaDoH(hostname);
     if (!ip) throw new Error(`Could not resolve ${hostname}`);
-    return requestUpstream(urlStr, ip, 8000);
+    return requestUpstream(urlStr, ip, 4000);
   }
-}
-
-function nodeStreamToWeb(nodeStream: IncomingMessage): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    start(controller) {
-      nodeStream.on("data", (chunk) => controller.enqueue(chunk));
-      nodeStream.on("end", () => controller.close());
-      nodeStream.on("error", (error) => controller.error(error));
-    },
-    cancel() {
-      nodeStream.destroy();
-    },
-  });
 }
 
 function bufferStream(nodeStream: IncomingMessage): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    nodeStream.on("data", (chunk) => chunks.push(chunk));
+    let size = 0;
+    nodeStream.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > 10 * 1024 * 1024) nodeStream.destroy(new Error("Image exceeds size limit"));
+      else chunks.push(chunk);
+    });
     nodeStream.on("end", () => resolve(Buffer.concat(chunks)));
     nodeStream.on("error", reject);
+    nodeStream.on("aborted", () => reject(new Error("Incomplete source image")));
   });
 }
 
@@ -184,21 +181,38 @@ export async function GET(
     return NextResponse.json({ error: "Image source is not allowed." }, { status: 404 });
   }
   const hostname = parsedUpstream.hostname;
-  let upstream: UpstreamResponse;
+  let original: Buffer | undefined;
+  let contentType: string | null = null;
   try {
-    upstream = await fetchUpstreamWithFallback(upstreamUrl, hostname);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const upstream = await fetchUpstreamWithFallback(upstreamUrl, hostname);
+        if (upstream.status < 200 || upstream.status >= 300) {
+          upstream.body.destroy();
+          if (upstream.status !== 408 && upstream.status !== 429 && upstream.status < 500) break;
+          throw new Error("Upstream HTTP " + upstream.status);
+        }
+        original = await bufferStream(upstream.body);
+        await sharp(original).metadata();
+        contentType = upstream.contentType;
+        break;
+      } catch (error) {
+        original = undefined;
+        if (attempt === 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
   } catch {
-    return NextResponse.json({ error: "Could not reach the image source." }, { status: 502 });
+    console.warn("[vehicle-image] source unavailable", { site, id });
   }
-  if (upstream.status < 200 || upstream.status >= 300) {
-    upstream.body.resume();
-    return NextResponse.json({ error: "Image source returned an error." }, { status: 502 });
+  if (!original) {
+    return NextResponse.json({ error: "Image source is temporarily unavailable." }, { status: 502, headers: { "Cache-Control": "no-store", "Retry-After": "5" } });
   }
 
   if (width != null) {
     let resized: Buffer;
     try {
-      const original = await bufferStream(upstream.body);
+
       resized = await sharp(original)
         .resize({ width, withoutEnlargement: true })
         .webp({ quality })
@@ -218,11 +232,11 @@ export async function GET(
     });
   }
 
-  return new NextResponse(nodeStreamToWeb(upstream.body), {
+  return new NextResponse(new Uint8Array(original), {
     status: 200,
     headers: {
-      "Content-Type": upstream.contentType || "application/octet-stream",
-      ...(upstream.contentLength ? { "Content-Length": upstream.contentLength } : {}),
+      "Content-Type": contentType || "application/octet-stream",
+      "Content-Length": String(original.length),
       "Cache-Control": "public, max-age=86400, immutable",
     },
   });

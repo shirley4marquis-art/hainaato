@@ -5,7 +5,7 @@ import { CATALOGUE_COLLECTIONS, getFilterOptions, searchVehicles } from "../../l
 import { buildVehiclesUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, CatalogueCollections, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
 
-const VEHICLES_SHARE_IMAGE = "/images/hainaauto-vehicles-hero-full-hd.jpg";
+const VEHICLES_SHARE_IMAGE = "/vehicle-images/hongyu/jac-hunter-safety-4x4/01.webp";
 
 export const metadata: Metadata = {
   title: "Vehículos nuevos y usados de China",

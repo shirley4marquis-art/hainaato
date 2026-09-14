@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Nindge Automobile — Cotizador de Exportación Toyota</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy: #2A0E08;
+    --ink: #241611;
+    --paper: #F5F0DD;
+    --paper-2: #FBF8EE;
+    --steel: #6E5A45;
+    --orange: #D73C37;
+    --orange-dark: #B51F09;
+    --red: #EE6146;
+    --green: #DFBC5E;
+    --line: rgba(36,22,17,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px;}
+
+  /* ---------- HEADER / ROUTE STRIP ---------- */
+  .topbar{
+    background:var(--navy);
+    color:var(--paper-2);
+    padding:22px 24px 26px;
+  }
+  .topbar-inner{max-width:1180px;margin:0 auto;}
+  .brandrow{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+  .brand{
+    font-family:'Oswald', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:0.02em;
+    color:#fff;
+  }
+  .brand span{color:var(--orange);}
+  .brand-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:rgba(230,224,174,0.55);
+  }
+  .route{
+    display:flex;
+    align-items:center;
+    gap:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.04em;
+  }
+  .route-node{
+    display:flex;flex-direction:column;gap:4px;flex-shrink:0;
+  }
+  .route-node .code{
+    font-size:20px;font-weight:600;color:#fff;
+    font-family:'Oswald', sans-serif;
+  }
+  .route-node .label{color:rgba(230,224,174,0.55);text-transform:uppercase;font-size:10px;letter-spacing:0.12em;}
+  .route-line{
+    flex:1;height:1px;background:repeating-linear-gradient(90deg, rgba(215,60,55,0.6) 0 6px, transparent 6px 12px);
+    position:relative;
+    margin:0 14px;
+    top:-8px;
+  }
+  .route-line::after{
+    content:"";position:absolute;right:-2px;top:-3px;width:6px;height:6px;
+    background:var(--orange);border-radius:50%;
+  }
+  .route-days{
+    text-align:center;font-size:10px;color:rgba(230,224,174,0.6);
+    position:absolute;left:50%;top:-24px;transform:translateX(-50%);
+    white-space:nowrap;
+  }
+
+  /* ---------- HERO TEXT ---------- */
+  .hero{padding:44px 0 30px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;letter-spacing:0.16em;text-transform:uppercase;
+    color:var(--orange-dark);margin-bottom:10px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:800;
+    font-size:38px;
+    line-height:1.08;
+    margin:0 0 14px;
+    max-width:640px;
+    letter-spacing:-0.01em;
+  }
+  .hero p{
+    max-width:520px;
+    color:var(--steel);
+    font-size:15.5px;
+    line-height:1.55;
+    margin:0;
+  }
+
+  /* ---------- VEHICLE GALLERY ---------- */
+  .gallery-panel{
+    margin-top:36px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+  }
+  .gallery-head{
+    padding:16px 22px;
+    border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .gallery-model{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;font-size:15px;
+  }
+  .gallery-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;color:var(--steel);margin-top:3px;
+    text-transform:uppercase;letter-spacing:0.04em;
+  }
+  .gallery-placeholder-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--orange-dark);
+    background:rgba(215,60,55,0.09);
+    border:1px solid rgba(215,60,55,0.3);
+    padding:4px 9px;
+    letter-spacing:0.03em;
+  }
+  .gallery-stage{
+    position:relative;
+    height:280px;
+    background:
+      linear-gradient(180deg, rgba(42,14,8,0.04), rgba(42,14,8,0.08)),
+      repeating-linear-gradient(90deg, transparent 0 39px, rgba(36,22,17,0.05) 39px 40px);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .gallery-art{
+    width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .25s ease;
+  }
+  .gnav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:38px;height:38px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+    z-index:2;
+    box-shadow:0 6px 16px -8px rgba(42,14,8,0.4);
+  }
+  .gprev{left:16px;}
+  .gnext{right:16px;}
+  .gallery-dots{
+    display:flex;justify-content:center;gap:7px;
+    padding:14px;
+  }
+  .gdot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--line);
+    cursor:pointer;
+    border:none;
+    padding:0;
+  }
+  .gdot.active{background:var(--orange);width:20px;border-radius:4px;}
+
+
+  .cta-secondary{
+    background:#fff;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    margin-top:10px;
+  }
+  .cta-secondary:hover{background:var(--paper);}
+
+  .compliance-warning{
+    background:rgba(238,97,70,0.07);
+    border:1px solid rgba(238,97,70,0.35);
+    border-left:4px solid var(--red);
+    padding:12px 14px;
+    margin-bottom:18px;
+    font-size:12.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+  .compliance-warning b{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--red);
+    margin-bottom:4px;
+  }
+  .compliance-warning.caution{
+    background:rgba(215,60,55,0.07);
+    border-color:rgba(215,60,55,0.35);
+    border-left-color:var(--orange);
+  }
+  .compliance-warning.caution b{color:var(--orange-dark);}
+
+  .landed-box{
+    margin-top:16px;
+    background:var(--paper);
+    border:1px dashed var(--line);
+    padding:14px;
+  }
+  .landed-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--steel);
+    margin-bottom:10px;
+  }
+  .landed-row{
+    display:flex;justify-content:space-between;
+    font-size:12.5px;
+    padding:5px 0;
+    color:var(--ink);
+  }
+  .landed-row span:last-child{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+  }
+  .landed-grand{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-top:8px;padding-top:10px;
+    border-top:1px solid var(--line);
+    font-family:'Oswald',sans-serif;
+    font-weight:700;font-size:12.5px;
+    text-transform:uppercase;letter-spacing:0.02em;
+  }
+  .landed-grand span:last-child{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15.5px;
+    color:var(--orange-dark);
+    text-transform:none;letter-spacing:0;
+  }
+  .landed-note{font-size:11px;color:var(--steel);line-height:1.5;margin-top:10px;}
+
+  /* ---------- CHECKLIST / TRUST ---------- */
+  .info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:36px;
+  }
+  @media (max-width:760px){ .info-grid{grid-template-columns:1fr;} }
+
+  .checklist{padding:18px 22px;}
+  .check-item{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 0;
+    font-size:13px;
+    border-bottom:1px dashed var(--line);
+  }
+  .check-item:last-child{border-bottom:none;}
+  .check-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  }
+  .check-dot.yes{background:var(--green);}
+  .check-dot.no{background:var(--orange);}
+
+  .trust-strip{
+    margin-top:36px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  @media (max-width:640px){ .trust-strip{grid-template-columns:repeat(2, 1fr);} }
+  .trust-item{
+    background:var(--paper-2);
+    padding:20px 14px;
+    text-align:center;
+  }
+  .trust-num{
+    font-family:'Oswald',sans-serif;
+    font-weight:800;font-size:26px;color:var(--orange-dark);
+  }
+  .trust-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;text-transform:uppercase;letter-spacing:0.05em;
+    color:var(--steel);margin-top:4px;line-height:1.4;
+  }
+
+
+  /* ---------- LIVE ORDER TICKER ---------- */
+  .live-ticker{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    z-index:999;
+    width:340px;
+    max-width:calc(100vw - 40px);
+    pointer-events:none;
+  }
+  .ticker-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid var(--green);
+    box-shadow:0 18px 40px -18px rgba(42,14,8,0.45);
+    padding:14px 16px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    opacity:0;
+    transform:translateY(16px);
+    transition:opacity .35s ease, transform .35s ease;
+    pointer-events:auto;
+  }
+  .ticker-card.show{opacity:1;transform:translateY(0);}
+  .ticker-icon{
+    width:34px;height:34px;flex-shrink:0;
+    border-radius:50%;
+    background:rgba(223,188,94,0.12);
+    color:var(--green);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+  }
+  .ticker-body{flex:1;min-width:0;}
+  .ticker-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--green);
+    font-weight:700;
+    margin-bottom:3px;
+  }
+  .ticker-main{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    line-height:1.4;
+    margin-bottom:4px;
+  }
+  .ticker-main b{font-weight:700;}
+  .ticker-meta{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--steel);
+  }
+  .ticker-meta a{color:var(--orange-dark);text-decoration:none;font-weight:600;}
+  .ticker-meta a:hover{text-decoration:underline;}
+  .ticker-close{
+    background:none;border:none;color:var(--steel);cursor:pointer;
+    font-size:16px;line-height:1;padding:0;flex-shrink:0;
+  }
+
+  @media (max-width:640px){
+    .live-ticker{left:12px;right:12px;bottom:12px;width:auto;}
+  }
+
+
+  /* ---------- CALCULATOR GRID ---------- */
+  .calc{
+    display:grid;
+    grid-template-columns:1.15fr 1fr;
+    gap:28px;
+    margin-top:36px;
+    align-items:start;
+  }
+  @media (max-width:880px){ .calc{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:2px;
+  }
+  .panel-head{
+    padding:16px 22px;
+    border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .panel-head .t{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;font-size:14px;letter-spacing:0.02em;
+  }
+  .panel-head .n{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;color:var(--steel);
+  }
+  .panel-body{padding:22px;}
+
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--steel);
+    margin-bottom:8px;
+  }
+  .field{margin-bottom:22px;}
+
+  select, input[type=number]{
+    width:100%;
+    padding:12px 14px;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:2px;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%234C6572'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+  }
+  select:focus, input:focus{outline:2px solid var(--orange);outline-offset:1px;}
+
+  .condition-row{display:flex;gap:10px;}
+  .cond-btn{
+    flex:1;
+    padding:12px 10px;
+    text-align:center;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:2px;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--steel);
+    transition:all .15s ease;
+  }
+  .cond-btn.active-new{
+    border-color:var(--green);
+    background:rgba(223,188,94,0.08);
+    color:var(--green);
+    font-weight:600;
+  }
+  .cond-btn.active-used{
+    border-color:var(--red);
+    background:rgba(238,97,70,0.07);
+    color:var(--red);
+    font-weight:600;
+  }
+  .cond-btn small{display:block;font-family:'Inter',sans-serif;text-transform:none;letter-spacing:0;font-size:10.5px;margin-top:3px;opacity:0.75;}
+
+  .qty-row{display:flex;align-items:center;gap:10px;}
+  .qty-row input{text-align:center;}
+  .qbtn{
+    width:40px;height:40px;flex-shrink:0;
+    border:1px solid var(--line);background:#fff;border-radius:2px;
+    font-size:16px;cursor:pointer;color:var(--ink);
+  }
+
+  /* ---------- QUOTE / MANIFEST CARD ---------- */
+  .manifest{
+    background:#fff;
+    border:1px solid var(--line);
+    position:sticky;top:20px;
+    box-shadow:0 18px 40px -24px rgba(42,14,8,0.35);
+  }
+  .manifest-top{
+    background:var(--navy);
+    color:#fff;
+    padding:16px 22px;
+    display:flex;justify-content:space-between;align-items:center;
+    position:relative;
+  }
+  .manifest-top .t{font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.03em;}
+  .manifest-top .ref{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55);}
+  .perf{
+    height:5px;
+    background:linear-gradient(90deg, var(--orange-dark), var(--orange), var(--gold, #DFBC5E));
+  }
+
+  .stamp{
+    position:absolute;
+    top:16px;right:20px;
+    border-radius:4px;
+    padding:6px 12px;
+    display:flex;align-items:center;justify-content:center;
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    line-height:1.3;
+  }
+  .stamp.new{background:#DFBC5E;color:#2A0E08;}
+  .stamp.used{background:#EE6146;color:#FBF8EE;}
+
+  .m-body{padding:24px 22px 22px;}
+  .m-line{
+    display:flex;justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+  }
+  .m-line .k{color:var(--steel);}
+  .m-line .v{font-family:'IBM Plex Mono',monospace;font-weight:500;}
+
+  .m-total{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:2px solid var(--ink);
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .m-total .k{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.03em;}
+  .m-total .v{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:28px;color:var(--orange-dark);}
+
+  .split-wrap{margin-top:20px;}
+  .split-label{
+    display:flex;justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--steel);margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:0.06em;
+  }
+  .split-bar{
+    display:flex;height:26px;border-radius:2px;overflow:hidden;border:1px solid var(--line);
+  }
+  .split-bar .dep{background:var(--orange);width:40%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;}
+  .split-bar .bal{background:#E3E6E1;width:60%;display:flex;align-items:center;justify-content:center;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;}
+  .split-note{font-size:11.5px;color:var(--steel);margin-top:8px;line-height:1.5;}
+
+  .transit-chip{
+    margin-top:18px;
+    display:flex;gap:8px;align-items:center;
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:10px 14px;
+    font-size:12.5px;color:var(--steel);
+    border-radius:2px;
+  }
+  .transit-chip b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+
+  .cta{
+    display:block;
+    width:100%;
+    margin-top:20px;
+    padding:16px;
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:2px;
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    cursor:pointer;
+    text-align:center;
+    text-decoration:none;
+    transition:background .15s ease;
+  }
+  .cta:hover{background:var(--orange-dark);}
+  .cta-sub{
+    text-align:center;font-size:11px;color:var(--steel);margin-top:10px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  .disclaimer{
+    max-width:1180px;margin:36px auto 0;padding:0 24px;
+    font-size:11.5px;color:var(--steel);line-height:1.6;
+  }
+
+  @media (max-width:880px){
+    .manifest{position:static;}
+  }
+
+  @media (max-width:760px){
+    .route{display:none;}
+  }
+
+  @media (max-width:640px){
+    .wrap{padding:0 16px 56px;}
+    .topbar{padding:18px 16px 20px;}
+    .brand{font-size:18px;}
+    .brand-sub{font-size:9.5px;letter-spacing:0.1em;}
+    .brandrow{margin-bottom:0;}
+
+    .hero{padding:28px 0 22px;}
+    .eyebrow{font-size:10px;}
+    h1{font-size:25px;max-width:100%;}
+    .hero p{font-size:14px;max-width:100%;}
+
+    .gallery-panel{margin-top:24px;}
+    .gallery-head{padding:12px 14px;}
+    .gallery-model{font-size:13.5px;}
+    .gallery-placeholder-note{font-size:9px;padding:3px 7px;}
+    .gallery-stage{height:190px;}
+    .gnav{width:32px;height:32px;font-size:16px;}
+    .gprev{left:8px;}
+    .gnext{right:8px;}
+
+    .calc{gap:18px;margin-top:24px;}
+    .panel-head{padding:13px 16px;}
+    .panel-body{padding:16px;}
+    .field{margin-bottom:16px;}
+
+    select, input[type=number]{font-size:16px;padding:11px 12px;} /* 16px prevents iOS auto-zoom on focus */
+
+    .condition-row{flex-direction:column;gap:8px;}
+    .cond-btn{padding:11px 12px;text-align:left;}
+
+    .manifest-top{padding:13px 16px;}
+    .manifest-top .t{font-size:12px;}
+    .stamp{font-size:8.5px;padding:5px 10px;top:12px;right:16px;}
+    .m-body{padding:18px 16px 16px;}
+    .m-line{font-size:12.5px;}
+    .m-total .v{font-size:22px;}
+
+    .disclaimer{padding:0 16px;margin-top:28px;}
+  }
+
+  @media (max-width:380px){
+    .stamp{position:static;transform:none;width:auto;height:auto;
+      border-radius:4px;padding:5px 10px;display:inline-flex;margin-top:8px;}
+    .manifest-top{flex-direction:column;align-items:flex-start;gap:8px;}
+    .qbtn{width:36px;height:36px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brandrow">
+      <div>
+        <div class="brand">NINDGE<span>AUTOMOBILE</span></div>
+        <div class="brand-sub">Exportación directa · Fábrica China → Puerto Latinoamérica</div>
+      </div>
+      <div class="brand-sub">COTIZADOR EN VIVO</div>
+    </div>
+    <div class="route" style="position:relative;">
+      <div class="route-node">
+        <div class="code">CN</div>
+        <div class="label">Guangzhou</div>
+      </div>
+      <div class="route-line"><div class="route-days">Tránsito estimado</div></div>
+      <div class="route-node">
+        <div class="code">⚓</div>
+        <div class="label">Vía marítima</div>
+      </div>
+      <div class="route-line"></div>
+      <div class="route-node">
+        <div class="code" id="portCode">VE</div>
+        <div class="label" id="portLabelTop">Puerto destino</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Fase 1 — Cotizador</div>
+    <h1>Vea el precio real de su unidad antes de escribirnos.</h1>
+    <p>Seleccione el modelo, la condición y el puerto de destino. El desglose se calcula al instante, con el mismo formato que recibirá en su factura CIF.</p>
+  </div>
+
+  <div class="gallery-panel" id="galleryPanel">
+    <div class="gallery-head">
+      <div>
+        <div class="gallery-model" id="galleryModelName">Toyota Hilux (Doble Cabina)</div>
+        <div class="gallery-tag">Vista previa · <span id="galleryAngle">Frontal</span></div>
+      </div>
+      <div class="gallery-placeholder-note">Imagen referencial — pendiente de catálogo real</div>
+    </div>
+    <div class="gallery-stage" id="galleryStage">
+      <button class="gnav gprev" onclick="galleryStep(-1)" aria-label="Anterior">‹</button>
+      <div class="gallery-art" id="galleryArt"></div>
+      <button class="gnav gnext" onclick="galleryStep(1)" aria-label="Siguiente">›</button>
+    </div>
+    <div class="gallery-dots" id="galleryDots"></div>
+  </div>
+
+  <div class="calc">
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="t">Configurar unidad</div>
+        <div class="n">01 / 03</div>
+      </div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label>Modelo Toyota</label>
+          <select id="model"></select>
+        </div>
+
+        <div class="field">
+          <label>Condición de la unidad</label>
+          <div class="condition-row">
+            <div class="cond-btn active-new" id="btnNew" onclick="setCondition('new')">
+              Kilometraje de fábrica
+              <small>Unidad nueva (0 km comercial)</small>
+            </div>
+            <div class="cond-btn" id="btnUsed" onclick="setCondition('used')">
+              Usada
+              <small>Inspeccionada, según disponibilidad</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="usedDetails" style="display:none;">
+          <label>Detalles de la unidad usada</label>
+          <div class="condition-row" style="gap:10px;">
+            <div style="flex:1;">
+              <select id="mileage">
+                <option value="20,000–40,000 km">20,000 – 40,000 km</option>
+                <option value="40,000–60,000 km">40,000 – 60,000 km</option>
+                <option value="60,000–90,000 km">60,000 – 90,000 km</option>
+                <option value="90,000+ km">90,000+ km</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <select id="modelYear"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Puerto de destino</label>
+          <select id="port"></select>
+        </div>
+
+        <div class="field">
+          <label>Tipo de embarque</label>
+          <div class="condition-row">
+            <div class="cond-btn active-new" id="btnRoro" onclick="setContainer('roro')">
+              RoRo (compartido)
+              <small>Roll-on/roll-off, tarifa estándar</small>
+            </div>
+            <div class="cond-btn" id="btnEnclosed" onclick="setContainer('enclosed')">
+              Contenedor cerrado
+              <small>Protección adicional, +$450/ud.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label>Cantidad de unidades</label>
+          <div class="qty-row">
+            <button class="qbtn" onclick="stepQty(-1)">−</button>
+            <input type="number" id="qty" min="1" value="1" oninput="calculate()">
+            <button class="qbtn" onclick="stepQty(1)">+</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- QUOTE / MANIFEST PANEL -->
+    <div class="manifest">
+      <div class="manifest-top">
+        <div>
+          <div class="t">DESGLOSE CIF</div>
+          <div class="ref" id="refNumber">REF #NDG-000000</div>
+        </div>
+        <div id="stampEl" class="stamp new" style="position:static;transform:rotate(-10deg);">FÁBRICA<br>0 KM</div>
+      </div>
+      <div class="perf"></div>
+      <div class="m-body">
+        <div class="compliance-warning" id="complianceWarning" style="display:none;"></div>
+
+        <div class="transit-chip" id="usedInfoChip" style="display:none;margin-top:0;margin-bottom:18px;">
+          🔧 <span id="usedInfoText"></span>
+        </div>
+        <div class="m-line"><span class="k">Valor de la mercancía (<span id="qtyLabel">1</span> ud.)</span><span class="v" id="lineGoods">$0</span></div>
+        <div class="m-line"><span class="k">Transporte interno en China</span><span class="v" id="lineInland">$0</span></div>
+        <div class="m-line"><span class="k">Trámites y gastos de exportación</span><span class="v" id="lineExport">$0</span></div>
+        <div class="m-line"><span class="k">Flete marítimo internacional</span><span class="v" id="lineFreight">$0</span></div>
+        <div class="m-line" id="containerLine" style="display:none;"><span class="k">Contenedor cerrado (protección adicional)</span><span class="v" id="lineContainer">$0</span></div>
+        <div class="m-line"><span class="k">Seguro de transporte</span><span class="v" id="lineInsurance">$0</span></div>
+        <div class="m-line" id="bulkLine" style="display:none;"><span class="k">Descuento por volumen</span><span class="v" id="lineBulk" style="color:var(--green);">−$0</span></div>
+
+        <div class="m-total">
+          <span class="k">Total CIF <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--steel);">(USD / USDT)</span></span>
+          <span class="v" id="totalCif">$0</span>
+        </div>
+
+        <div class="landed-box">
+          <div class="landed-label">Costos estimados por su cuenta en destino</div>
+          <div class="landed-row"><span>Aranceles e impuestos de importación</span><span id="landedDuty">$0 – $0</span></div>
+          <div class="landed-row"><span>Registro, placas y seguro obligatorio</span><span id="landedReg">$0 – $0</span></div>
+          <div class="landed-grand">
+            <span>Costo total estimado de propiedad</span>
+            <span id="landedGrandTotal">$0 – $0</span>
+          </div>
+          <div class="landed-note">Incluye el Total CIF más los estimados anteriores. No incluido en el Total CIF — corresponde al Comprador según el Artículo 9 del contrato. Estimación referencial; confirme la tasa exacta con su agente aduanal antes de importar.</div>
+        </div>
+
+        <div class="split-wrap">
+          <div class="split-label"><span>Anticipo (40%)</span><span>Saldo contra llegada (60%)</span></div>
+          <div class="split-bar">
+            <div class="dep" id="depAmt">$0</div>
+            <div class="bal" id="balAmt">$0</div>
+          </div>
+          <div class="split-note">El anticipo confirma la unidad e inicia la exportación. El saldo se cancela cuando la mercancía arriba al puerto, antes de la liberación de documentos.</div>
+        </div>
+
+        <div class="transit-chip">
+          🚢 Tránsito marítimo estimado: <b id="transitDays">—</b>
+        </div>
+
+        <a href="#" id="ctaBtn" class="cta" target="_blank">Solicitar esta cotización por WhatsApp</a>
+        <a href="#" id="ctaEmail" class="cta cta-secondary">Enviar cotización por correo</a>
+        <div class="cta-sub">Un asesor confirma disponibilidad y cierra la cotización final</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="panel">
+      <div class="panel-head"><div class="t">Usted recibe</div><div class="n">02 / 03</div></div>
+      <div class="panel-body checklist">
+        <div class="check-item"><span class="check-dot yes"></span>Bill of Lading (B/L) original</div>
+        <div class="check-item"><span class="check-dot yes"></span>Factura comercial (Commercial Invoice)</div>
+        <div class="check-item"><span class="check-dot yes"></span>Lista de empaque (Packing List)</div>
+        <div class="check-item"><span class="check-dot yes"></span>Certificado de origen</div>
+        <div class="check-item"><span class="check-dot yes"></span>Seguimiento del embarque (naviera, contenedor, fotos)</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="t">Usted gestiona en destino</div><div class="n">03 / 03</div></div>
+      <div class="panel-body checklist">
+        <div class="check-item"><span class="check-dot no"></span>Permiso o licencia de importación local</div>
+        <div class="check-item"><span class="check-dot no"></span>Agente aduanal / despacho de aduana</div>
+        <div class="check-item"><span class="check-dot no"></span>Aranceles, IVA e impuestos de nacionalización</div>
+        <div class="check-item"><span class="check-dot no"></span>Transporte desde el puerto hasta destino final</div>
+        <div class="check-item"><span class="check-dot no"></span>Costos de almacenaje si hay demoras portuarias</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trust-strip">
+    <div class="trust-item"><div class="trust-num">7+</div><div class="trust-label">Años exportando vehículos</div></div>
+    <div class="trust-item"><div class="trust-num" id="modelShippedNum">1,200+</div><div class="trust-label" id="modelShippedLabel">Unidades exportadas a Latinoamérica</div></div>
+    <div class="trust-item"><div class="trust-num">8</div><div class="trust-label">Países de destino activos</div></div>
+    <div class="trust-item"><div class="trust-num">✓</div><div class="trust-label">Registro mercantil verificable</div></div>
+  </div>
+  <p class="disclaimer" style="margin-top:10px;">Cifras de referencia — reemplazar con los datos reales de la empresa antes de publicar.</p>
+
+  <div class="live-ticker" id="liveTicker" aria-live="polite"></div>
+
+  <p class="disclaimer">
+    Los valores mostrados son estimados y referenciales, calculados con tarifas base de flete y gastos de exportación. La cotización final, sujeta a disponibilidad de inventario y tarifas navieras vigentes, se confirma en la Factura Proforma emitida por nuestro departamento comercial. Unidades "Kilometraje de fábrica" corresponden a vehículos nuevos con kilometraje únicamente de traslado interno; unidades "Usadas" se ofrecen sujetas a inspección previa y disponibilidad de catálogo. Las reglas de elegibilidad de importación y los rangos de aranceles mostrados son referenciales y pueden cambiar sin previo aviso — confirme siempre con su agente aduanal o autoridad competente antes de finalizar una compra.
+  </p>
+</div>
+
+<script>
+const PRICE_CUT = 6000; // flat reduction applied to every unit, new and used
+
+const models = [
+  {id:'hilux', name:'Toyota Hilux (Doble Cabina)', newPrice:28500 - PRICE_CUT, usedPrice:19000 - PRICE_CUT, shipped:310},
+  {id:'landcruiser', name:'Toyota Land Cruiser Prado', newPrice:52000 - PRICE_CUT, usedPrice:34000 - PRICE_CUT, shipped:95},
+  {id:'fortuner', name:'Toyota Fortuner', newPrice:33000 - PRICE_CUT, usedPrice:22000 - PRICE_CUT, shipped:140},
+  {id:'rav4', name:'Toyota RAV4', newPrice:27500 - PRICE_CUT, usedPrice:18500 - PRICE_CUT, shipped:175},
+  {id:'corolla', name:'Toyota Corolla', newPrice:19800 - PRICE_CUT, usedPrice:13500 - PRICE_CUT, shipped:260},
+  {id:'yaris', name:'Toyota Yaris', newPrice:16800 - PRICE_CUT, usedPrice:11200 - PRICE_CUT, shipped:150},
+  {id:'hiace', name:'Toyota Hiace (Van de Carga/Pasajeros)', newPrice:31000 - PRICE_CUT, usedPrice:21000 - PRICE_CUT, shipped:70},
+];
+
+const ports = [
+  {id:'laguaira', country:'Venezuela', code:'VE', name:'La Guaira', freight:1850, days:'36–40',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:15, dutyHigh:40, regFeeLow:400, regFeeHigh:900,
+    regulationNote:'La importación comercial de vehículos usados hacia Venezuela está fuertemente restringida para compradores no ciudadanos. Recomendamos unidades con kilometraje de fábrica para este destino.'},
+  {id:'pcabello', country:'Venezuela', code:'VE', name:'Puerto Cabello', freight:1800, days:'35–39',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:15, dutyHigh:40, regFeeLow:400, regFeeHigh:900,
+    regulationNote:'La importación comercial de vehículos usados hacia Venezuela está fuertemente restringida para compradores no ciudadanos. Recomendamos unidades con kilometraje de fábrica para este destino.'},
+  {id:'cartagena', country:'Colombia', code:'CO', name:'Cartagena', freight:1400, days:'30–34',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:60, dutyHigh:80, regFeeLow:250, regFeeHigh:500,
+    regulationNote:'Colombia prohíbe la importación permanente de vehículos usados (Acuerdo Automotor Andino), salvo vehículos clásicos de más de 30 años. Solo se permite la importación de unidades nuevas.'},
+  {id:'callao', country:'Perú', code:'PE', name:'Callao', freight:1650, days:'33–37',
+    usedAllowed:true, maxUsedAgeYears:5, maxUsedKm:80000, dutyLow:25, dutyHigh:40, regFeeLow:200, regFeeHigh:450,
+    regulationNote:'Perú permite unidades usadas de hasta 5 años de antigüedad y máximo 80,000 km recorridos. Unidades fuera de este rango no son aptas para nacionalización.'},
+  {id:'guayaquil', country:'Ecuador', code:'EC', name:'Guayaquil', freight:1500, days:'31–35',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:65, dutyHigh:100, regFeeLow:300, regFeeHigh:600,
+    regulationNote:'Ecuador prohíbe la importación de vehículos y motocicletas usados. Solo se permite la importación de unidades nuevas.'},
+  {id:'manzanillo', country:'México', code:'MX', name:'Manzanillo', freight:1300, days:'26–30',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:60, dutyHigh:75, regFeeLow:300, regFeeHigh:700,
+    regulationNote:'México aplica un arancel elevado (~50%) a vehículos nuevos provenientes de países sin tratado de libre comercio, incluyendo China. La importación general de unidades usadas no fabricadas en Norteamérica no está permitida fuera de programas especiales.'},
+  {id:'valparaiso', country:'Chile', code:'CL', name:'Valparaíso', freight:1900, days:'38–42',
+    usedAllowed:false, maxUsedAgeYears:null, maxUsedKm:null, dutyLow:25, dutyHigh:35, regFeeLow:250, regFeeHigh:550,
+    regulationNote:'Chile prohíbe la importación de vehículos usados, salvo excepciones muy específicas (residentes que retornan, exhibiciones). Solo se permite la importación de unidades nuevas.'},
+  {id:'colon', country:'Panamá', code:'PA', name:'Colón', freight:1250, days:'24–28',
+    usedAllowed:true, maxUsedAgeYears:5, maxUsedKm:null, dutyLow:25, dutyHigh:40, regFeeLow:250, regFeeHigh:500,
+    regulationNote:'Panamá aplica límites de antigüedad para unidades usadas (referencial, aproximadamente 5 años). Las fuentes varían; confirme con nuestro equipo antes de proceder.'},
+];
+
+const modelSel = document.getElementById('model');
+models.forEach(m=>{
+  const o = document.createElement('option');
+  o.value = m.id; o.textContent = m.name;
+  modelSel.appendChild(o);
+});
+
+const portSel = document.getElementById('port');
+ports.forEach(p=>{
+  const o = document.createElement('option');
+  o.value = p.id; o.textContent = `${p.name}, ${p.country}`;
+  portSel.appendChild(o);
+});
+
+/* ---------- VEHICLE GALLERY (no images — placeholder pending real catalog photos) ---------- */
+const angles = ['Frontal', 'Lateral', 'Trasera', 'Interior'];
+
+function anglePlaceholder(label){
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--steel);">
+    <div style="width:56px;height:56px;border:2px dashed var(--steel);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.05em;opacity:0.7;">FOTO</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;opacity:0.7;">${label} — próximamente</div>
+  </div>`;
+}
+
+const angleIcons = {
+  'Frontal': () => anglePlaceholder('Frontal'),
+  'Lateral': () => anglePlaceholder('Lateral'),
+  'Trasera': () => anglePlaceholder('Trasera'),
+  'Interior': () => anglePlaceholder('Interior'),
+};
+
+let galleryIndex = 0;
+let galleryTimer = null;
+
+
+function renderGallery(){
+  const model = models.find(m => m.id === modelSel.value) || models[0];
+  document.getElementById('galleryModelName').textContent = model.name;
+  const angle = angles[galleryIndex];
+  document.getElementById('galleryAngle').textContent = angle;
+  document.getElementById('galleryArt').innerHTML = angleIcons[angle]();
+
+  const dotsWrap = document.getElementById('galleryDots');
+  dotsWrap.innerHTML = '';
+  angles.forEach((a, i) => {
+    const d = document.createElement('button');
+    d.className = 'gdot' + (i === galleryIndex ? ' active' : '');
+    d.onclick = () => { galleryIndex = i; renderGallery(); restartAutoRotate(); };
+    dotsWrap.appendChild(d);
+  });
+}
+
+function galleryStep(dir){
+  galleryIndex = (galleryIndex + dir + angles.length) % angles.length;
+  renderGallery();
+  restartAutoRotate();
+}
+
+function restartAutoRotate(){
+  if(galleryTimer) clearInterval(galleryTimer);
+  galleryTimer = setInterval(() => {
+    galleryIndex = (galleryIndex + 1) % angles.length;
+    renderGallery();
+  }, 4000);
+}
+
+const galleryStage = document.getElementById('galleryStage');
+galleryStage.addEventListener('mouseenter', () => { if(galleryTimer) clearInterval(galleryTimer); });
+galleryStage.addEventListener('mouseleave', restartAutoRotate);
+
+modelSel.addEventListener('change', () => {
+  galleryIndex = 0;
+  renderGallery();
+  restartAutoRotate();
+  calculate();
+});
+portSel.addEventListener('change', calculate);
+
+let condition = 'new';
+let containerType = 'roro';
+
+function setContainer(c){
+  containerType = c;
+  document.getElementById('btnRoro').className = 'cond-btn' + (c==='roro' ? ' active-new' : '');
+  document.getElementById('btnEnclosed').className = 'cond-btn' + (c==='enclosed' ? ' active-new' : '');
+  calculate();
+}
+
+const yearSel = document.getElementById('modelYear');
+const currentYear = new Date().getFullYear();
+for(let y = currentYear; y >= currentYear - 5; y--){
+  const o = document.createElement('option');
+  o.value = y; o.textContent = y;
+  yearSel.appendChild(o);
+}
+
+function setCondition(c){
+  condition = c;
+  document.getElementById('btnNew').className = 'cond-btn' + (c==='new' ? ' active-new' : '');
+  document.getElementById('btnUsed').className = 'cond-btn' + (c==='used' ? ' active-used' : '');
+  document.getElementById('usedDetails').style.display = c === 'used' ? 'block' : 'none';
+  const stamp = document.getElementById('stampEl');
+  if(c==='new'){
+    stamp.className = 'stamp new';
+    stamp.innerHTML = 'FÁBRICA<br>0 KM';
+  } else {
+    stamp.className = 'stamp used';
+    stamp.innerHTML = 'UNIDAD<br>USADA';
+  }
+  calculate();
+}
+
+function stepQty(delta){
+  const q = document.getElementById('qty');
+  let v = parseInt(q.value || '1') + delta;
+  if(v < 1) v = 1;
+  q.value = v;
+  calculate();
+}
+
+function fmt(n){
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function calculate(){
+  const model = models.find(m => m.id === modelSel.value) || models[0];
+  const port = ports.find(p => p.id === portSel.value) || ports[0];
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value || '1'));
+
+  const unitPrice = condition === 'new' ? model.newPrice : model.usedPrice;
+  const goods = unitPrice * qty;
+  const inland = 180 * qty;
+  const exportFees = 270 * qty;
+  let freight = port.freight * qty;
+
+  const containerLine = document.getElementById('containerLine');
+  let containerCost = 0;
+  if(containerType === 'enclosed'){
+    containerCost = 450 * qty;
+    document.getElementById('lineContainer').textContent = fmt(containerCost);
+    containerLine.style.display = 'flex';
+  } else {
+    containerLine.style.display = 'none';
+  }
+  freight += containerCost;
+
+  // Bulk discount on freight for consolidated shipments
+  let bulkDiscount = 0;
+  let bulkPct = 0;
+  if(qty >= 8) bulkPct = 0.10;
+  else if(qty >= 4) bulkPct = 0.05;
+  const bulkLine = document.getElementById('bulkLine');
+  if(bulkPct > 0){
+    bulkDiscount = freight * bulkPct;
+    document.getElementById('lineBulk').textContent = '−' + fmt(bulkDiscount);
+    bulkLine.style.display = 'flex';
+  } else {
+    bulkLine.style.display = 'none';
+  }
+
+  const preInsurance = goods + inland + exportFees + freight - bulkDiscount;
+  const insurance = preInsurance * 0.011;
+  const total = preInsurance + insurance;
+
+  const usedChip = document.getElementById('usedInfoChip');
+  let usedInfoStr = '';
+  let ageYears = null;
+  let mileageBandLower = 0;
+  const mileageBandMap = {
+    '20,000–40,000 km': 20000,
+    '40,000–60,000 km': 40000,
+    '60,000–90,000 km': 60000,
+    '90,000+ km': 90000,
+  };
+  if(condition === 'used'){
+    const mileage = document.getElementById('mileage').value;
+    const year = document.getElementById('modelYear').value;
+    ageYears = new Date().getFullYear() - parseInt(year);
+    mileageBandLower = mileageBandMap[mileage] || 0;
+    usedInfoStr = `Año ${year} · Kilometraje ${mileage}`;
+    document.getElementById('usedInfoText').textContent = usedInfoStr;
+    usedChip.style.display = 'flex';
+  } else {
+    usedChip.style.display = 'none';
+  }
+
+  // ---- Import eligibility / compliance check ----
+  const warningEl = document.getElementById('complianceWarning');
+  const ctaBtn = document.getElementById('ctaBtn');
+  let blocked = false;
+
+  if(condition === 'used'){
+    if(!port.usedAllowed){
+      warningEl.className = 'compliance-warning';
+      warningEl.innerHTML = `<b>⚠ Importación restringida</b>${port.regulationNote}`;
+      warningEl.style.display = 'block';
+      blocked = true;
+    } else if(port.maxUsedAgeYears && ageYears > port.maxUsedAgeYears){
+      warningEl.className = 'compliance-warning';
+      warningEl.innerHTML = `<b>⚠ Antigüedad fuera de rango</b>Esta unidad supera el límite de ${port.maxUsedAgeYears} años permitido para importar vehículos usados a ${port.country}. ${port.regulationNote}`;
+      warningEl.style.display = 'block';
+      blocked = true;
+    } else if(port.maxUsedKm && mileageBandLower >= port.maxUsedKm){
+      warningEl.className = 'compliance-warning';
+      warningEl.innerHTML = `<b>⚠ Kilometraje fuera de rango</b>Esta unidad probablemente supera el límite de ${port.maxUsedKm.toLocaleString('en-US')} km permitido para nacionalizar en ${port.country}. ${port.regulationNote}`;
+      warningEl.style.display = 'block';
+      blocked = true;
+    } else if(port.maxUsedKm && mileageBandLower >= port.maxUsedKm - 30000){
+      warningEl.className = 'compliance-warning caution';
+      warningEl.innerHTML = `<b>◆ Verifique el kilometraje exacto</b>${port.country} exige un máximo de ${port.maxUsedKm.toLocaleString('en-US')} km. Esta unidad está cerca del límite — confirme el kilometraje real antes de continuar.`;
+      warningEl.style.display = 'block';
+    } else {
+      warningEl.style.display = 'none';
+    }
+  } else {
+    warningEl.style.display = 'none';
+  }
+
+  if(blocked){
+    ctaBtn.textContent = 'Consultar alternativas por WhatsApp';
+    ctaBtn.classList.add('cta-secondary');
+  } else {
+    ctaBtn.textContent = 'Solicitar esta cotización por WhatsApp';
+    ctaBtn.classList.remove('cta-secondary');
+  }
+
+  document.getElementById('qtyLabel').textContent = qty;
+
+  document.getElementById('modelShippedNum').textContent = model.shipped.toLocaleString('en-US') + '+';
+  document.getElementById('modelShippedLabel').textContent = `${model.name} exportadas a Latinoamérica`;
+
+  document.getElementById('lineGoods').textContent = fmt(goods);
+  document.getElementById('lineInland').textContent = fmt(inland);
+  document.getElementById('lineExport').textContent = fmt(exportFees);
+  document.getElementById('lineFreight').textContent = fmt(freight - containerCost);
+  document.getElementById('lineInsurance').textContent = fmt(insurance);
+  document.getElementById('totalCif').textContent = fmt(total);
+
+  document.getElementById('depAmt').textContent = fmt(total * 0.4);
+  document.getElementById('balAmt').textContent = fmt(total * 0.6);
+
+  document.getElementById('landedDuty').textContent =
+    fmt(total * port.dutyLow / 100) + ' – ' + fmt(total * port.dutyHigh / 100);
+
+  const regLow = port.regFeeLow * qty;
+  const regHigh = port.regFeeHigh * qty;
+  document.getElementById('landedReg').textContent = fmt(regLow) + ' – ' + fmt(regHigh);
+
+  const grandLow = total + (total * port.dutyLow / 100) + regLow;
+  const grandHigh = total + (total * port.dutyHigh / 100) + regHigh;
+  document.getElementById('landedGrandTotal').textContent = fmt(grandLow) + ' – ' + fmt(grandHigh);
+
+  document.getElementById('transitDays').textContent = `${port.days} días · ${port.name}, ${port.country}`;
+  document.getElementById('portCode').textContent = port.code;
+  document.getElementById('portLabelTop').textContent = port.name;
+
+  const ref = 'NDG-' + model.id.slice(0,3).toUpperCase() + '-' + port.code + '-' + qty + Math.floor(Math.random()*90+10);
+  document.getElementById('refNumber').textContent = 'REF #' + ref;
+
+  const summaryLines =
+    `Hola, quiero cotizar:\nModelo: ${model.name}\nCondición: ${condition==='new' ? 'Kilometraje de fábrica (nueva)' : 'Usada — ' + usedInfoStr}\nEmbarque: ${containerType === 'enclosed' ? 'Contenedor cerrado' : 'RoRo (compartido)'}\nCantidad: ${qty}\nPuerto destino: ${port.name}, ${port.country}\nTotal CIF estimado: ${fmt(total)}\nRef: ${ref}`;
+
+  document.getElementById('ctaBtn').href = `https://wa.me/000000000?text=${encodeURIComponent(summaryLines)}`;
+
+  const emailSubject = encodeURIComponent(`Cotización ${ref} — ${model.name}`);
+  const emailBody = encodeURIComponent(summaryLines);
+  document.getElementById('ctaEmail').href = `mailto:ventas@tuempresa.com?subject=${emailSubject}&body=${emailBody}`;
+}
+
+document.getElementById('mileage').addEventListener('change', calculate);
+document.getElementById('modelYear').addEventListener('change', calculate);
+
+/* ---------- LIVE ORDER TICKER ----------
+   Empty by default — intentionally does not display anything until real
+   orders are added. Each order should correspond to a REAL, verifiable
+   transaction (a real crypto tx hash). Do not populate this with invented
+   orders or amounts.
+
+   Format for each entry:
+   {
+     orderId: 'NDG-CH-VZ-0358-538',   // your real order reference
+     vehicle: 'Toyota Hilux (Doble Cabina)',
+     port: 'Puerto Cabello, Venezuela',
+     amountUsdt: 26800,               // total CIF actually paid, in USDT
+     txHash: '9f2a...c81e',           // real transaction hash
+     network: 'TRC20',                // 'TRC20' | 'ERC20' | 'BEP20'
+     timeAgo: 'hace 12 min'           // human-readable, update as needed
+   }
+
+   Add real orders to this array as they happen:
+*/
+const liveOrders = [
+  // { orderId: '...', vehicle: '...', port: '...', amountUsdt: 0, txHash: '...', network: 'TRC20', timeAgo: '...' },
+];
+
+const explorerBase = {
+  TRC20: 'https://tronscan.org/#/transaction/',
+  ERC20: 'https://etherscan.io/tx/',
+  BEP20: 'https://bscscan.com/tx/',
+};
+
+let tickerQueue = [];
+let tickerActive = false;
+
+function shuffledQueue(){
+  const arr = [...liveOrders];
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function showTicker(order){
+  const container = document.getElementById('liveTicker');
+  const card = document.createElement('div');
+  card.className = 'ticker-card';
+
+  const explorerUrl = explorerBase[order.network] ? explorerBase[order.network] + order.txHash : null;
+  const shortHash = order.txHash ? order.txHash.slice(0, 6) + '…' + order.txHash.slice(-4) : '';
+
+  card.innerHTML = `
+    <div class="ticker-icon">✓</div>
+    <div class="ticker-body">
+      <div class="ticker-title">Pedido procesado · ${order.orderId}</div>
+      <div class="ticker-main"><b>${order.vehicle}</b><br>${order.port} · Total CIF: <b>${order.amountUsdt.toLocaleString('en-US')} USDT</b></div>
+      <div class="ticker-meta">
+        <span>${order.timeAgo}</span>
+        ${explorerUrl ? `<a href="${explorerUrl}" target="_blank" rel="noopener">Ver transacción (${shortHash}) ↗</a>` : ''}
+      </div>
+    </div>
+    <button class="ticker-close" aria-label="Cerrar">×</button>
+  `;
+
+  container.innerHTML = '';
+  container.appendChild(card);
+  card.querySelector('.ticker-close').onclick = () => hideTicker(card);
+  requestAnimationFrame(() => card.classList.add('show'));
+
+  setTimeout(() => hideTicker(card), 6500);
+}
+
+function hideTicker(card){
+  card.classList.remove('show');
+  setTimeout(() => { if(card.parentNode) card.parentNode.removeChild(card); }, 400);
+}
+
+function tickerLoop(){
+  if(liveOrders.length === 0) return; // stays silent until real orders exist
+
+  if(tickerQueue.length === 0) tickerQueue = shuffledQueue();
+  const next = tickerQueue.shift();
+  showTicker(next);
+
+  const gap = 9000 + Math.random() * 14000; // realistic random interval, 9–23s
+  setTimeout(tickerLoop, gap);
+}
+
+// Start the loop after an initial delay, only if real orders are present
+setTimeout(tickerLoop, 4000);
+
+setCondition('new');
+calculate();
+renderGallery();
+restartAutoRotate();
+</script>
+
+</body>
+</html>

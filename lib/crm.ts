@@ -33,16 +33,16 @@ function getPool(): Pool {
 type Row = Record<string, unknown>;
 
 async function nextRef(client: PoolClient): Promise<string> {
-  // Prevent simultaneous submissions from choosing the same EST number.
+  // Prevent simultaneous submissions from choosing the same quote reference.
   // This lock is transaction-scoped and is released automatically.
   await client.query("SELECT pg_advisory_xact_lock(hashtext('hainaauto:quote-reference'))");
-  const { rows } = await client.query<{ ref: string }>("SELECT ref FROM quotes WHERE ref LIKE 'EST%'");
+  const { rows } = await client.query<{ ref: string }>("SELECT ref FROM quotes WHERE ref ~ '^(EST|NINDGE-AUTO-)[0-9]+$'");
   let max = 0;
   for (const { ref } of rows) {
-    const n = parseInt(ref.slice(3), 10);
+    const n = parseInt(ref.match(/[0-9]+$/)![0], 10);
     if (Number.isFinite(n) && n > max) max = n;
   }
-  return "EST" + String(max + 1).padStart(4, "0");
+  return "NINDGE-AUTO-" + String(max + 1).padStart(4, "0");
 }
 
 async function findOrCreateCustomer(
@@ -289,7 +289,7 @@ export type AdminQuoteItemInput = {
 
 export type AdminQuoteInput = {
   ref?: string | null; // omit to create a new quote; pass to update an existing one
-  documentNumber?: string | null; // omit on create to auto-generate HA-QT-{year}-####
+  documentNumber?: string | null; // omit on create to auto-generate NINDGE-AUTO-QT-{year}-####
   customer: AdminCustomerInput;
   quoteDate?: string | null;
   validUntil?: string | null;
@@ -365,7 +365,7 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
       isNew = true;
     }
     const documentNumber =
-      input.documentNumber ?? (isNew ? await nextDocumentNumber(client, new Date().getFullYear()) : null);
+      isNew ? await nextDocumentNumber(client, new Date().getUTCFullYear()) : input.documentNumber ?? null;
 
     const incoterm = quotePriceType(input.incoterm) === "FOB" ? "FOB" : "CIF";
     const isFob = incoterm === "FOB";

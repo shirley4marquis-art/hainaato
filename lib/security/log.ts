@@ -12,6 +12,7 @@ import { Pool } from "pg";
 
 export type SecurityEventType =
   | "edge_auth_failed"
+  | "blocked_geo_country"
   | "rate_limited"
   | "admin_login_failed"
   | "admin_login_blocked"

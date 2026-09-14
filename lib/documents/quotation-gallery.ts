@@ -33,6 +33,20 @@ export async function loadQuotationPhotos(items: Item[], load: (source: string) 
         if (photos.length === 3) break;
       }
     }
+    // Retry unavailable photos once after trying other photos of this unit.
+    // Successful loads remain cached across items.
+    if (photos.length < 3) {
+      for (const source of sources) {
+        if (await cache.get(source)) continue;
+        const retry = load(source);
+        cache.set(source, retry);
+        const bytes = await retry;
+        if (!bytes) continue;
+        const hash = createHash("sha256").update(bytes).digest("hex");
+        if (!hashes.has(hash)) { hashes.add(hash); photos.push(bytes); }
+        if (photos.length === 3) break;
+      }
+    }
     if (photos.length < 3) throw new DocumentError(`Add at least 3 distinct, accessible vehicle photos for ${item.make} ${item.model} before generating the quotation (${photos.length} available).`);
     galleries.push(photos);
   }

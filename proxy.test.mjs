@@ -23,3 +23,10 @@ test("proxy defaults to English without a country-derived language", () => {
   assert.match(proxySource, /const targetLang = langOverride \|\| existingLocale \|\| "en";/);
   assert.match(proxySource, /const EXPLICIT_LOCALE_COOKIE = "haina_locale_explicit";/);
 });
+
+test("proxy blocks mainland China and Chinese-administered adjacent regions", () => {
+  const proxySource = sources.find(([file]) => file === "proxy.ts")?.[1] ?? "";
+  assert.match(proxySource, /BLOCKED_COUNTRY_CODES = new Set\(\["CN", "HK", "MO", "TW"\]\);/);
+  assert.match(proxySource, /cf-ipcountry|x-vercel-ip-country|x-country-code/);
+  assert.match(proxySource, /blocked_geo_country/);
+});

@@ -23,6 +23,7 @@ import { normalizeLangParam } from "./lib/i18n/regions";
 const LOCALE_COOKIE = "haina_locale";
 const EXPLICIT_LOCALE_COOKIE = "haina_locale_explicit";
 const YEAR_SECONDS = 31_536_000;
+const BLOCKED_COUNTRY_CODES = new Set(["CN", "HK", "MO", "TW"]);
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/api/admin/login"]);
 
@@ -61,6 +62,22 @@ function forbidden(): NextResponse {
   return res;
 }
 
+function geoCountryCode(request: NextRequest): string | null {
+  const country = [
+    request.headers.get("x-vercel-ip-country"),
+    request.headers.get("cf-ipcountry"),
+    request.headers.get("x-country-code"),
+    request.headers.get("x-country"),
+  ].find((value): value is string => Boolean(value));
+
+  return country ? country.trim().toUpperCase() : null;
+}
+
+function isBlockedGeoCountry(request: NextRequest): boolean {
+  const country = geoCountryCode(request);
+  return country !== null && BLOCKED_COUNTRY_CODES.has(country);
+}
+
 function decorate(response: NextResponse): NextResponse {
   for (const [k, v] of Object.entries(allSecurityHeaders())) response.headers.set(k, v);
   return response;
@@ -90,7 +107,19 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     return forbidden();
   }
 
-  // 2. Visitor-selected localisation. Country headers are intentionally ignored;
+  // 2. Geo-blocking for China mainland and Chinese-administered adjacent regions.
+  if (isBlockedGeoCountry(request)) {
+    const country = geoCountryCode(request);
+    event.waitUntil(logSecurityEvent({
+      type: "blocked_geo_country",
+      ip,
+      path: pathname,
+      detail: country ? { country } : {},
+    }));
+    return forbidden();
+  }
+
+  // 3. Visitor-selected localisation. Country headers are intentionally ignored;
   //    explicit ?lang= choices and a prior explicit locale cookie remain supported.
   const langOverride = normalizeLangParam(request.nextUrl.searchParams.get("lang"));
   const hasExplicitLocale = request.cookies.get(EXPLICIT_LOCALE_COOKIE)?.value === "1";

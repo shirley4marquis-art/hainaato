@@ -17,7 +17,7 @@ async function catalogueImage(source?: string): Promise<Buffer | null> {
     const response = await fetch(new URL(source, pdfOrigin("http://localhost:3000")), {
       redirect: "error",
       headers: internalSecret ? { "x-internal-pdf-secret": internalSecret } : undefined,
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(30000),
     });
     if (!response.ok || Number(response.headers.get("content-length")) > 10 * 1024 * 1024) return null;
     const reader = response.body!.getReader(), chunks: Uint8Array[] = []; let size = 0;
@@ -29,7 +29,10 @@ async function build(quoteRef: string, template: TemplateFile, number: string, o
   const quote = existingQuote ?? await adminGetQuote(quoteRef);
   if (!quote) throw new DocumentError("Quotation not found.", 404);
   const data = documentData(quote, template.type, template.language, number, overrides, vins);
-  if (template.mapping.fields.some(f => f.kind === "image")) {
+  const galleries = template.type === "quotation" ? await loadQuotationPhotos(quote.items, catalogueImage) : null;
+  if (galleries) {
+    data.images = galleries.map(photos => photos[0]);
+  } else if (template.mapping.fields.some(f => f.kind === "image")) {
     const indexes = new Set(template.mapping.fields.filter(f => f.kind === "image").map(f => f.itemIndex ?? 0));
     const cache = new Map<string, Buffer | null>();
     for (let i = 0; i < quote.items.length; i++) {
@@ -39,7 +42,6 @@ async function build(quoteRef: string, template: TemplateFile, number: string, o
       data.images.push(cache.get(source) ?? null);
     }
   }
-  const galleries = template.type === "quotation" ? await loadQuotationPhotos(quote.items, catalogueImage) : null;
   const base = await generatePdf(template.prepared, template.mapping, data);
   return { pdf: galleries ? await appendQuotationGallery(base, data, galleries) : base, data };
 }
