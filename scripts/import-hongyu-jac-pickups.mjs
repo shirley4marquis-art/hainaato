@@ -131,7 +131,7 @@ for (const product of products) {
     slug, site, id: product.id, title: product.title, year: product.year, priceCNY,
     mileageKm: 0, fuel: "Gasoline", bodyType: "Pickup", location: "Hubei, China",
     thumb: images[0], thumbs: images.slice(0, 4), imageCount: images.length, color: product.color,
-    brand: "JAC", model: product.model, condition: "new", availability: "available",
+    brand: "JAC", model: product.model, condition: "new", availability: product.id === "jac-t9-hunter" ? "sold" : "available",
     transmission: product.transmission, stockCode: product.stockCode, listedAt: new Date().toISOString(),
   });
   details[slug] = {

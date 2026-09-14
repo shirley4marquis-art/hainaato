@@ -102,7 +102,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           {v.site === "hendrick" && <span className="tag">Hendrick Toyota</span>}
           <span className="tag">{v.condition === "new" ? "New Car" : "Actual Mileage"}</span>
           <span className="tag">{fuelChoiceLabel(v.fuel)}</span>
-          <span className="tag">Original vehicle photos</span><span className="tag">Export Ready</span><span className="tag">Available</span>
+          <span className="tag">Original vehicle photos</span>{v.availability === "available" && <span className="tag">Export Ready</span>}<span className="tag">{v.availability === "sold" ? <QuoteCopy en="Sold out" es="Agotado"/> : v.availability === "reserved" ? "Reserved" : "Available"}</span>
         </div>
         <dl className="vlist-details"><div><dt>Model Year</dt><dd>{v.year??"—"}</dd></div><div><dt>Color</dt><dd>{v.color??"—"}</dd></div><div><dt>Fuel options</dt><dd>{fuelChoiceLabel(v.fuel)}</dd></div><div><dt>Transmission</dt><dd>{v.transmission??"—"}</dd></div><div><dt>Body Type</dt><dd>{v.bodyType?normalizeBodyType(v.bodyType):"—"}</dd></div><div><dt>Location</dt><dd>{v.location??"China"}</dd></div></dl>
       </div>
@@ -117,6 +117,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <button
             type="button"
             className="is-cart"
+            disabled={v.availability === "sold" && !inCart}
             aria-pressed={inCart}
             aria-label={inCart ? "Remove from cart" : "Add to cart"}
             onClick={() => (inCart ? removeFromCart(v.slug) : addToCart(v.slug))}
@@ -126,7 +127,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
           <a className="is-wc" href={WECHAT_CONTACT_URL} aria-label="WeChat inquiry"><WeChatIcon/></a>
           <a className="is-tg" href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Telegram inquiry"><TelegramIcon/></a>
         </div>
-        <div className="vehicle-browse-actions"><Link className="vlist-view" href={href}><QuoteCopy en="View vehicle" es="Ver vehículo"/></Link><Link className="vlist-inquire" href={`/quote?vehicle=${encodeURIComponent(v.slug)}`}><QuoteCopy en="Request a quote" es="Solicitar cotización"/></Link></div>
+        <div className="vehicle-browse-actions"><Link className="vlist-view" href={href}><QuoteCopy en="View vehicle" es="Ver vehículo"/></Link>{v.availability !== "sold" && <Link className="vlist-inquire" href={`/quote?vehicle=${encodeURIComponent(v.slug)}`}><QuoteCopy en="Request a quote" es="Solicitar cotización"/></Link>}</div>
       </div>
     </article>
   );

@@ -29,6 +29,7 @@ import {WHATSAPP_URL} from "../../contact-links";
 import {
   formatKm,
   getFeaturedVehicles,
+  getVehicleIndexEntryBySlug,
   getTotalVehicleCount,
 } from "../../../lib/vehicles";
 import { convertFromCNY } from "../../../lib/currency";
@@ -98,8 +99,9 @@ export async function generateMetadata({
   const { slug } = await params;
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
+  const sold = getVehicleIndexEntryBySlug(slug)?.availability === "sold";
   const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
-  const description = `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de Nindge Automobile.`;
+  const description = sold ? `${vehicle.title}. Agotado / Sold out. Consulte otros vehículos disponibles en Nindge Automobile.` : `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de Nindge Automobile.`;
   const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
   const heroFile = rankVehicleImages(vehicle.images)[0];
   const shareImage = heroFile
@@ -141,6 +143,7 @@ export default async function VehicleDetail({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) notFound();
 
+  const sold = getVehicleIndexEntryBySlug(slug)?.availability === "sold";
   const specEntries = Object.entries(vehicle.specs).filter(shouldShowSpec);
   const metaLine = [
     vehicle.year,
@@ -163,8 +166,8 @@ export default async function VehicleDetail({
       <div className="container vehicle-layout">
         <div>
           <div className="gallery-badges">
-            <span>Export Ready</span>
-            <span className="alt">Inspection Available</span>
+            <span>{sold ? <QuoteCopy en="Sold out" es="Agotado"/> : "Export Ready"}</span>
+            {!sold && <span className="alt">Inspection Available</span>}
           </div>
           <Gallery site={vehicle.site} id={vehicle.id} images={vehicle.images} title={vehicle.title} />
 
@@ -197,6 +200,7 @@ export default async function VehicleDetail({
             {vehicle.site === "cntransit" ? "PARTNER LISTING" : "NINDGE AUTOMOBILE LISTING"}
           </span>
           <h1>{vehicle.title}</h1>
+          {sold && <p role="status"><strong><QuoteCopy en="Sold out — this vehicle is no longer available." es="Agotado — este vehículo ya no está disponible."/></strong></p>}
           <div className="vehicle-meta">{metaLine}</div>
           {chips.length > 0 && (
             <div className="detail-chips">
@@ -231,8 +235,8 @@ export default async function VehicleDetail({
           </ul>
 
           <div className="detail-actions">
-            <Link className="btn primary" href="#request">
-              <QuoteCopy en="Request a quote" es="Solicitar cotización"/>
+            <Link className="btn primary" href={sold ? "/vehicles?brand=JAC&availability=available" : "#request"}>
+              {sold ? <QuoteCopy en="Browse available vehicles" es="Ver vehículos disponibles"/> : <QuoteCopy en="Request a quote" es="Solicitar cotización"/>}
             </Link>
             <a className="btn ghost" href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
               <Download size={16} /> Download Specs
@@ -245,7 +249,7 @@ export default async function VehicleDetail({
             </a>
           </div>
           <div className="detail-secondary">
-            <AddToCartButton slug={vehicle.slug} />
+            {!sold && <AddToCartButton slug={vehicle.slug} />}
             <AddToCompareButton slug={vehicle.slug} />
             <ShareButton title={vehicle.title} />
           </div>
@@ -281,7 +285,7 @@ export default async function VehicleDetail({
             <div className="export-info-tiles">
               <div>
                 <small>Export Status</small>
-                <b>Ready to Export</b>
+                <b>{sold ? <QuoteCopy en="Sold out" es="Agotado"/> : "Ready to Export"}</b>
               </div>
               <div>
                 <small>Shipping</small>
@@ -344,7 +348,7 @@ export default async function VehicleDetail({
         </div>
 
         <div id="request">
-          <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel} />
+          {sold ? <div className="side-card"><h2><QuoteCopy en="Sold out" es="Agotado"/></h2><p><QuoteCopy en="This red JAC T9 has been sold. Contact our team for another available vehicle." es="Este JAC T9 rojo ha sido vendido. Contacte con nuestro equipo para consultar otro vehículo disponible."/></p><Link className="btn primary" href="/vehicles?brand=JAC&availability=available"><QuoteCopy en="Browse available vehicles" es="Ver vehículos disponibles"/></Link></div> : <VehicleRequestForm vehicleSlug={vehicle.slug} vehicleTitle={vehicle.title} vehicleFuel={vehicle.fuel} />}
           <div className="side-card specialist-card">
             <span className="avatar" aria-label="Nindge Automobile export team">
               <Image src="/images/KkwGH.png" alt="Nindge Automobile logo" width={32} height={32} />
