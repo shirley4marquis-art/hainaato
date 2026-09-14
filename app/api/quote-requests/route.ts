@@ -3,8 +3,8 @@
 // vehicle's own catalogue listing (no manual spec entry), saves the quote via
 // the same adminSaveQuote() the staff editor uses (so it's immediately
 // visible in /admin), renders the PDF, and emails it to the customer —
-// synchronously, so the response only returns once all of that either
-// succeeded or definitively failed. NINDGE AUTOMOBILE website quotes default to CIF:
+// in background tasks after returning the saved reference.
+// NINDGE AUTOMOBILE website quotes default to CIF:
 // the entered unit price already includes vehicle, ocean freight and marine
 // insurance to the agreed destination port.
 import { after, NextRequest, NextResponse } from "next/server";
@@ -245,7 +245,9 @@ export async function POST(request: NextRequest) {
       vehicleSummary,
       message,
     });
+  });
 
+  after(async () => {
     if (!email) return;
     let pdfBuffer: Buffer | null = null;
     try {

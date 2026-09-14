@@ -43,7 +43,7 @@ export type QuoteEmailDraft = {
   attachesPdf?: boolean;
 };
 
-const EMAIL_LOGO_CID = "hainaauto-logo";
+const EMAIL_LOGO_URL = "https://www.nindgeauto.com/nindge-mark.png";
 const SALES_EMAIL = "info@nindgeauto.com";
 const SALES_NAME = "Ventas Nindge Automobile";
 const WHATSAPP_URL = "https://wa.me/8615032178759";
@@ -107,7 +107,7 @@ function brandedEmail(params: {
 
   return `<!doctype html>
 <html lang="en">
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(params.preheader)}</div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px">
@@ -116,7 +116,7 @@ function brandedEmail(params: {
       <tr>
         <td bgcolor="${NAVY}" style="background:${NAVY};padding:24px 28px">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-            <td width="74" valign="middle"><img src="cid:${EMAIL_LOGO_CID}" width="62" height="62" alt="Nindge Automobile" style="display:block;width:62px;height:62px;border:0;border-radius:10px;background:#fff"></td>
+            <td width="74" valign="middle"><img src="${EMAIL_LOGO_URL}" width="62" height="62" alt="Nindge Automobile" style="display:block;width:62px;height:62px;border:0;border-radius:10px;background:#fff"></td>
             <td valign="middle"><div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em">NINDGE AUTOMOBILE</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">${escapeHtml(params.eyebrow)}</div></td>
           </tr></table>
         </td>

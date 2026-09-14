@@ -113,6 +113,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     draftType?: QuoteEmailDraftType;
   } | null;
   if (!body || [body.mode, body.toEmail, body.subject, body.message, body.draftType].some((value) => value != null && typeof value !== "string")) return NextResponse.json({ ok: false, error: "Invalid email request." }, { status: 400 });
+  if ((body.mode != null && body.mode !== "custom_links") || (body.draftType != null && !DRAFT_TYPES.has(body.draftType))) {
+    return NextResponse.json({ ok: false, error: "Unsupported email mode or draft type." }, { status: 400 });
+  }
   if (body?.mode === "custom_links") {
     if (body.uploadedFiles && (!Array.isArray(body.uploadedFiles) || body.uploadedFiles.length > MAX_ATTACHMENT_COUNT || body.uploadedFiles.some((file) => !file || typeof file.name !== "string" || typeof file.url !== "string" || !safeEmailUrl(file.url)))) return NextResponse.json({ ok: false, error: "Provide up to 5 files with valid HTTP or HTTPS download links." }, { status: 400 });
     const recipients = parseRecipients(body.toEmail || quote.customer.email || "");

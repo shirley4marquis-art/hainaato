@@ -45,5 +45,5 @@ export async function GET(request: NextRequest) {
       })),
       deliveryStatus: quote.customer.email ? (latestEmail?.status ?? "processing") : "whatsapp-only",
     },
-  });
+  }, { headers: { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" } });
 }

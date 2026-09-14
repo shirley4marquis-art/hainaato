@@ -8,6 +8,7 @@
 //   LEADS_FROM_EMAIL - a sender address verified with Resend (e.g. leads@nindgeauto.com,
 //                       or onboarding@resend.dev while testing without a verified domain)
 //   LEADS_TO_EMAIL   - optional, defaults to info@nindgeauto.com
+import { randomUUID } from "node:crypto";
 import type { WebLead } from "./crm";
 import { normalizeQuoteLanguage, type QuoteLanguage } from "./quote-language";
 import { isSingleEmail, safeEmailUrl } from "./security/generation";
@@ -58,27 +59,39 @@ async function sendResend(payload: ResendPayload): Promise<{ id: string | null }
   const sender = senderEmailAddress(payload.from);
   if (!sender || !isSingleEmail(sender)) throw new Error("Email sender is not configured with a valid address.");
 
-  const response = await fetch(RESEND_API_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(30_000),
-  });
-  const body = await response.text().catch(() => "");
-  if (!response.ok) {
-    let detail = body;
+  // Keep one key across retries; a deliberate resend gets a new key.
+  const idempotencyKey = randomUUID();
+  const body = JSON.stringify(payload);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let response: Response;
     try {
-      const parsed = JSON.parse(body) as { message?: string; name?: string };
-      detail = parsed.message || parsed.name || body;
-    } catch { /* keep the provider's raw response */ }
-    throw new Error(`Resend API error ${response.status}: ${detail}`);
+      response = await fetch(RESEND_API_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body,
+        signal: AbortSignal.timeout(30_000),
+      });
+    } catch (error) {
+      if (attempt === 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      continue;
+    }
+    const raw = await response.text();
+    let parsed: { id?: string; message?: string; name?: string } = {};
+    try { parsed = JSON.parse(raw) ?? {}; } catch { /* report invalid responses below */ }
+    if (!response.ok) {
+      if (attempt === 0 && (response.status === 429 || response.status >= 500)) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+      throw new Error(`Resend API error ${response.status}: ${parsed.message || parsed.name || raw}`);
+    }
+    if (typeof parsed.id !== "string" || !parsed.id.trim()) {
+      throw new Error("Resend did not return a message ID; email acceptance could not be confirmed.");
+    }
+    return { id: parsed.id };
   }
-  try {
-    const parsed = JSON.parse(body) as { id?: string };
-    return { id: parsed.id ?? null };
-  } catch {
-    return { id: null };
-  }
+  throw new Error("Email send failed after retry.");
 }
 
 export function customSalesEmailHtml(params: {
@@ -101,7 +114,7 @@ export function customSalesEmailHtml(params: {
   const downloads = params.downloadLinks?.length
     ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0;border:1px solid #DCE3EC;border-radius:12px;background:#F7F9FC"><tr><td style="padding:18px 20px"><div style="margin-bottom:10px;color:#082F63;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Download files</div>${params.downloadLinks.map((link) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #E3E8EF"><tr><td style="padding:12px 0;color:#44536A;font-size:13px;font-weight:700">${escapeHtml(link.label)}${link.size ? ` <span style="color:#7B879A;font-weight:400">(${escapeHtml(link.size)})</span>` : ""}</td><td align="right" style="padding:12px 0"><a href="${escapeHtml(link.url)}" style="display:inline-block;padding:8px 11px;border-radius:7px;background:#082F63;color:#fff;text-decoration:none;font-size:11px;font-weight:800">Download</a></td></tr></table>`).join("")}</td></tr></table>`
     : "";
-  return `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">NINDGE AUTOMOBILE</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${downloads}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">Nindge Automobile Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">NINDGE AUTOMOBILE</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:info@nindgeauto.com" style="color:#082F63">info@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:#082F63">nindgeauto.com</a></td></tr></table></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D"><div style="display:none;max-height:0;overflow:hidden">${heading}</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF" style="max-width:620px;border:1px solid #DCE3EC;border-radius:16px;overflow:hidden"><tr><td style="height:7px;background:#FF6B00;font-size:0">&nbsp;</td></tr><tr><td bgcolor="#082F63" style="padding:24px 28px"><table role="presentation" width="100%"><tr><td width="74">${logoImg()}</td><td><div style="color:#fff;font-size:22px;font-weight:800">NINDGE AUTOMOBILE</div><div style="color:#9FC5FF;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-top:5px">China vehicle sourcing &amp; export</div></td></tr></table></td></tr><tr><td style="padding:30px"><p style="margin:0 0 10px;color:#44536A;font-size:15px">Hello ${name},</p><h1 style="margin:0 0 20px;color:#082F63;font-size:25px;line-height:1.25">${heading}</h1>${paragraphs}${downloads}${cta}<p style="margin:22px 0 0;font-size:14px;line-height:1.7;color:#44536A">Best regards,<br><b style="color:#082F63">Nindge Automobile Sales Team</b></p></td></tr><tr><td style="padding:20px 30px 26px;background:#F7F9FC;font-size:11px;line-height:1.7;color:#7B879A"><b style="color:#082F63">NINDGE AUTOMOBILE</b><br>11, Yuefeng Road, Economic Development Zone, Zhangjiagang, Jiangsu, China<br><a href="mailto:info@nindgeauto.com" style="color:#082F63">info@nindgeauto.com</a> · <a href="https://www.nindgeauto.com" style="color:#082F63">nindgeauto.com</a></td></tr></table></td></tr></table></body></html>`;
 }
 
 export function customQuoteEmailHtml(params: {
@@ -249,7 +262,7 @@ export function quoteCreatedSalesEmailHtml(params: {
 
   const html = `<!doctype html>
 <html lang="en">
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="max-width:620px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #DCE3EC;box-shadow:0 8px 28px rgba(8,47,99,.10)">
@@ -391,7 +404,7 @@ export function customerQuoteEmailHtml(params: {
   const vehicleLines = escapeHtml(params.vehicleSummary).replace(/; /g, "<br>");
   const html = `<!doctype html>
 <html lang="${copy.lang}">
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:#EEF2F7;font-family:Arial,Helvetica,sans-serif;color:#14213D">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(copy.preheader)}</div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#EEF2F7"><tr><td align="center" style="padding:28px 12px">
@@ -471,10 +484,12 @@ export async function sendEmail(params: {
   }
 
   try {
-    const attachments = [
-      ...(params.attachments ?? []),
-      ...(params.attachment ? [params.attachment] : []),
-    ].map((attachment) => ({
+    const files = [...(params.attachments ?? []), ...(params.attachment ? [params.attachment] : [])];
+    // Leave room for Base64 expansion and MIME overhead beneath Resend's 40 MB limit.
+    if (files.reduce((size, file) => size + file.content.length, 0) > 25 * 1024 * 1024) {
+      return { ok: false, error: "Email attachments exceed 25 MB. Send smaller files or download links." };
+    }
+    const attachments = files.map((attachment) => ({
       filename: attachment.filename,
       content: attachment.content.toString("base64"),
       ...(attachment.contentType ? { content_type: attachment.contentType } : {}),
