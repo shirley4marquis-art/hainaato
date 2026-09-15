@@ -1,3 +1,4 @@
+import { SITE_HERO_PREVIEW } from "../../../lib/social-preview";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -48,7 +49,7 @@ import { rankVehicleImages } from "../../../lib/image-ranking";
 // caching at all.
 export const revalidate = 3600;
 const SITE_URL = "https://www.nindgeauto.com";
-const VEHICLE_FALLBACK_SHARE_IMAGE = `${SITE_URL}/images/hainaauto-vehicles-hero-full-hd.jpg`;
+const VEHICLE_FALLBACK_SHARE_IMAGE = `${SITE_URL}${SITE_HERO_PREVIEW.url}`;
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);

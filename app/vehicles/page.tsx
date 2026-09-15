@@ -5,7 +5,8 @@ import { CATALOGUE_COLLECTIONS, getFilterOptions, searchVehicles } from "../../l
 import { buildVehiclesUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, CatalogueCollections, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
 
-const VEHICLES_SHARE_IMAGE = "/vehicle-images/hongyu/jac-hunter-safety-4x4/01.webp";
+import { SITE_HERO_PREVIEW } from "../../lib/social-preview";
+const VEHICLES_SHARE_IMAGE = SITE_HERO_PREVIEW.url;
 
 export const metadata: Metadata = {
   title: "Vehículos nuevos y usados de China",
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: VEHICLES_SHARE_IMAGE,
-        width: 1920,
-        height: 1080,
+        width: SITE_HERO_PREVIEW.width,
+        height: SITE_HERO_PREVIEW.height,
         alt: "Vehículos preparados para exportación internacional con Nindge Automobile",
       },
     ],
