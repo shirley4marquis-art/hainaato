@@ -656,3 +656,7 @@ body{background:#fbf8ee}
 
 /* Header search icons submit the same GET form on touch and keyboard. */
 .mobile-header-search button{order:2;flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;border-radius:999px;cursor:pointer}.mobile-header-search:focus-within{outline:2px solid #b51f09;outline-offset:2px}.ah-header-search button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;cursor:pointer}.ah-header-search button:focus-visible,.mobile-header-search button:focus-visible{outline:2px solid #b51f09;outline-offset:2px}
+
+.vehicle-search-spinner{animation:vehicle-search-spin 1s linear infinite}.mobile-header-search button{gap:5px}.mobile-header-search button span{font-size:11px}.ah-header-search button:disabled,.mobile-header-search button:disabled{cursor:progress}@keyframes vehicle-search-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.vehicle-search-spinner{animation:none}}
+
+.vehicle-search-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
