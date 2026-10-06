@@ -36,6 +36,10 @@ export function convertFromCNY(cny: number, currency: CurrencyCode): number {
   return cny * RATE_PER_CNY[currency];
 }
 
+export function convertToCNY(amount: number, currency: CurrencyCode): number {
+  return amount / RATE_PER_CNY[currency];
+}
+
 // Display prices cleanly for buyers; the fixed-rate caveat is covered in the
 // pricing disclaimer rather than repeated in every catalogue card.
 export function formatPrice(cny: number | null | undefined, currency: CurrencyCode): string {

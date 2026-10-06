@@ -6,6 +6,7 @@ import {
   normalizeFuel,
   type VehicleIndexEntry,
 } from "./format";
+import { applyCatalogueFobOverride } from "./catalogue-fob-overrides";
 
 export type { Vehicle, VehicleIndexEntry, VehicleSite } from "./format";
 export { formatCNY, formatKm, imagePath } from "./format";
@@ -30,7 +31,7 @@ let indexCache: VehicleIndexEntry[] | null = null;
 function loadIndex(): VehicleIndexEntry[] {
   if (!indexCache) {
     const raw = fs.readFileSync(path.join(dataDir, "vehicles-index.json"), "utf-8");
-    indexCache = JSON.parse(raw);
+    indexCache = (JSON.parse(raw) as VehicleIndexEntry[]).map(applyCatalogueFobOverride);
   }
   return indexCache!;
 }

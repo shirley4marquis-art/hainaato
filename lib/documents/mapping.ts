@@ -20,7 +20,7 @@ export function validateMapping(input: unknown, pages: PageInfo[]): TemplateMapp
   const ids = new Set<string>();
   for (const f of m.fields) {
     rect(f, pages);
-    if (typeof f.id !== "string" || !f.id || ids.has(f.id) || !validKey(f.field)) throw new DocumentError("Invalid or duplicate template field.");
+    if (typeof f.id !== "string" || !f.id || ids.has(f.id) || !validKey(f.field)) throw new DocumentError(`Invalid or duplicate template field${typeof f.id === "string" ? ` ${f.id}` : ""} (${String(f.field)}).`);
     ids.add(f.id);
     if (!finite(f.fontSize, 4, 100) || !finite(f.minFontSize, 4, f.fontSize) || !finite(f.lineHeight, 1, 3) || !finite(f.maxLines, 1, 1000) || !finite(f.characterSpacing, -1, 10) || !/^#[0-9a-f]{6}$/i.test(f.color) || !["sans", "serif", "mono"].includes(f.font) || !["normal", "bold"].includes(f.fontWeight) || !["left", "center", "right"].includes(f.align) || ![undefined, "text", "vehicles", "image"].includes(f.kind)) throw new DocumentError(`Invalid text settings for ${f.field}.`);
     if ([f.wrap, f.autoShrink, f.replaceExisting].some(v => typeof v !== "boolean") || (f.replaceImages != null && typeof f.replaceImages !== "boolean") || (f.itemIndex != null && (!Number.isInteger(f.itemIndex) || !finite(f.itemIndex, 0, 99)))) throw new DocumentError("Invalid field options.");

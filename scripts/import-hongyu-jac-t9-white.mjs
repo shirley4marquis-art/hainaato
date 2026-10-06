@@ -3,8 +3,8 @@ import path from "node:path";
 import sharp from "sharp";
 
 // Clones the existing red JAC Hunter T9 listing (hongyu-jac-t9-hunter) with a
-// different color and its own real photos — same vehicle, same specs, same
-// price, only the color and images differ. Source photos supplied locally in
+// different color and its own real photos — same vehicle and specs, with its
+// own manually agreed FOB price. Source photos supplied locally in
 // Auto-Shop/FB/WHITE JAC T9 (Facebook marketplace photos of the actual unit).
 
 const root = process.cwd();
@@ -52,9 +52,11 @@ for (let i = 0; i < uniqueFiles.length; i += 1) {
 }
 
 const newStockCode = `${baseIndexEntry.stockCode}-WHITE`;
+const whiteT9PriceCNY = 9_500 / 0.139;
 
 index.unshift({
   ...baseIndexEntry,
+  priceCNY: whiteT9PriceCNY,
   slug: newSlug,
   id: newId,
   thumb: images[0],
@@ -67,6 +69,7 @@ index.unshift({
 
 details[newSlug] = {
   ...baseDetail,
+  priceCNY: whiteT9PriceCNY,
   slug: newSlug,
   id: newId,
   color: "White",

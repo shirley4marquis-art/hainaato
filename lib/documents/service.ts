@@ -15,6 +15,7 @@ import { loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
 import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
 import { translateSpecificationText, translateVehicleTerm } from "./vehicle-translation";
+import { generateOfficialDocument } from "./official-templates";
 
 async function catalogueImage(source?: string): Promise<Buffer | null> {
   if (!source || source.length > 2048) return null;
@@ -122,6 +123,25 @@ export async function generateQuoteTemplatePdf(ref: string, selectedLanguage?: D
       notes: facts,
     });
   }
+  if (language === "en" && quote.items.length === 1) {
+    const item = data.vehicles[0];
+    const source = quote.items[0];
+    const indexEntry = linkedCatalogueVehicle(source);
+    const stockId = indexEntry ? getVehicleIndexEntryBySlug(indexEntry.slug)?.stockCode : undefined;
+    const priceText = String(item.unit_price ?? "").replace(/^[A-Z]{3}\s*/, "").replace(/\s+(?:FOB|CIF|CFR)$/i, "");
+    Object.assign(data.values, {
+      buyer_address: [quote.customer.address, quote.customer.city, quote.customer.country].filter(Boolean).join(", ") || quote.customer.country || "—",
+      buyer_email: quote.customer.email || "—", buyer_phone: quote.customer.phone || "—",
+      loading_port: "To be confirmed", stock_id: stockId ?? indexEntry?.id ?? "—",
+      vehicle_summary: [item.vehicle_year, item.vehicle_brand, item.vehicle_model].map(cleanValue).filter(Boolean).join(" "),
+      vehicle_details: [item.vehicle_color, item.fuel, item.mileage ? `${item.mileage} km` : ""].map(cleanValue).filter(Boolean).join(" · ") || "See confirmed vehicle record",
+      stock_summary: stockId ?? indexEntry?.id ?? "—", quantity_summary: item.quantity ?? 1,
+      price_summary: priceText || "—", steering: "See vehicle specification",
+      transmission: item.transmission || "See vehicle specification",
+    });
+    data.images = (galleries[0] ?? []).slice(0, 3);
+    return generateOfficialDocument("quotation", data);
+  }
   return generateQuotationLayout(data, galleries);
 }
 export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language: DocumentLanguage) {
@@ -133,6 +153,31 @@ export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language
   const photos = (await Promise.all(photoSources.map(catalogueImage))).filter((photo): photo is Buffer => photo !== null);
   if (!photos.length) throw new DocumentError(`Vehicle photos for ${vehicle.title} are temporarily unavailable. Please try again shortly.`, 503);
   values.vehicle_condition = index?.condition ? translateVehicleTerm(index.condition, language) : "";
+  if (language === "en") {
+    const specs = vehicle.specs;
+    const spec = (...keys: string[]) => keys.map(key => specs[key]).find(value => value != null && String(value).trim()) ?? "Not stated";
+    const date = new Intl.DateTimeFormat("en-GB", { dateStyle: "long", timeZone: "UTC" }).format(new Date());
+    const availability = index?.availability === "sold" ? "Sold" : index?.availability === "reserved" ? "Reserved" : "Available";
+    Object.assign(values, {
+      issue_date: date, attached_to: "—", units: "Metric (SI)", stock_id: index?.stockCode ?? vehicle.id,
+      vehicle_condition: availability, interior_color: translateVehicleTerm(specs["Interior Color"] ?? "Not stated", language),
+      body_type: vehicle.bodyType ?? "Not stated", doors_seats: `${spec("Doors", "Door count")} / ${spec("Seats", "Seating capacity", "Capacity (people/seats)", "Capacity")}`,
+      steering: spec("Steering", "Steering position", "Direction"), fuel: translateVehicleTerm(vehicle.fuel ?? "Not stated", language),
+      engine: spec("Displacement", "Engine", "Motor"), power: spec("Maximum Power", "Power", "Horsepower", "Potencia"),
+      transmission: translateVehicleTerm(vehicle.gearbox ?? "Not stated", language), drivetrain: spec("Drive type", "Drivetrain", "Tracción") === "Not stated" ? vehicle.driveType ?? "Not stated" : spec("Drive type", "Drivetrain", "Tracción"),
+      emissions: spec("Emission standard", "Emissions", "Emission"), battery_range: spec("Battery / range", "Battery capacity", "Range", "Battery range"),
+      mileage: vehicle.mileageKm == null ? "Not recorded" : `${vehicle.mileageKm.toLocaleString("en-US")} km, as displayed and accepted by the buyer`,
+      first_registration: spec("First registration", "Registration date"), ownership_history: spec("Use / owners", "Ownership history"),
+      keys_books: spec("Keys / books", "Keys", "Service book"), condition_note: spec("Condition note", "Condition"),
+      inspection_status: spec("Inspection", "PDI status"), length_width_height: spec("Dimensions", "Length / width / height"),
+      wheelbase: spec("Wheelbase", "Wheelbase (mm)"), curb_weight: spec("Curb weight", "Weight"),
+      packed_volume: spec("Packed volume", "Volume"), preferred_lifting: "To be confirmed with the shipping agent",
+      loading_port: "To be confirmed with buyer", export_photo_status: `${photos.length} listing photo(s) attached; PDI date to confirm`,
+      export_licence_status: "Applied for after deposit clearance", deregistration_status: index?.condition === "used" ? "Certificate required before shipment" : "Not applicable to this new vehicle",
+      destination_rules: "Buyer to confirm age, steering and emissions requirements",
+    });
+    return generateOfficialDocument("specification", { values, vehicles: [values], images: photos.slice(0, 3), language });
+  }
   return generateQuotationLayout({ values, vehicles: [values], images: photos, language }, [photos], true);
 }
 export async function createDocument(input: { quoteRef: string; templateId?: string; type: DocumentType; language: DocumentLanguage; idempotencyKey: string; overrides?: DocumentValues; vins?: Record<string, string> }) {

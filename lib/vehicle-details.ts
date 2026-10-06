@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Vehicle } from "./format";
+import { applyCatalogueFobOverride } from "./catalogue-fob-overrides";
 
 const detailShardCache = new Map<number, Record<string, Vehicle>>();
 const DETAIL_SHARD_COUNT = 64;
@@ -37,5 +38,5 @@ export function getVehicleBySlug(slug: string): Vehicle | null {
   }
   const vehicle = shard![slug];
   // Never expose an imported supplier URL as this listing's public address.
-  return vehicle ? { ...vehicle, url: `/vehicles/${encodeURIComponent(slug)}` } : null;
+  return vehicle ? { ...applyCatalogueFobOverride(vehicle), url: `/vehicles/${encodeURIComponent(slug)}` } : null;
 }

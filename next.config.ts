@@ -32,9 +32,9 @@ const nextConfig: NextConfig = {
     "/api/admin/documents": ["./assets/fonts/*"],
     "/api/admin/quotes/*/pdf": ["./assets/fonts/*"],
     "/api/admin/quotes/*/resend": ["./assets/fonts/*"],
-    "/api/quote-pdf": ["./assets/fonts/*"],
+    "/api/quote-pdf": ["./assets/fonts/*", "./docs/HAINA_AUTO_Export_Quotation_Template (1).pdf"],
     "/api/quote-requests": ["./assets/fonts/*"],
-    "/api/vehicle-specification-pdf": ["./assets/fonts/*"],
+    "/api/vehicle-specification-pdf": ["./assets/fonts/*", "./docs/HAINA_AUTO_Vehicle_Specification_Template (1).pdf"],
   },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];

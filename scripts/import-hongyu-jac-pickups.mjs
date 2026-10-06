@@ -14,14 +14,14 @@ const products = [
     title: "2025 JAC Hunter T9 2.0T Gasoline 4×4 Automatic",
     year: 2025,
     priceUsd: 11_000,
-    finalPriceUsd: 9_500,
     stockCode: "HA-CN-JACT9-2025",
     color: "Red",
+    listedFobUsd: 9_700,
     transmission: "8-speed automatic",
     driveType: "4×4",
     overview: "Pickup JAC Hunter T9 nueva, con motor de gasolina turbo de 2.0 litros, tracción 4×4 y transmisión automática de ocho velocidades. Disponible para inspección, documentación de exportación y envío internacional mediante HainaAuto. El precio mostrado es desde y depende de la configuración final.",
-    priceLabel: "Desde US$11,000",
-    priceNote: "Rango publicado: US$11,000–25,000. El precio final depende de la versión, transmisión, tracción y configuración confirmadas en la cotización.",
+    priceLabel: "US$9,700 FOB",
+    priceNote: "Precio FOB publicado para esta unidad; el transporte y el seguro internacional se calculan en la cotización CIF.",
     model: "Hunter T9",
     modelNumber: "HYS5137GYYZ3",
     torque: "360 N·m",
@@ -121,11 +121,8 @@ for (const product of products) {
     images.push(file);
   }
 
-  // finalPriceUsd is an approved final CIF selling price and must not receive
-  // the general catalogue reduction a second time.
-  const discountedPriceUsd = (product.finalPriceUsd != null
-    ? product.finalPriceUsd
-    : product.priceUsd * RECENT_LISTING_PRICE_FACTOR) * CURRENT_PRICE_FACTOR;
+  // Explicit vehicle FOB offers are independent of the general catalogue reduction.
+  const discountedPriceUsd = product.listedFobUsd ?? product.priceUsd * RECENT_LISTING_PRICE_FACTOR * CURRENT_PRICE_FACTOR;
   const priceCNY = discountedPriceUsd / USD_PER_CNY;
   imported.push({
     slug, site, id: product.id, title: product.title, year: product.year, priceCNY,
@@ -159,8 +156,9 @@ const t9Base = imported.find((vehicle) => vehicle.slug === "hongyu-jac-t9-hunter
 const t9WhiteSlug = "hongyu-jac-t9-hunter-white";
 const t9WhiteIndex = index.find((vehicle) => vehicle.slug === t9WhiteSlug);
 if (t9Base && t9WhiteIndex && details[t9WhiteSlug]) {
-  t9WhiteIndex.priceCNY = t9Base.priceCNY;
-  details[t9WhiteSlug].priceCNY = t9Base.priceCNY;
+  const whiteT9FobCny = 9_500 / USD_PER_CNY;
+  t9WhiteIndex.priceCNY = whiteT9FobCny;
+  details[t9WhiteSlug].priceCNY = whiteT9FobCny;
 }
 
 fs.writeFileSync(indexPath, JSON.stringify([...imported, ...index]));
