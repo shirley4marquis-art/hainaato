@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, PDFTextField, rgb } from "pdf-lib";
 import { defaultField, EMPTY_MAPPING, type DocumentData, type FieldMapping, type TemplateMapping } from "./types";
 import { generatePdf, inspectPdf } from "./pdf";
 
@@ -72,7 +72,7 @@ async function mappingFor(type: OfficialType, data: DocumentData): Promise<Templ
   const pdf = await PDFDocument.load(source), config = type === "quotation" ? quotationConfig(data) : null, fields: FieldMapping[] = [];
   const pages = pdf.getPages(), pageIndexes = new Map(pages.map((page, index) => [String(page.ref), index]));
   for (const pdfField of pdf.getForm().getFields()) {
-    if (pdfField.constructor.name !== "PDFTextField") continue;
+    if (!(pdfField instanceof PDFTextField)) continue;
     const fieldName = pdfField.getName(), specKey = SPEC_FIELDS[fieldName], entry = config?.[fieldName];
     const fieldKey = entry?.field ?? specKey;
     if (!fieldKey) continue;
