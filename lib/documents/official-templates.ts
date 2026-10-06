@@ -99,8 +99,18 @@ async function mappingFor(type: OfficialType, data: DocumentData): Promise<Templ
 }
 
 export async function generateOfficialDocument(type: OfficialType, data: DocumentData): Promise<Buffer> {
-  const template = await loadTemplate(type);
-  const mapping = await mappingFor(type, data);
-  await inspectPdf(template);
-  return generatePdf(template, mapping, data);
+  let stage = "load template";
+  try {
+    const template = await loadTemplate(type);
+    stage = "map fillable fields";
+    const mapping = await mappingFor(type, data);
+    stage = "inspect flattened template";
+    await inspectPdf(template);
+    stage = "render document fields and photos";
+    return await generatePdf(template, mapping, data);
+  } catch (error) {
+    const detail = error as { code?: string; name?: string };
+    console.error("[official-document] generation stage failed", { type, stage, name: detail?.name ?? "Unknown", code: detail?.code });
+    throw error;
+  }
 }
