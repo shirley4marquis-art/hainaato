@@ -6,6 +6,7 @@ import { convertToCNY } from "./currency";
 export const FOB_USD_OVERRIDES: Readonly<Record<string, number>> = {
   "hongyu-jac-t9-hunter": 9700,
   "hongyu-jac-t9-hunter-white": 9500,
+  "hongyu-jac-hunter-safety-4x4": 11500,
   "hainaauto-799121499": 11500,
   "hainaauto-821427468": 11500,
 };
