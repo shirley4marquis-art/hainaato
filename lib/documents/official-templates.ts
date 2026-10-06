@@ -1,13 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { PDFDocument, rgb } from "pdf-lib";
 import { defaultField, EMPTY_MAPPING, type DocumentData, type FieldMapping, type TemplateMapping } from "./types";
 import { generatePdf, inspectPdf } from "./pdf";
 
 type OfficialType = "quotation" | "specification";
 type Config = { field: string; text?: string; fontSize?: number; minFontSize?: number; align?: "left" | "right"; wrap?: boolean; maxLines?: number };
-type PageWidget = { fieldName: string; fieldType: string; rect: number[] };
 const FILES: Record<OfficialType, string> = {
   quotation: "HAINA_AUTO_Export_Quotation_Template (1).pdf",
   specification: "HAINA_AUTO_Vehicle_Specification_Template (1).pdf",
@@ -71,29 +69,28 @@ async function loadTemplate(type: OfficialType): Promise<Buffer> {
 
 async function mappingFor(type: OfficialType, data: DocumentData): Promise<TemplateMapping> {
   const source = await readFile(path.join(process.cwd(), "docs", FILES[type]));
-  const task = getDocument({ data: new Uint8Array(source), useSystemFonts: true });
-  const doc = await task.promise, config = type === "quotation" ? quotationConfig(data) : null, fields: FieldMapping[] = [];
-  try {
-    for (let pageNo = 1; pageNo <= doc.numPages; pageNo++) {
-      const page = await doc.getPage(pageNo), widgets = await page.getAnnotations({ intent: "display" }) as PageWidget[];
-      const pageHeight = page.view[3] - page.view[1];
-      for (const widget of widgets) {
-        if (widget.fieldType !== "Tx" || !widget.fieldName) continue;
-        const specKey = SPEC_FIELDS[widget.fieldName], entry = config?.[widget.fieldName];
-        const fieldKey = entry?.field ?? specKey;
-        if (!fieldKey) continue;
-        const [left, bottom, right, top] = widget.rect;
-        const resolved = entry ?? { field: fieldKey };
-        fields.push({
-          ...defaultField(pageNo), id: `official-${type}-${widget.fieldName}`, field: resolved.field, text: resolved.text ?? `{{${resolved.field}}}`,
-          x: left + 2.4, y: pageHeight - top + 2, width: Math.max(2, right - left - 4.8), height: Math.max(2, top - bottom - 4),
-          font: "sans", fontSize: resolved.fontSize ?? 8, minFontSize: resolved.minFontSize ?? 5.2, fontWeight: "normal", color: "#6b3e11",
-          maxLines: resolved.maxLines ?? 1, wrap: resolved.wrap ?? false, autoShrink: true, lineHeight: 1.05,
-          align: resolved.align ?? "left", replaceExisting: false,
-        });
-      }
+  const pdf = await PDFDocument.load(source), config = type === "quotation" ? quotationConfig(data) : null, fields: FieldMapping[] = [];
+  const pages = pdf.getPages(), pageIndexes = new Map(pages.map((page, index) => [String(page.ref), index]));
+  for (const pdfField of pdf.getForm().getFields()) {
+    if (pdfField.constructor.name !== "PDFTextField") continue;
+    const fieldName = pdfField.getName(), specKey = SPEC_FIELDS[fieldName], entry = config?.[fieldName];
+    const fieldKey = entry?.field ?? specKey;
+    if (!fieldKey) continue;
+    for (const widget of pdfField.acroField.getWidgets()) {
+      const pageIndex = pageIndexes.get(String(widget.P()));
+      if (pageIndex == null) continue;
+      const pageNo = pageIndex + 1, pageHeight = pages[pageIndex].getHeight(), rect = widget.getRectangle();
+      const left = rect.x, bottom = rect.y, right = left + rect.width, top = bottom + rect.height;
+      const resolved = entry ?? { field: fieldKey };
+      fields.push({
+        ...defaultField(pageNo), id: `official-${type}-${fieldName}`, field: resolved.field, text: resolved.text ?? `{{${resolved.field}}}`,
+        x: left + 2.4, y: pageHeight - top + 2, width: Math.max(2, right - left - 4.8), height: Math.max(2, top - bottom - 4),
+        font: "sans", fontSize: resolved.fontSize ?? 8, minFontSize: resolved.minFontSize ?? 5.2, fontWeight: "normal", color: "#6b3e11",
+        maxLines: resolved.maxLines ?? 1, wrap: resolved.wrap ?? false, autoShrink: true, lineHeight: 1.05,
+        align: resolved.align ?? "left", replaceExisting: false,
+      });
     }
-  } finally { await task.destroy(); }
+  }
   fields.push(...photoFields(type));
   return { ...structuredClone(EMPTY_MAPPING), reviewed: true, fields };
 }
