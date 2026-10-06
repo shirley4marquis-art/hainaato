@@ -17,6 +17,8 @@ export const roundMoney = (value: number): number =>
 
 export type QuoteTotalsInput = {
   incoterm?: string | null;
+  /** Website estimates store vehicle FOB subtotal and CIF cost legs separately. */
+  cifCostsIncluded?: boolean;
   items: { fobFinal: number; qty: number }[];
   inlandTransportCost?: number | null;
   exportDocumentationCost?: number | null;
@@ -60,10 +62,14 @@ export function computeQuoteTotals(input: QuoteTotalsInput): QuoteTotals {
   };
 
   const itemsSubtotal = roundMoney(quoteItemsSubtotal(pricing));
-  const cifTotal = roundMoney(quoteCifTotal(pricing));
-  const customsBaseCifValue = roundMoney(quoteNationalizationCifValue(pricing));
-
   const isCif = (input.incoterm ?? "").trim().toUpperCase() !== "FOB";
+  const logistics = pricing.inlandTransportCost + pricing.exportDocumentationCost + pricing.freightCost + pricing.insuranceCost;
+  const cifTotal = isCif && input.cifCostsIncluded
+    ? roundMoney(itemsSubtotal + logistics)
+    : roundMoney(quoteCifTotal(pricing));
+  const customsBaseCifValue = isCif && input.cifCostsIncluded
+    ? cifTotal
+    : roundMoney(quoteNationalizationCifValue(pricing));
   const freight = isCif ? 0 : pricing.freightCost;
   const insurance = isCif ? 0 : pricing.insuranceCost;
 

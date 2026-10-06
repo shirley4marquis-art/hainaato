@@ -4,9 +4,8 @@
 // the same adminSaveQuote() the staff editor uses (so it's immediately
 // visible in /admin), renders the PDF, and emails it to the customer —
 // in background tasks after returning the saved reference.
-// NINDGE AUTOMOBILE website quotes default to CIF:
-// the entered unit price already includes vehicle, ocean freight and marine
-// insurance to the agreed destination port.
+// The submitted listing price is FOB. This route adds estimated origin costs,
+// route freight and cargo insurance to create a destination specific CIF quote.
 import { after, NextRequest, NextResponse } from "next/server";
 import { guardRequest } from "../../../lib/security/http";
 import { getVehicleIndexEntryBySlug } from "../../../lib/vehicles";
@@ -35,6 +34,7 @@ import { createQuoteAccessToken } from "../../../lib/quote-access";
 import { readJsonObject } from "../../../lib/security/request-body";
 import { createHash } from "node:crypto";
 import { checkRateLimit } from "../../../lib/security/rate-limit";
+import { estimateCif } from "../../../lib/cif-estimate";
 
 // PDF rendering (headless Chromium) can take longer than the default limit.
 export const maxDuration = 300;
@@ -70,7 +70,7 @@ function parseVehicles(value: unknown): RequestedVehicle[] {
 // the whole point being staff/the customer never hand-type specs. Returns
 // null for a slug that no longer resolves (delisted between add-to-cart and
 // submit) so the caller can skip it rather than fail the whole request.
-type BuiltListingItem = { item: AdminQuoteItemInput; cataloguePriceUsd: number };
+type BuiltListingItem = { item: AdminQuoteItemInput; cataloguePriceUsd: number; bodyType: string; condition: string };
 
 function buildItemFromListing({ slug, qty, customColor, customColorName }: RequestedVehicle): BuiltListingItem | null {
   const indexEntry = getVehicleIndexEntryBySlug(slug);
@@ -128,7 +128,7 @@ function buildItemFromListing({ slug, qty, customColor, customColorName }: Reque
     discount: 0,
     fobFinal: fobUsd,
     photos: images.map((url) => ({ url, caption: null })),
-  }, cataloguePriceUsd: baseFobUsd };
+  }, cataloguePriceUsd: baseFobUsd, bodyType: detail.bodyType ?? "car", condition: indexEntry.condition };
 }
 
 export async function POST(request: NextRequest) {
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
   if (email && !isLikelyRealEmail(email)) {
     return NextResponse.json({ ok: false, error: "Please enter a valid email address." }, { status: 400 });
   }
-  if (!country) return NextResponse.json({ ok: false, error: "Destination country is required." }, { status: 400 });
+  if (!country || !destinationPort) return NextResponse.json({ ok: false, error: "Destination country and port are required." }, { status: 400 });
   if (requestedVehicles.length === 0) {
     return NextResponse.json({ ok: false, error: "At least one vehicle is required." }, { status: 400 });
   }
@@ -197,6 +197,15 @@ export async function POST(request: NextRequest) {
     };
   });
 
+  const estimate = estimateCif(country, destinationPort, items.map((item, index) => ({
+    fobFinal: item.fobFinal,
+    qty: item.qty,
+    bodyType: builtItems[index].bodyType,
+    fuelType: item.fuelType,
+    condition: builtItems[index].condition,
+  })));
+  if (!estimate) return NextResponse.json({ ok: false, error: "A shipping estimate is not available for this destination." }, { status: 400 });
+
   const language = normalizeQuoteLanguage(selectedLanguage, languageForCountry(country));
 
   let ref: string;
@@ -206,23 +215,24 @@ export async function POST(request: NextRequest) {
       destinationPort: destinationPort || `${country} main import port`,
       destinationCountry: country,
       incoterm: "CIF",
-      inlandTransportCost: 0,
-      exportDocumentationCost: 0,
-      freightCost: 0,
-      insuranceCost: 0,
+      inlandTransportCost: estimate.inlandTransportCost,
+      exportDocumentationCost: estimate.exportDocumentationCost,
+      freightCost: estimate.freightCost,
+      insuranceCost: estimate.insuranceCost,
       depositPct: DEFAULT_DEPOSIT_PCT,
       currency: "USD",
       language,
       status: "quoted",
       notes: [
-        "Website quote request (cart checkout).",
+        "Website CIF quotation (FOB vehicle price plus route-based cost estimate).",
+        `Estimate: FOB USD ${estimate.fobSubtotal}; origin handling USD ${estimate.inlandTransportCost}; export clearance, documents and B/L USD ${estimate.exportDocumentationCost}; freight USD ${estimate.freightCost}; insurance USD ${estimate.insuranceCost}; route basis ${estimate.rateBasis}. Carrier and insurer confirmation required.`,
         promotionApplies
           ? `Catalogue promotion applied: at least ${CATALOGUE_PROMOTION.minimumEligibleListings} eligible listings priced at or below USD ${CATALOGUE_PROMOTION.maximumCataloguePriceUsd.toLocaleString("en-US")}; eligible units capped at USD ${CATALOGUE_PROMOTION.promotionalUnitPriceUsd.toLocaleString("en-US")} each.`
           : null,
         message || null,
       ].filter(Boolean).join("\n"),
       publicConsent,
-      source: "cart-checkout",
+      source: "cart-checkout-cif-estimate-v2",
       items,
     }, { publicSubmission: true });
   } catch (error) {

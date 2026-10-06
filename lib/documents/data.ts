@@ -23,11 +23,14 @@ export function documentData(quote: AdminQuoteDetail, type: DocumentType, langua
     if (!Number.isSafeInteger(item.qty) || item.qty < 1 || item.qty > 10000) throw new DocumentError("Vehicle quantity must be a positive whole number.");
     const unit = moneyNumber(item.fobFinal, "unit price"), vin = cleanValue(vins[String(item.id)] ?? item.vin ?? "").trim().toUpperCase();
     if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) throw new DocumentError("Vehicle VIN must contain 17 valid letters and digits.");
-    return { vehicle_brand: item.make, vehicle_model: item.model, vehicle_year: item.year ?? "", vehicle_condition: !item.condition ? "" : item.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado"), vehicle_color: item.exteriorColor ?? "", vin, engine: item.engine ?? "", fuel: item.fuelType ?? "", transmission: item.transmission ?? "", mileage: item.mileageKm ?? "", quantity: item.qty, unit_price: amount(unit), vehicle_total: amount(unit * item.qty), notes: item.specSummary ?? "" };
+    const priceBasis = quote.source === "cart-checkout-cif-estimate-v2" ? " FOB" : quote.incoterm === "FOB" ? " FOB" : " CIF";
+    return { vehicle_brand: item.make, vehicle_model: item.model, vehicle_year: item.year ?? "", vehicle_condition: !item.condition ? "" : item.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado"), vehicle_color: item.exteriorColor ?? "", vin, engine: item.engine ?? "", fuel: item.fuelType ?? "", transmission: item.transmission ?? "", mileage: item.mileageKm ?? "", quantity: item.qty, unit_price: amount(unit) + priceBasis, vehicle_total: amount(unit * item.qty) + priceBasis, notes: item.specSummary ?? "" };
   });
   const subtotal = quote.items.reduce((total, item) => total + moneyNumber(item.fobFinal, "unit price") * item.qty, 0);
   const shipping = moneyNumber(quote.freightCost, "shipping"), insurance = moneyNumber(quote.insuranceCost, "insurance");
-  const cif = quote.incoterm === "FOB" ? subtotal + shipping + insurance + moneyNumber(quote.inlandTransportCost, "inland transport") + moneyNumber(quote.exportDocumentationCost, "export documentation") : subtotal;
+  const cif = quote.incoterm === "FOB" || quote.source === "cart-checkout-cif-estimate-v2"
+    ? subtotal + shipping + insurance + moneyNumber(quote.inlandTransportCost, "inland transport") + moneyNumber(quote.exportDocumentationCost, "export documentation")
+    : subtotal;
   if (!Number.isSafeInteger(cif)) throw new DocumentError("Document value is too large.");
   const percent = quote.depositPct;
   if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new DocumentError("Initial payment percentage must be between 0 and 100.");

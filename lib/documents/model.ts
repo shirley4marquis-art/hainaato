@@ -21,6 +21,6 @@ export type BusinessDocument = { id: string; number: string; type: DocumentType;
 export function makeSnapshot(quote: AdminQuoteDetail, type: DocumentType, language: Language, operations: Operation[], notes = "", paymentTerms = ""): DocumentSnapshot {
  // Exclude internal CRM notes from customer documents. User-authored document copy is language-specific.
  const safeQuote = { ...quote, notes: null, customer: { ...quote.customer, notes: null }, items: quote.items.map((item, index) => ({ ...item, id: (item as {id?:number}).id ?? index, historyNotes: null, specSummary: null, photos: [] })) };
- return { version: 1, type, language, quote: safeQuote, company: COMPANY, totals: computeQuoteTotals(quote), operations, notes, paymentTerms, issueDate: new Date().toISOString().slice(0,10) };
+ return { version: 1, type, language, quote: safeQuote, company: COMPANY, totals: computeQuoteTotals({ ...quote, cifCostsIncluded: quote.source === "cart-checkout-cif-estimate-v2" }), operations, notes, paymentTerms, issueDate: new Date().toISOString().slice(0,10) };
 }
 export function documentTitle(type: DocumentType, language: Language) { return DOCUMENT_TYPES[type][language === "es" ? 1 : 0]; }

@@ -137,7 +137,7 @@ export default async function AdminVehiclesPage({ searchParams }: { searchParams
                   </span>
                 </div>
                 <div className={styles.dataRowMeta}>
-                  <b>{formatCNY(v.priceCNY)}</b>
+                  <b>{formatCNY(v.priceCNY)} FOB</b>
                   <small>
                     <ExternalLink size={10} /> Open
                   </small>

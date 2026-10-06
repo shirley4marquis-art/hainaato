@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   }
   if (!quote) return NextResponse.json({ ok: false, error: "Quotation not found." }, { status: 404 });
   const latestEmail = emails[0] ?? null;
+  const calculatedCif = quote.source === "cart-checkout-cif-estimate-v2";
 
   return NextResponse.json({
     ok: true,
@@ -33,6 +34,14 @@ export async function GET(request: NextRequest) {
       destination: [quote.destinationPort, quote.destinationCountry].filter(Boolean).join(", "),
       currency: quote.currency,
       cifTotal: quote.cifTotal,
+      priceBasis: calculatedCif ? "FOB" : "CIF",
+      cifBreakdown: calculatedCif ? {
+        fobSubtotal: quote.items.reduce((sum, item) => sum + item.fobFinal * item.qty, 0),
+        originHandling: quote.inlandTransportCost,
+        exportDocumentationCost: quote.exportDocumentationCost,
+        freight: quote.freightCost,
+        insurance: quote.insuranceCost,
+      } : null,
       depositPct: quote.depositPct,
       depositAmount: quote.depositAmount,
       balanceAmount: quote.balanceAmount,

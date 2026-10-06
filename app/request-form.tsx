@@ -9,11 +9,19 @@ import {submitQuoteRequest} from "./submit-quote-request";
 import {clearCart} from "./cart-store";
 import {DestinationPortFields} from "./destination-port-fields";
 import {fuelOptionsForVehicle,normalizeFuelPreference} from "../lib/fuel-options";
+import {CifEstimatePreview} from "./cif-estimate-preview";
+import type {CifEstimate} from "../lib/cif-estimate";
 
 type Status="idle"|"sending"|"sent"|"error";
 
 function field(data:FormData,key:string):string|undefined{const v=data.get(key);return typeof v==="string"&&v.trim()?v.trim():undefined}
 function checked(data:FormData,key:string):boolean{return data.get(key)==="on"}
+async function calculateCifEstimate(country:string,port:string,vehicles:{slug:string;qty:number}[]):Promise<CifEstimate>{
+  const response=await fetch("/api/quote-estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({country,port,vehicles})});
+  const data=await response.json().catch(()=>null) as {ok?:boolean;estimate?:CifEstimate;error?:string}|null;
+  if(!response.ok||!data?.ok||!data.estimate)throw new Error(data?.error||"Could not calculate this CIF estimate.");
+  return data.estimate;
+}
 
 const CONSENT_LABEL="Allow an anonymized status update (reference, destination and status only — never your name or contact details) to appear in the shipment updates ticker on this site.";
 export function RequestForm({kind}:{kind:"quote"|"contact"|"dealer"}){
@@ -58,9 +66,20 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
   const [step,setStep]=useState<1|2>(1);
+  const [estimate,setEstimate]=useState<CifEstimate|null>(null);
+  const [calculating,setCalculating]=useState(false);
   useEffect(()=>{if(step===2)contactRef.current?.focus()},[step]);
   const defaultFuel=normalizeFuelPreference(vehicleFuel);
   const fuelOptions=fuelOptionsForVehicle(vehicleFuel);
+  async function calculateEstimate(form:HTMLFormElement){
+    if(!form.reportValidity())return;
+    const data=new FormData(form),country=field(data,"destination"),port=field(data,"destinationPort");
+    if(!country||!port){setError(spanish?"Elige el país y el puerto de destino para continuar.":"Choose a destination country and port to continue.");return}
+    setCalculating(true);setEstimate(null);setError(null);
+    try{setEstimate(await calculateCifEstimate(country,port,[{slug:vehicleSlug,qty:Number(field(data,"quantity"))||1}]))}
+    catch(cause){setError(cause instanceof Error?cause.message:"Could not calculate this CIF estimate.")}
+    finally{setCalculating(false)}
+  }
   function continueToContact(form:HTMLFormElement){
     if(!form.reportValidity())return;
     const data=new FormData(form);
@@ -68,6 +87,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
       setError(spanish?"Elige el país y el puerto de destino para continuar.":"Choose a destination country and port to continue.");
       return;
     }
+    if(!estimate){setError(spanish?"Calcula el CIF estimado antes de continuar.":"Calculate the CIF estimate before continuing.");return}
     setError(null);setStep(2);
   }
   async function submit(event:FormEvent<HTMLFormElement>){
@@ -86,7 +106,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
     else{setError(result.error);setState("error")}
     } catch {setError(spanish?"No pudimos enviar la solicitud. Inténtalo de nuevo; tus datos siguen aquí.":"We could not send your request. Please try again; your details are still here.");setState("error")}
   }
-  return <form id="quote-form" translate={spanish?"no":undefined} lang={spanish?"es":undefined} className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"}>
+  return <form id="quote-form" translate={spanish?"no":undefined} lang={spanish?"es":undefined} className="request-form compact quote-form-panel" onSubmit={submit} aria-busy={state==="sending"||calculating}>
     <div className="quote-form-intro">
       <div className="quote-brand-mark" aria-hidden="true">
         <Image src="/images/KkwGH.png" alt="Nindge Automobile logo" width={30} height={30} />
@@ -98,7 +118,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
     </div>
     <h2><QuoteCopy en="Get an Instant Vehicle Quote" es="Solicitar cotización"/></h2>
     <div className="quote-wizard-progress"><span className={step===1?"active":"complete"}><QuoteCopy en="1 · Delivery" es="1 · Destino"/></span><span className={step===2?"active":""}><QuoteCopy en="2 · Contact" es="2 · Contacto"/></span></div>
-    <div className="form-grid quote-step" hidden={step!==1}>
+    <div className="form-grid quote-step" hidden={step!==1} onChange={()=>setEstimate(null)}>
       <span className="wide quote-form-section" role="heading" aria-level={3}><QuoteCopy en="Your vehicle" es="Tu vehículo"/></span>
       <label htmlFor="rv-vehicle"><QuoteCopy en="Vehicle" es="Vehículo"/></label>
       <input id="rv-vehicle" name="vehicle" defaultValue={vehicleTitle} readOnly/>
@@ -127,7 +147,7 @@ export function VehicleRequestForm({vehicleSlug,vehicleTitle,vehicleFuel}:{vehic
       <textarea className="wide" id="rv-message" name="message" rows={3} placeholder={spanish?"Color, plazo de entrega, condiciones de envío…":"Color, timeline, incoterms…"}/>
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="rv-consent"/> <QuoteCopy en={CONSENT_LABEL} es="Permitir una actualización anónima del estado (solo referencia, destino y estado; nunca tu nombre ni tus datos de contacto) en las novedades de envíos de este sitio."/></label>
     </div>
-    {step===1?<button type="button" className="btn primary" onClick={(event)=>continueToContact(event.currentTarget.form!)}><QuoteCopy en="Continue to contact →" es="Continuar con mis datos →"/></button>:<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}><QuoteCopy en="← Back" es="← Volver"/></button><button className="btn primary" disabled={state==="sending"}><QuoteCopy en={state==="sending"?"Creating your quote…":"Create My CIF Quote"} es={state==="sending"?"Preparando tu cotización…":"Obtener mi cotización CIF"}/></button></div>}
+    {step===1&&<div className="wide">{estimate&&<CifEstimatePreview estimate={estimate}/>}<div className="quote-wizard-actions"><button type="button" className="btn primary" disabled={calculating} onClick={(event)=>calculateEstimate(event.currentTarget.form!)}><QuoteCopy en={calculating?"Calculating CIF…":estimate?"Recalculate CIF estimate":"Calculate CIF estimate"} es={calculating?"Calculando CIF…":estimate?"Recalcular estimación CIF":"Calcular estimación CIF"}/></button>{estimate&&<button type="button" className="btn ghost" onClick={(event)=>continueToContact(event.currentTarget.form!)}><QuoteCopy en="Continue to contact →" es="Continuar con mis datos →"/></button>}</div></div>}{step===2&&<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}><QuoteCopy en="← Back" es="← Volver"/></button><button className="btn primary" disabled={state==="sending"}><QuoteCopy en={state==="sending"?"Creating your quote…":"Create My CIF Quote"} es={state==="sending"?"Preparando tu cotización…":"Obtener mi cotización CIF"}/></button></div>}
     <div role="status" aria-live="polite">{error&&<p className="form-error" role="alert">{error}</p>}</div>
   </form>
 }
@@ -148,13 +168,23 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
   const [state,setState]=useState<Status>("idle");
   const [error,setError]=useState<string|null>(null);
   const [step,setStep]=useState<1|2>(1);
+  const [estimate,setEstimate]=useState<CifEstimate|null>(null);
+  const [calculating,setCalculating]=useState(false);
   const [quantities,setQuantities]=useState<Record<string,number>>({});
   const qtyFor=(slug:string)=>quantities[slug]??1;
   const fuelFor=(vehicle:{slug:string;fuel?:string|null})=>normalizeFuelPreference(vehicle.fuel);
 
-  function continueToContact(form:HTMLFormElement){
+  async function calculateEstimate(form:HTMLFormElement){
     const data=new FormData(form);
-    if(!field(data,"country")||!field(data,"destinationPort")){setError("Choose a destination country and port to continue.");return}
+    const country=field(data,"country"),port=field(data,"destinationPort");
+    if(!country||!port){setError("Choose a destination country and port to continue.");return}
+    setCalculating(true);setEstimate(null);setError(null);
+    try{setEstimate(await calculateCifEstimate(country,port,vehicles.map((v)=>({slug:v.slug,qty:qtyFor(v.slug)}))))}
+    catch(cause){setError(cause instanceof Error?cause.message:"Could not calculate this CIF estimate.")}
+    finally{setCalculating(false)}
+  }
+  function continueToContact(){
+    if(!estimate){setError("Calculate the CIF estimate before continuing.");return}
     setError(null);setStep(2);
   }
 
@@ -181,11 +211,11 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
     else{setError(result.error);setState("error")}
   }
 
-  return <form className="request-form" onSubmit={submit} aria-busy={state==="sending"}>
+  return <form className="request-form" onSubmit={submit} aria-busy={state==="sending"||calculating}>
     <h2>Request a Formal Quotation</h2>
     <p style={{margin:"-8px 0 16px",fontSize:13,color:"var(--muted)"}}>We&apos;ll generate a personalized PDF quotation from these listings and email it to you immediately — no need to wait for a reply.</p>
     <div className="quote-wizard-progress"><span className={step===1?"active":"complete"}>1 · Vehicles &amp; delivery</span><span className={step===2?"active":""}>2 · Contact</span></div>
-    <div className="form-grid quote-step" hidden={step!==1}>
+    <div className="form-grid quote-step" hidden={step!==1} onChange={()=>setEstimate(null)}>
       <label className="wide" htmlFor="cr-vehicles">Vehicles &amp; quantity ({vehicles.length})</label>
       <div className="wide" style={{display:"flex",flexDirection:"column",gap:8,marginBottom:4}}>
         {vehicles.map((v)=>(
@@ -217,7 +247,7 @@ export function CartRequestForm({vehicles}:{vehicles:{slug:string;title:string;f
       <textarea className="wide" id="cr-message" name="message" rows={3} placeholder="Color, timeline, incoterms…"/>
       <label className="wide consent-checkbox"><input type="checkbox" name="publicConsent" id="cr-consent"/> {CONSENT_LABEL}</label>
     </div>
-    {step===1?<button type="button" className="btn primary" onClick={(event)=>continueToContact(event.currentTarget.form!)}>Continue to contact →</button>:<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}>← Back</button><button className="btn primary" disabled={state==="sending"||vehicles.length===0}>{state==="sending"?"Creating your quote…":`Create quote for ${vehicles.length} vehicle${vehicles.length===1?"":"s"}`}</button></div>}
+    {step===1&&<div className="wide">{estimate&&<CifEstimatePreview estimate={estimate}/>}<div className="quote-wizard-actions"><button type="button" className="btn primary" disabled={calculating||vehicles.length===0} onClick={(event)=>calculateEstimate(event.currentTarget.form!)}>{calculating?"Calculating CIF…":estimate?"Recalculate CIF estimate":"Calculate CIF estimate"}</button>{estimate&&<button type="button" className="btn ghost" onClick={continueToContact}>Continue to contact →</button>}</div></div>}{step===2&&<div className="quote-wizard-actions"><button type="button" className="btn ghost" onClick={()=>{setError(null);setStep(1)}}>← Back</button><button className="btn primary" disabled={state==="sending"||vehicles.length===0}>{state==="sending"?"Creating your quote…":`Create quote for ${vehicles.length} vehicle${vehicles.length===1?"":"s"}`}</button></div>}
     <div role="status" aria-live="polite">
       {state==="error"&&<p className="form-error" role="alert">{error}</p>}
     </div>

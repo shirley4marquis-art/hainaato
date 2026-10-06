@@ -110,7 +110,7 @@ export function VehicleListItem({ v }: { v: VehicleIndexEntry }) {
         <div className="vlist-location"><MapPin aria-hidden="true"/>{v.location ?? "China"}</div>
         <div className="vlist-side-spacer"/>
         <div className="vlist-price"><Price cny={v.priceCNY}/></div>
-        <div className="vlist-cif-note"><span>CIF</span> Freight + marine insurance included</div>
+        <div className="vlist-fob-note"><span>FOB</span> China · freight + insurance quoted separately</div>
         <time className="vlist-date">{displayDate}</time>
         <div className="vlist-contact">
 
@@ -304,7 +304,7 @@ export function FilterFields({
           </select>
         </label>
         <label>
-          Max price
+          Max FOB price (CNY)
           <select name="maxPrice" defaultValue={sp.maxPrice ?? ""}>
             {PRICE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>

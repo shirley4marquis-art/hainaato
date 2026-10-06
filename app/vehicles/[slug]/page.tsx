@@ -86,10 +86,10 @@ function iconFor(key: string) {
   return SPEC_ICONS.find(([re]) => re.test(key))?.[1] ?? Tag;
 }
 
-function formatUsdCifPreview(cny: number | null | undefined): string {
-  if (cny == null) return "CIF price on request";
+function formatUsdFobPreview(cny: number | null | undefined): string {
+  if (cny == null) return "FOB price on request";
   const usd = Math.round(convertFromCNY(cny, "USD"));
-  return `USD ${usd.toLocaleString("en-US")} CIF`;
+  return `USD ${usd.toLocaleString("en-US")} FOB China`;
 }
 
 export async function generateMetadata({
@@ -101,8 +101,8 @@ export async function generateMetadata({
   const vehicle = getVehicleBySlug(slug);
   if (!vehicle) return { robots: { index:false, follow:false } };
   const sold = getVehicleIndexEntryBySlug(slug)?.availability === "sold";
-  const usdCifPrice = formatUsdCifPreview(vehicle.priceCNY);
-  const description = sold ? `${vehicle.title}. Agotado / Sold out. Consulte otros vehículos disponibles en Nindge Automobile.` : `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdCifPrice}. Disponible para importar desde China a Venezuela y Sudamérica con inspección, documentación y apoyo logístico de Nindge Automobile.`;
+  const usdFobPrice = formatUsdFobPreview(vehicle.priceCNY);
+  const description = sold ? `${vehicle.title}. Agotado / Sold out. Consulte otros vehículos disponibles en Nindge Automobile.` : `${vehicle.title}${vehicle.year ? `, año ${vehicle.year}` : ""}${vehicle.mileageKm != null ? `, ${formatKm(vehicle.mileageKm)}` : ""}. ${usdFobPrice}. Disponible para exportación desde China; flete y seguro se cotizan por separado según destino.`;
   const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
   const heroFile = rankVehicleImages(vehicle.images)[0];
   const shareImage = heroFile
@@ -212,15 +212,15 @@ export default async function VehicleDetail({
           )}
 
           <div className="price-block">
-            <small>Vehicle price</small>
+            <small>Vehicle FOB price</small>
             {vehicle.msrpCNY != null && vehicle.priceCNY != null && vehicle.msrpCNY > vehicle.priceCNY && (
-              <div className="msrp">MSRP <Price cny={vehicle.msrpCNY}/></div>
+              <div className="msrp">MSRP <Price cny={vehicle.msrpCNY} basis={null}/></div>
             )}
             <div className="sale">
               <Price cny={vehicle.priceCNY}/>
             </div>
-            <p className="cif-price-note"><b>CIF included</b> Vehicle, international ocean freight and marine insurance are included in NINDGE AUTOMOBILE quotations unless marked FOB.</p>
-            <p className="cif-price-note"><b>Fuel choice</b> Diesel and Gasoline are shown by the actual vehicle configuration; Hybrid and Electric remain separate categories.</p>
+            <p className="fob-price-note"><b>FOB China</b> Listed vehicle price excludes international freight and marine insurance. These are calculated separately for your destination in the quotation.</p>
+            <p className="fob-price-note"><b>Fuel choice</b> Diesel and Gasoline are shown by the actual vehicle configuration; Hybrid and Electric remain separate categories.</p>
           </div>
 
           <ul className="buy-checklist">

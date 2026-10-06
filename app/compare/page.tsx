@@ -25,7 +25,7 @@ type CompareVehicle = {
 
 function buildRows(): [string, (v: CompareVehicle) => string][] {
   return [
-  ["Price", (v) => formatPrice(v.priceCNY, DEFAULT_CURRENCY)],
+  ["Vehicle FOB price", (v) => `${formatPrice(v.priceCNY, DEFAULT_CURRENCY)} FOB`],
   ["Year", (v) => (v.year != null ? String(v.year) : "—")],
   ["Mileage", (v) => formatKm(v.mileageKm)],
   ["Fuel", (v) => v.fuel || "—"],

@@ -1,0 +1,695 @@
+{
+  "fetchedAt": "2026-10-06",
+  "source": "https://landedcar.com/api/countries",
+  "sourceNotes": "Published indicative China-to-port ranges; midpoint used. Countries without a matching published route use a deterministic regional route estimate. All figures are USD per standard passenger car and require carrier confirmation.",
+  "rates": {
+    "VE": {
+      "country": "Venezuela",
+      "freightUsd": 2900,
+      "freightLowUsd": 2300,
+      "freightHighUsd": 3500,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "CO": {
+      "country": "Colombia",
+      "freightUsd": 3500,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4500,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "US": {
+      "country": "United States",
+      "freightUsd": 4200,
+      "freightLowUsd": 3350,
+      "freightHighUsd": 5050,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "MX": {
+      "country": "Mexico",
+      "freightUsd": 7000,
+      "freightLowUsd": 5000,
+      "freightHighUsd": 9000,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "PA": {
+      "country": "Panama",
+      "freightUsd": 3200,
+      "freightLowUsd": 2550,
+      "freightHighUsd": 3850,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "EC": {
+      "country": "Ecuador",
+      "freightUsd": 3200,
+      "freightLowUsd": 2550,
+      "freightHighUsd": 3850,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "PE": {
+      "country": "Peru",
+      "freightUsd": 3400,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4500,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "CL": {
+      "country": "Chile",
+      "freightUsd": 3500,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4500,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "BR": {
+      "country": "Brazil",
+      "freightUsd": 4200,
+      "freightLowUsd": 3350,
+      "freightHighUsd": 5050,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "AR": {
+      "country": "Argentina",
+      "freightUsd": 4600,
+      "freightLowUsd": 3700,
+      "freightHighUsd": 5500,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "UY": {
+      "country": "Uruguay",
+      "freightUsd": 4400,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 5300,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "DO": {
+      "country": "Dominican Republic",
+      "freightUsd": 3600,
+      "freightLowUsd": 2900,
+      "freightHighUsd": 4300,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "JM": {
+      "country": "Jamaica",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "TT": {
+      "country": "Trinidad and Tobago",
+      "freightUsd": 3700,
+      "freightLowUsd": 2950,
+      "freightHighUsd": 4450,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "AE": {
+      "country": "United Arab Emirates",
+      "freightUsd": 2900,
+      "freightLowUsd": 2000,
+      "freightHighUsd": 3800,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "SA": {
+      "country": "Saudi Arabia",
+      "freightUsd": 3700,
+      "freightLowUsd": 2600,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "OM": {
+      "country": "Oman",
+      "freightUsd": 3200,
+      "freightLowUsd": 2200,
+      "freightHighUsd": 4200,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "ZA": {
+      "country": "South Africa",
+      "freightUsd": 3500,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4500,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "NG": {
+      "country": "Nigeria",
+      "freightUsd": 4250,
+      "freightLowUsd": 3000,
+      "freightHighUsd": 5500,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "GH": {
+      "country": "Ghana",
+      "freightUsd": 4500,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 5800,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "KE": {
+      "country": "Kenya",
+      "freightUsd": 3300,
+      "freightLowUsd": 2300,
+      "freightHighUsd": 4300,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "TZ": {
+      "country": "Tanzania",
+      "freightUsd": 3650,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "RU": {
+      "country": "Russia",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "GE": {
+      "country": "Georgia",
+      "freightUsd": 3500,
+      "freightLowUsd": 2400,
+      "freightHighUsd": 4600,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "PH": {
+      "country": "Philippines",
+      "freightUsd": 1100,
+      "freightLowUsd": 800,
+      "freightHighUsd": 1400,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "AU": {
+      "country": "Australia",
+      "freightUsd": 3600,
+      "freightLowUsd": 2600,
+      "freightHighUsd": 4600,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "NZ": {
+      "country": "New Zealand",
+      "freightUsd": 3800,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "CA": {
+      "country": "Canada",
+      "freightUsd": 4800,
+      "freightLowUsd": 3850,
+      "freightHighUsd": 5750,
+      "insuranceRate": 0.004,
+      "basis": "regional-route-estimate"
+    },
+    "GB": {
+      "country": "United Kingdom",
+      "freightUsd": 5250,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 7000,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "DE": {
+      "country": "Germany",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "NL": {
+      "country": "Netherlands",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "BE": {
+      "country": "Belgium",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "FR": {
+      "country": "France",
+      "freightUsd": 4500,
+      "freightLowUsd": 3000,
+      "freightHighUsd": 6000,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "ES": {
+      "country": "Spain",
+      "freightUsd": 4500,
+      "freightLowUsd": 3000,
+      "freightHighUsd": 6000,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "PT": {
+      "country": "Portugal",
+      "freightUsd": 4200,
+      "freightLowUsd": 2900,
+      "freightHighUsd": 5500,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "IT": {
+      "country": "Italy",
+      "freightUsd": 4500,
+      "freightLowUsd": 3000,
+      "freightHighUsd": 6000,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "GR": {
+      "country": "Greece",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "TR": {
+      "country": "Turkey",
+      "freightUsd": 4000,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "PL": {
+      "country": "Poland",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "SE": {
+      "country": "Sweden",
+      "freightUsd": 5000,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 6500,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "NO": {
+      "country": "Norway",
+      "freightUsd": 5000,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 6500,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "FI": {
+      "country": "Finland",
+      "freightUsd": 5000,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 6500,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "RO": {
+      "country": "Romania",
+      "freightUsd": 4000,
+      "freightLowUsd": 2800,
+      "freightHighUsd": 5200,
+      "insuranceRate": 0.004,
+      "basis": "published-route-range"
+    },
+    "UA": {
+      "country": "Ukraine",
+      "freightUsd": 4800,
+      "freightLowUsd": 3850,
+      "freightHighUsd": 5750,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "EG": {
+      "country": "Egypt",
+      "freightUsd": 3000,
+      "freightLowUsd": 2200,
+      "freightHighUsd": 3800,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "MA": {
+      "country": "Morocco",
+      "freightUsd": 5000,
+      "freightLowUsd": 3500,
+      "freightHighUsd": 6500,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "DZ": {
+      "country": "Algeria",
+      "freightUsd": 4300,
+      "freightLowUsd": 3450,
+      "freightHighUsd": 5150,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "TN": {
+      "country": "Tunisia",
+      "freightUsd": 4000,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "LY": {
+      "country": "Libya",
+      "freightUsd": 4800,
+      "freightLowUsd": 3850,
+      "freightHighUsd": 5750,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "SN": {
+      "country": "Senegal",
+      "freightUsd": 6500,
+      "freightLowUsd": 4500,
+      "freightHighUsd": 8500,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "CI": {
+      "country": "Cote d'Ivoire",
+      "freightUsd": 6500,
+      "freightLowUsd": 4500,
+      "freightHighUsd": 8500,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "CM": {
+      "country": "Cameroon",
+      "freightUsd": 6200,
+      "freightLowUsd": 4500,
+      "freightHighUsd": 8000,
+      "insuranceRate": 0.008,
+      "basis": "published-route-range"
+    },
+    "AO": {
+      "country": "Angola",
+      "freightUsd": 5500,
+      "freightLowUsd": 4400,
+      "freightHighUsd": 6600,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "MZ": {
+      "country": "Mozambique",
+      "freightUsd": 4500,
+      "freightLowUsd": 3600,
+      "freightHighUsd": 5400,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "NA": {
+      "country": "Namibia",
+      "freightUsd": 4500,
+      "freightLowUsd": 3600,
+      "freightHighUsd": 5400,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "DJ": {
+      "country": "Djibouti",
+      "freightUsd": 3100,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 3700,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "QA": {
+      "country": "Qatar",
+      "freightUsd": 3200,
+      "freightLowUsd": 2200,
+      "freightHighUsd": 4200,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "KW": {
+      "country": "Kuwait",
+      "freightUsd": 3200,
+      "freightLowUsd": 2200,
+      "freightHighUsd": 4200,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "BH": {
+      "country": "Bahrain",
+      "freightUsd": 2400,
+      "freightLowUsd": 1800,
+      "freightHighUsd": 3000,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "JO": {
+      "country": "Jordan",
+      "freightUsd": 3400,
+      "freightLowUsd": 2700,
+      "freightHighUsd": 4100,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "IL": {
+      "country": "Israel",
+      "freightUsd": 3500,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 4500,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "IQ": {
+      "country": "Iraq",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "PK": {
+      "country": "Pakistan",
+      "freightUsd": 3200,
+      "freightLowUsd": 2550,
+      "freightHighUsd": 3850,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "IN": {
+      "country": "India",
+      "freightUsd": 2700,
+      "freightLowUsd": 2150,
+      "freightHighUsd": 3250,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "BD": {
+      "country": "Bangladesh",
+      "freightUsd": 3100,
+      "freightLowUsd": 2500,
+      "freightHighUsd": 3700,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "LK": {
+      "country": "Sri Lanka",
+      "freightUsd": 2900,
+      "freightLowUsd": 2300,
+      "freightHighUsd": 3500,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "MM": {
+      "country": "Myanmar",
+      "freightUsd": 1700,
+      "freightLowUsd": 1350,
+      "freightHighUsd": 2050,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "TH": {
+      "country": "Thailand",
+      "freightUsd": 1400,
+      "freightLowUsd": 1100,
+      "freightHighUsd": 1700,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "VN": {
+      "country": "Vietnam",
+      "freightUsd": 900,
+      "freightLowUsd": 600,
+      "freightHighUsd": 1300,
+      "insuranceRate": 0.005,
+      "basis": "published-route-range"
+    },
+    "MY": {
+      "country": "Malaysia",
+      "freightUsd": 1800,
+      "freightLowUsd": 1450,
+      "freightHighUsd": 2150,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "SG": {
+      "country": "Singapore",
+      "freightUsd": 1600,
+      "freightLowUsd": 1300,
+      "freightHighUsd": 1900,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "ID": {
+      "country": "Indonesia",
+      "freightUsd": 2200,
+      "freightLowUsd": 1750,
+      "freightHighUsd": 2650,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "KR": {
+      "country": "South Korea",
+      "freightUsd": 2200,
+      "freightLowUsd": 1750,
+      "freightHighUsd": 2650,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "JP": {
+      "country": "Japan",
+      "freightUsd": 2300,
+      "freightLowUsd": 1850,
+      "freightHighUsd": 2750,
+      "insuranceRate": 0.005,
+      "basis": "regional-route-estimate"
+    },
+    "MN": {
+      "country": "Mongolia",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "CR": {
+      "country": "Costa Rica",
+      "freightUsd": 3600,
+      "freightLowUsd": 2900,
+      "freightHighUsd": 4300,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "GT": {
+      "country": "Guatemala",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "HN": {
+      "country": "Honduras",
+      "freightUsd": 4000,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "SV": {
+      "country": "El Salvador",
+      "freightUsd": 3800,
+      "freightLowUsd": 3050,
+      "freightHighUsd": 4550,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "NI": {
+      "country": "Nicaragua",
+      "freightUsd": 4000,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "CU": {
+      "country": "Cuba",
+      "freightUsd": 4000,
+      "freightLowUsd": 3200,
+      "freightHighUsd": 4800,
+      "insuranceRate": 0.008,
+      "basis": "regional-route-estimate"
+    },
+    "BS": {
+      "country": "Bahamas",
+      "freightUsd": 3700,
+      "freightLowUsd": 2950,
+      "freightHighUsd": 4450,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "GY": {
+      "country": "Guyana",
+      "freightUsd": 4500,
+      "freightLowUsd": 3600,
+      "freightHighUsd": 5400,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "SR": {
+      "country": "Suriname",
+      "freightUsd": 4700,
+      "freightLowUsd": 3750,
+      "freightHighUsd": 5650,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "PY": {
+      "country": "Paraguay",
+      "freightUsd": 4600,
+      "freightLowUsd": 3700,
+      "freightHighUsd": 5500,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    },
+    "BO": {
+      "country": "Bolivia",
+      "freightUsd": 4200,
+      "freightLowUsd": 3350,
+      "freightHighUsd": 5050,
+      "insuranceRate": 0.006,
+      "basis": "regional-route-estimate"
+    }
+  }
+}

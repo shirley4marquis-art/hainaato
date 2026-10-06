@@ -12,6 +12,7 @@ import styles from "../../admin.module.css";
 
 const SOURCE_LABELS: Record<string, string> = {
   "cart-checkout": "Website — cart checkout (automated)",
+  "cart-checkout-cif-estimate-v2": "Website — route-based CIF estimate (automated)",
 };
 
 export default async function EditQuote({ params }: { params: Promise<{ ref: string }> }) {

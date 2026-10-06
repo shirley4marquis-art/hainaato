@@ -21,7 +21,7 @@ const COMPANY = {
 
 function money(cny: number | null): string {
   if (cny == null) return "Price on request";
-  return `USD ${Math.round(convertFromCNY(cny, "USD")).toLocaleString("en-US")} CIF`;
+  return `USD ${Math.round(convertFromCNY(cny, "USD")).toLocaleString("en-US")} FOB China`;
 }
 
 function cleanSpecEntries(specs: Record<string, string>): [string, string][] {
@@ -57,7 +57,7 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
     ["Engine / displacement", vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "—"],
     ["Interior color", vehicle.specs["Interior Color"] ?? "—"],
     ["Availability", indexEntry.availability],
-    ["CIF price", money(vehicle.priceCNY)],
+    ["Vehicle FOB price", money(vehicle.priceCNY)],
   ];
 
   return (
@@ -92,8 +92,8 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
               <h1 className={styles.title}>{vehicle.title}</h1>
             </div>
             <div className={styles.summaryGrid}>
-              <div><span>Price</span><b>{money(vehicle.priceCNY)}</b></div>
-              <div><span>Destination terms</span><b>CIF by default</b></div>
+              <div><span>Vehicle FOB price</span><b>{money(vehicle.priceCNY)}</b></div>
+              <div><span>Destination terms</span><b>Freight and insurance quoted separately</b></div>
               <div><span>Documents</span><b>Export support available</b></div>
               <div><span>Inspection</span><b>Professional inspection available</b></div>
             </div>
@@ -140,8 +140,8 @@ export default async function VehicleSpecificationPage({ params }: { params: Pro
 
         <section className={`${styles.section} ${styles.notes}`}>
           <div className={styles.noteBox}>
-            <b>CIF quotation basis</b>
-            Vehicle, international ocean freight and marine insurance are included in NINDGE AUTOMOBILE quotations unless the written quotation is explicitly marked FOB.
+            <b>FOB China vehicle price</b>
+            The listed vehicle price excludes international freight and marine insurance. The formal quotation estimates these separately for the requested destination and gives the resulting CIF total.
           </div>
           <div className={styles.noteBox}>
             <b>Destination charges</b>

@@ -68,6 +68,7 @@ async function recalc(client: PoolClient, ref: string): Promise<void> {
   const items = (await client.query("SELECT * FROM quote_items WHERE quote_id = $1", [quote.id])).rows as Row[];
   const totals = computeQuoteTotals({
     incoterm: (quote.incoterm as string | null) ?? null,
+    cifCostsIncluded: quote.source === "cart-checkout-cif-estimate-v2",
     items: items.map((it) => ({ fobFinal: it.fob_final as number, qty: it.qty as number })),
     inlandTransportCost: quote.inland_transport_cost as number,
     exportDocumentationCost: quote.export_documentation_cost as number,
@@ -380,11 +381,10 @@ export async function adminSaveQuote(input: AdminQuoteInput, options: { publicSu
       isNew ? await nextDocumentNumber(client, new Date().getUTCFullYear()) : input.documentNumber ?? null;
 
     const incoterm = quotePriceType(input.incoterm) === "FOB" ? "FOB" : "CIF";
-    const isFob = incoterm === "FOB";
-    const inlandTransportCost = isFob ? input.inlandTransportCost ?? 0 : 0;
-    const exportDocumentationCost = isFob ? input.exportDocumentationCost ?? 0 : 0;
-    const freightCost = isFob ? input.freightCost ?? 0 : 0;
-    const insuranceCost = isFob ? input.insuranceCost ?? 0 : 0;
+    const inlandTransportCost = input.inlandTransportCost ?? 0;
+    const exportDocumentationCost = input.exportDocumentationCost ?? 0;
+    const freightCost = input.freightCost ?? 0;
+    const insuranceCost = input.insuranceCost ?? 0;
 
     const language = normalizeQuoteLanguage(input.language);
 

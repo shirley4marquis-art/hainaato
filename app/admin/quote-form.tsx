@@ -287,11 +287,13 @@ export function QuoteForm({ initial }: { initial: AdminQuoteDetail | null }) {
   }
 
   const isCif = quote.incoterm !== "FOB";
+  const isCalculatedCif = initial?.source === "cart-checkout-cif-estimate-v2";
 
   // Live preview of the same calculation the server runs on save
   // (lib/quote-totals.ts) — so staff see the real totals before generating.
   const liveTotals = computeQuoteTotals({
     incoterm: quote.incoterm,
+    cifCostsIncluded: isCalculatedCif,
     items: items.map((it) => ({ fobFinal: it.fobFinal, qty: it.qty })),
     inlandTransportCost: quote.inlandTransportCost,
     exportDocumentationCost: quote.exportDocumentationCost,
