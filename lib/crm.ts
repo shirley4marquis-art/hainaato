@@ -199,6 +199,7 @@ export type QuoteStatusResult = {
   destinationCountry: string;
   quoteDate: string;
   updatedAt: string;
+  language: QuoteLanguage;
 };
 
 // Deliberately returns only non-sensitive fields: quote refs are short and
@@ -206,7 +207,7 @@ export type QuoteStatusResult = {
 // exposed to an unauthenticated lookup by ref alone.
 export async function getQuoteStatus(ref: string): Promise<QuoteStatusResult | null> {
   const { rows } = await getPool().query(
-    "SELECT ref, status, destination_country, quote_date, updated_at FROM quotes WHERE ref = $1",
+    "SELECT ref, status, destination_country, quote_date, updated_at, language FROM quotes WHERE ref = $1",
     [ref]
   );
   const quote = rows[0] as Row | undefined;
@@ -217,6 +218,7 @@ export async function getQuoteStatus(ref: string): Promise<QuoteStatusResult | n
     destinationCountry: quote.destination_country as string,
     quoteDate: quote.quote_date as string,
     updatedAt: (quote.updated_at as Date).toISOString(),
+    language: normalizeQuoteLanguage(quote.language),
   };
 }
 

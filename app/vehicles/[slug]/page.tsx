@@ -8,7 +8,6 @@ import {
   Calendar,
   Car,
   Compass,
-  Download,
   FileText,
   Gauge,
   MapPin,
@@ -24,6 +23,7 @@ import { DetailTabs, Gallery, ShareButton, SiteShell, VehicleCard } from "../../
 import { AddToCompareButton } from "../../compare-button";
 import { AddToCartButton } from "../../cart-button";
 import { VehicleRequestForm } from "../../request-form";
+import { SpecificationDownload } from "../../specification-download";
 import { Price } from "../../price";
 import { ResilientVehicleImage } from "../../vehicle-image";
 import {WHATSAPP_URL} from "../../contact-links";
@@ -239,9 +239,7 @@ export default async function VehicleDetail({
             <Link className="btn primary" href={sold ? "/vehicles?brand=JAC&availability=available" : "#request"}>
               {sold ? <QuoteCopy en="Browse available vehicles" es="Ver vehículos disponibles"/> : <QuoteCopy en="Request a quote" es="Solicitar cotización"/>}
             </Link>
-            <a className="btn ghost" href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
-              <Download size={16} /> Download Specs
-            </a>
+            <SpecificationDownload slug={vehicle.slug} />
             <a
               className="btn btn-whatsapp"
               href={WHATSAPP_URL}
@@ -318,12 +316,10 @@ export default async function VehicleDetail({
               ],
               [
                 "Specification",
-                <p key="s">
+                <div key="s" className="specification-tab-download">
                   <FileText size={14} />{" "}
-                  <a href={`/api/vehicle-specification-pdf?slug=${encodeURIComponent(vehicle.slug)}`}>
-                    Download the filled specification PDF for this vehicle.
-                  </a>
-                </p>,
+                  <SpecificationDownload slug={vehicle.slug} compact />
+                </div>,
               ],
               [
                 "Process",

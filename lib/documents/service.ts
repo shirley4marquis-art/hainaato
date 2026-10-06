@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { imagePath, type Vehicle } from "../format";
 import { adminGetQuote, type AdminQuoteDetail } from "../crm";
 import { getVehicleIndexEntryBySlug } from "../vehicles";
-import { pdfOrigin } from "../security/generation";
+import { convertFromCNY } from "../currency";
 import { documentData } from "./data";
 import { generateQuotationLayout, publicSpecificationNotes } from "./quotation-layout";
 import { getVehicleBySlug } from "../vehicle-details";
@@ -12,21 +14,51 @@ import { optimizeDocumentPhoto } from "./photo";
 import { loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
 import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
+import { translateSpecificationText, translateVehicleTerm } from "./vehicle-translation";
 
 async function catalogueImage(source?: string): Promise<Buffer | null> {
-  if (!source || !/^\/(?:api\/vehicle-image|vehicle-images)\/[^?\\]+$/.test(source) || source.includes("..")) return null;
+  if (!source || source.length > 2048) return null;
   try {
-    const internalSecret = process.env.INTERNAL_PDF_SECRET;
-    const response = await fetch(new URL(source, pdfOrigin("http://localhost:3000")), {
-      redirect: "error",
-      headers: internalSecret ? { "x-internal-pdf-secret": internalSecret } : undefined,
-      signal: AbortSignal.timeout(30000),
-    });
-    if (!response.ok || Number(response.headers.get("content-length")) > 10 * 1024 * 1024) return null;
-    const reader = response.body!.getReader(), chunks: Uint8Array[] = []; let size = 0;
-    try { while (true) { const next = await reader.read(); if (next.done) break; size += next.value.length; if (size > 10 * 1024 * 1024) return null; chunks.push(next.value); } } finally { await reader.cancel(); }
-    return await optimizeDocumentPhoto(Buffer.concat(chunks));
+    const url = new URL(source, "https://internal.invalid");
+    if (url.search || url.hash || (url.origin !== "https://internal.invalid" && !["nindgeauto.com", "www.nindgeauto.com", "hainaauto.vercel.app"].includes(url.hostname))) return null;
+    const match = url.pathname.match(/^\/(?:api\/vehicle-image|vehicle-images)\/([^/]+)\/([^/]+)\/([^/]+)$/);
+    if (!match) return null;
+    const [, rawSite, rawId, rawFile] = match;
+    const site = decodeURIComponent(rawSite), id = decodeURIComponent(rawId), file = decodeURIComponent(rawFile);
+    if ([site, id, file].some(part => !part || part === "." || part === ".." || /[\\/\0]/.test(part))) return null;
+    const vehicle = getVehicleBySlug(`${site}-${id}`);
+    if (!vehicle || !vehicle.images.includes(file)) return null;
+
+    let original: Buffer;
+    const staticDirectory = path.resolve(process.cwd(), "public", "vehicle-images");
+    if (url.pathname.startsWith("/vehicle-images/") || (site === "hainaauto" && id.startsWith("manual-"))) {
+      const localPath = path.resolve(staticDirectory, site, id, file);
+      if (!localPath.startsWith(staticDirectory + path.sep)) return null;
+      original = await readFile(localPath);
+    } else {
+      let upstream: string;
+      if (site === "hainaauto") upstream = `https://img.hainaauto.com/vehicle/${encodeURIComponent(file)}`;
+      else if (site === "cntransit") upstream = `https://cntransit.cn/uploads/${encodeURIComponent(file)}`;
+      else return null;
+      const response = await fetch(upstream, { redirect: "error", signal: AbortSignal.timeout(30000), headers: { "user-agent": "NindgeAutomobile-PDF/1.0", accept: "image/*" } });
+      if (!response.ok || !response.headers.get("content-type")?.toLowerCase().startsWith("image/")) return null;
+      const declaredSize = Number(response.headers.get("content-length"));
+      if (Number.isFinite(declaredSize) && declaredSize > 10 * 1024 * 1024) return null;
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (!bytes.length || bytes.length > 10 * 1024 * 1024) return null;
+      original = bytes;
+    }
+    return await optimizeDocumentPhoto(original);
   } catch { return null; }
+}
+
+function linkedCatalogueVehicle(item: AdminQuoteDetail["items"][number]) {
+  const source = item.photos?.[0]?.url ?? "";
+  const match = source.match(/^\/(?:api\/vehicle-image|vehicle-images)\/([^/]+)\/([^/]+)\//);
+  let photoSlug = "";
+  try { if (match) photoSlug = `${decodeURIComponent(match[1])}-${decodeURIComponent(match[2])}`; } catch { /* Ignore malformed saved image paths. */ }
+  const historySlug = item.historyNotes?.match(/https:\/\/(?:www\.)?(?:nindgeauto\.com|hainautocn\.com)\/vehicles\/([a-z0-9-]+)/i)?.[1] ?? "";
+  return getVehicleBySlug(photoSlug || historySlug);
 }
 
 async function build(quoteRef: string, template: TemplateFile, number: string, overrides: DocumentValues, vins: Record<string, string>, existingQuote?: AdminQuoteDetail) {
@@ -54,33 +86,54 @@ async function build(quoteRef: string, template: TemplateFile, number: string, o
     }
     data.vehicles.forEach((vehicle, index) => {
       const item = quote.items[index];
-      const slug = item.historyNotes?.match(/https:\/\/(?:www\.)?(?:nindgeauto\.com|hainautocn\.com)\/vehicles\/([a-z0-9-]+)/i)?.[1];
-      const catalogue = slug ? getVehicleBySlug(slug) : null;
-      Object.assign(vehicle, { interior_color: item.interiorColor ?? "", drivetrain: item.drivetrain ?? "", power: item.powerHp ?? "", capacity: item.capacity ?? "", body_type: catalogue?.bodyType ?? "", stock_id: catalogue?.id ?? "" });
-      vehicle.notes = [vehicle.notes, catalogue ? publicSpecificationNotes(catalogue.specs) : ""].filter(Boolean).join("\n");
+      const catalogue = linkedCatalogueVehicle(item);
+      const indexEntry = catalogue ? getVehicleIndexEntryBySlug(catalogue.slug) : null;
+      Object.assign(vehicle, { interior_color: item.interiorColor ?? "", drivetrain: item.drivetrain ?? "", power: item.powerHp ?? "", capacity: item.capacity ?? "", body_type: catalogue?.bodyType ?? "", stock_id: indexEntry?.stockCode ?? catalogue?.id ?? "" });
+      vehicle.notes = [vehicle.notes, catalogue ? publicSpecificationNotes(catalogue.specs, template.language) : ""].filter(Boolean).join("\n");
     });
     return { pdf: await generateQuotationLayout(data, galleries), data };
   }
   return { pdf: await generatePdf(template.prepared, template.mapping, data), data };
 }
-export async function generateQuoteTemplatePdf(ref: string): Promise<Buffer> {
+export async function generateQuoteTemplatePdf(ref: string, selectedLanguage?: DocumentLanguage): Promise<Buffer> {
   const quote = await adminGetQuote(ref);
   if (!quote) throw new DocumentError("Quotation not found.", 404);
-  const template = await defaultTemplate("quotation", quote.language);
-  return (await build(ref, template, quote.documentNumber ?? ref, {}, {}, quote)).pdf;
+  const language = selectedLanguage ?? quote.language;
+  const data = documentData(quote, "quotation", language, quote.documentNumber ?? ref);
+  const galleries = await loadQuotationPhotos(quote.items, catalogueImage);
+  data.images = galleries.map(photos => photos[0]);
+  for (let index = 0; index < quote.items.length; index++) {
+    const item = quote.items[index];
+    const vehicle = linkedCatalogueVehicle(item);
+    if (!vehicle) {
+      data.vehicles[index].notes = translateSpecificationText(String(data.vehicles[index].notes ?? ""), language);
+      continue;
+    }
+    const indexEntry = getVehicleIndexEntryBySlug(vehicle.slug);
+    const facts = publicSpecificationNotes(vehicle.specs, language);
+    Object.assign(data.vehicles[index], {
+      interior_color: translateVehicleTerm(item.interiorColor ?? vehicle.specs["Interior Color"] ?? "", language),
+      drivetrain: translateVehicleTerm(item.drivetrain ?? vehicle.driveType ?? "", language),
+      power: item.powerHp ?? vehicle.specs["Maximum Power"] ?? vehicle.specs.Horsepower ?? "",
+      capacity: item.capacity ?? vehicle.specs.Capacity ?? vehicle.specs["Capacity (people/seats)"] ?? "",
+      body_type: vehicle.bodyType ?? "",
+      stock_id: indexEntry?.stockCode ?? vehicle.id,
+      unit_price: quote.source === "cart-checkout-cif-estimate-v2" && !/\bFOB\b/i.test(String(data.vehicles[index].unit_price ?? "")) ? `${String(data.vehicles[index].unit_price ?? "")} FOB` : data.vehicles[index].unit_price,
+      notes: facts,
+    });
+  }
+  return generateQuotationLayout(data, galleries);
 }
 export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language: DocumentLanguage) {
   const values: DocumentValues = Object.fromEntries(FIELD_NAMES.map(key => [key, ""]));
   const index = getVehicleIndexEntryBySlug(vehicle.slug);
-  Object.assign(values, { document_number: `HA-SP-${vehicle.id}`, vehicle_brand: index?.brand ?? "", vehicle_model: index?.model ?? vehicle.title, vehicle_year: vehicle.year ?? "", vehicle_color: vehicle.color ?? "", fuel: vehicle.fuel ?? "", transmission: vehicle.gearbox ?? "", mileage: vehicle.mileageKm ?? "", engine: vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "", quantity: 1, company_name: "NINDGE AUTOMOBILE", company_email: "info@nindgeauto.com", vehicle_summary: vehicle.title, notes: Object.entries(vehicle.specs).filter(([key,value]) => value && !/price|precio|seller|selling|margin|profit|adjustment|cost|价格|成本|利润/i.test(key)).map(([key, value]) => `${key}: ${value}`).join("\n") });
+  const currency = new Intl.NumberFormat(language === "en" ? "en-US" : language === "zh" ? "zh-CN" : "es-ES", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  Object.assign(values, { document_number: `HA-SP-${vehicle.id}`, vehicle_brand: index?.brand ?? "", vehicle_model: index?.model ?? vehicle.title, vehicle_year: vehicle.year ?? "", vehicle_color: translateVehicleTerm(vehicle.color ?? "", language), fuel: translateVehicleTerm(vehicle.fuel ?? "", language), transmission: translateVehicleTerm(vehicle.gearbox ?? "", language), mileage: vehicle.mileageKm ?? "", engine: vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "", quantity: 1, company_name: "NINDGE AUTOMOBILE", company_email: "info@nindgeauto.com", vehicle_summary: vehicle.title, notes: publicSpecificationNotes(vehicle.specs, language), unit_price: vehicle.priceCNY == null ? "" : `${currency.format(convertFromCNY(vehicle.priceCNY, "USD"))} FOB China`, interior_color: translateVehicleTerm(vehicle.specs["Interior Color"] ?? "", language), drivetrain: translateVehicleTerm(vehicle.driveType ?? "", language), power: vehicle.specs["Maximum Power"] ?? vehicle.specs.Horsepower ?? "", capacity: vehicle.specs.Capacity ?? vehicle.specs["Capacity (people/seats)"] ?? "", body_type: vehicle.bodyType ?? "", stock_id: index?.stockCode ?? vehicle.id });
   const photoSources = vehicle.images.slice(0, 3).map(file => imagePath(vehicle.site, vehicle.id, file));
   const photos = (await Promise.all(photoSources.map(catalogueImage))).filter((photo): photo is Buffer => photo !== null);
-  values.notes = publicSpecificationNotes(vehicle.specs);
-  values.drivetrain = vehicle.driveType ?? "";
-  values.body_type = vehicle.bodyType ?? "";
-  values.stock_id = index?.stockCode ?? vehicle.id;
-  values.vehicle_condition = index?.condition === "new" ? (language === "en" ? "New" : language === "zh" ? "新车" : "Nuevo") : index?.condition === "used" ? (language === "en" ? "Used" : language === "zh" ? "二手车" : "Usado") : "";
-  return generateQuotationLayout({ values, vehicles: [values], images: [], language }, [photos], true);
+  if (!photos.length) throw new DocumentError(`Vehicle photos for ${vehicle.title} are temporarily unavailable. Please try again shortly.`, 503);
+  values.vehicle_condition = index?.condition ? translateVehicleTerm(index.condition, language) : "";
+  return generateQuotationLayout({ values, vehicles: [values], images: photos, language }, [photos], true);
 }
 export async function createDocument(input: { quoteRef: string; templateId?: string; type: DocumentType; language: DocumentLanguage; idempotencyKey: string; overrides?: DocumentValues; vins?: Record<string, string> }) {
   if (!/^[a-f0-9-]{36}$/i.test(input.idempotencyKey)) throw new DocumentError("Invalid generation request ID.", 400);

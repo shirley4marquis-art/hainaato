@@ -21,8 +21,9 @@ export async function GET(request: NextRequest) {
   if (!vehicle) return NextResponse.json({ ok: false, error: "Vehicle not found." }, { status: 404 });
 
   try {
-    const lang = request.nextUrl.searchParams.get("language") ?? "es";
-    const language: DocumentLanguage = Object.hasOwn(DOCUMENT_LANGUAGES, lang) ? lang as DocumentLanguage : "es";
+    const lang = request.nextUrl.searchParams.get("language") ?? "en";
+    if (!Object.hasOwn(DOCUMENT_LANGUAGES, lang)) return NextResponse.json({ ok: false, error: "Choose a supported document language." }, { status: 400 });
+    const language: DocumentLanguage = lang as DocumentLanguage;
     const pdf = await generateVehicleSpecificationPdf(vehicle, language);
     return pdfResponse(pdf, `Nindge Automobile-Vehicle-Specification-${safeFilename(slug)}-${language.toUpperCase()}.pdf`, true);
   } catch (error) {

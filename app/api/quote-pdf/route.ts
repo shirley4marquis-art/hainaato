@@ -9,6 +9,7 @@ import { getQuoteStatus } from "../../../lib/crm";
 import { renderQuotePdfWithRetry } from "../../../lib/render-quote-pdf";
 import { verifyQuoteAccessToken } from "../../../lib/quote-access";
 import { guardRequest } from "../../../lib/security/http";
+import { DOCUMENT_LANGUAGES, type DocumentLanguage } from "../../../lib/documents/types";
 
 // Launching a browser and rendering a multi-page document can take longer
 // than Vercel's default function timeout.
@@ -36,12 +37,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const pdf = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" });
+    const requestedLanguage = request.nextUrl.searchParams.get("language");
+    if (requestedLanguage && !Object.hasOwn(DOCUMENT_LANGUAGES, requestedLanguage)) {
+      return NextResponse.json({ ok: false, error: "Choose a supported quotation language." }, { status: 400 });
+    }
+    const language = (requestedLanguage || quote.language || "en") as DocumentLanguage;
+    const pdf = await renderQuotePdfWithRetry(ref, request.url, { kind: "internal-secret" }, language);
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Nindge Automobile-Quote-${ref}.pdf"`,
+        "Content-Disposition": `attachment; filename="Nindge Automobile-Quote-${ref}-${language.toUpperCase()}.pdf"`,
         "Content-Length": String(pdf.length),
         "Cache-Control": "no-store",
       },

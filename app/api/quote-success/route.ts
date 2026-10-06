@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       internalRef: quote.ref,
       destination: [quote.destinationPort, quote.destinationCountry].filter(Boolean).join(", "),
       currency: quote.currency,
+      language: quote.language,
       cifTotal: quote.cifTotal,
       priceBasis: calculatedCif ? "FOB" : "CIF",
       cifBreakdown: calculatedCif ? {

@@ -2,7 +2,7 @@
 export type RenderQuotePdfAuth = { kind: "cookie"; cookieHeader: string } | { kind: "internal-secret" };
 
 import { generateQuoteTemplatePdf } from "./documents/service";
-import { DocumentError } from "./documents/types";
+import { DocumentError, type DocumentLanguage } from "./documents/types";
 
 export function requireInternalPdfSecret(): string {
   const secret = process.env.INTERNAL_PDF_SECRET;
@@ -10,21 +10,22 @@ export function requireInternalPdfSecret(): string {
   return secret;
 }
 
-export async function renderQuotePdf(ref: string, _baseUrl: string, _auth: RenderQuotePdfAuth): Promise<Buffer> {
+export async function renderQuotePdf(ref: string, _baseUrl: string, _auth: RenderQuotePdfAuth, language?: DocumentLanguage): Promise<Buffer> {
   void _baseUrl; void _auth;
-  return generateQuoteTemplatePdf(ref);
+  return generateQuoteTemplatePdf(ref, language);
 }
 
 export async function renderQuotePdfWithRetry(
   ref: string,
   baseUrl: string,
   auth: RenderQuotePdfAuth,
+  language?: DocumentLanguage,
   attempts = 3,
 ): Promise<Buffer> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      return await renderQuotePdf(ref, baseUrl, auth);
+      return await renderQuotePdf(ref, baseUrl, auth, language);
     } catch (error) {
       if (error instanceof DocumentError) throw error;
       lastError = error;

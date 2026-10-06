@@ -9,8 +9,13 @@ import { DocumentError, EMPTY_MAPPING, defaultField, type DocumentData, type Fie
 type Item = AdminQuoteDetail["items"][number];
 export function quotationPhotoSources(item: Item): string[] {
   const sources = (item.photos ?? []).map(photo => photo.url);
-  // Only supplement from an explicitly linked catalogue vehicle; never guess by model.
-  const slug = item.historyNotes?.match(/https:\/\/(?:www\.)?(?:nindgeauto\.com|hainautocn\.com)\/vehicles\/([a-z0-9-]+)/i)?.[1];
+  // The photo path carries the catalogue vehicle ID. Use that exact record;
+  // never infer a vehicle from a make/model match.
+  const photoMatch = sources[0]?.match(/^\/(?:api\/vehicle-image|vehicle-images)\/([^/]+)\/([^/]+)\//);
+  let photoSlug = "";
+  try { if (photoMatch) photoSlug = `${decodeURIComponent(photoMatch[1])}-${decodeURIComponent(photoMatch[2])}`; } catch { /* Malformed saved photo paths are ignored. */ }
+  const linkedSlug = item.historyNotes?.match(/https:\/\/(?:www\.)?(?:nindgeauto\.com|hainautocn\.com)\/vehicles\/([a-z0-9-]+)/i)?.[1];
+  const slug = photoSlug || linkedSlug;
   const vehicle = slug ? getVehicleBySlug(slug) : null;
   if (vehicle) sources.push(...vehicle.images.map(file => imagePath(vehicle.site, vehicle.id, file)));
   return [...new Set(sources)].filter(source => !/(?:logo|qrcode|certificate|invoice)/i.test(source));
@@ -47,7 +52,7 @@ export async function loadQuotationPhotos(items: Item[], load: (source: string) 
         if (photos.length === 3) break;
       }
     }
-    if (photos.length < 3) throw new DocumentError(`Add at least 3 distinct, accessible vehicle photos for ${item.make} ${item.model} before generating the quotation (${photos.length} available).`);
+    if (!photos.length) throw new DocumentError(`No accessible catalogue photos are available for ${item.make} ${item.model}. Refresh the listing photos and try again.`);
     galleries.push(photos);
   }
   return galleries;
@@ -60,7 +65,7 @@ export async function appendQuotationGallery(base: Uint8Array, data: DocumentDat
   const fields: FieldMapping[] = [], images: Uint8Array[] = [];
   const tr = (es: string, en: string, zh: string) => data.language === "en" ? en : data.language === "zh" ? zh : data.language === "es-zh" ? `${es} / ${zh}` : es;
   galleries.forEach((photos, index) => {
-    if (photos.length < 3) throw new DocumentError("Quotation galleries require three photos per vehicle.");
+    if (!photos.length) throw new DocumentError("Quotation galleries require at least one photo per vehicle.");
     const page = gallery.addPage([width, height]), pageNumber = index + 1;
     page.drawPage(header, { x: 0, y: height - 159, width, height: 159 });
     page.drawPage(footer, { x: 0, y: 0, width, height: height - 775 });
