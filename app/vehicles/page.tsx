@@ -5,8 +5,8 @@ import { CATALOGUE_COLLECTIONS, getFilterOptions, searchVehicles } from "../../l
 import { buildVehiclesUrl, type SP } from "../../lib/format";
 import { AvailabilityToggle, CatalogueCollections, FloatingPager, MarketHero, QuickFilterBar, VehicleListItem } from "./market-ui";
 
-import { SITE_HERO_PREVIEW } from "../../lib/social-preview";
-const VEHICLES_SHARE_IMAGE = SITE_HERO_PREVIEW.url;
+import { absoluteSocialImage, SITE_HERO_PREVIEW } from "../../lib/social-preview";
+const VEHICLES_SHARE_IMAGE = absoluteSocialImage(SITE_HERO_PREVIEW.url);
 
 export const metadata: Metadata = {
   title: "Vehículos nuevos y usados de China",

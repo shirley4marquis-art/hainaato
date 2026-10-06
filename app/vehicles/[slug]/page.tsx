@@ -1,4 +1,4 @@
-import { SITE_HERO_PREVIEW } from "../../../lib/social-preview";
+import { absoluteSocialImage, SITE_HERO_PREVIEW, SOCIAL_IMAGE_ORIGIN } from "../../../lib/social-preview";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -49,7 +49,7 @@ import { rankVehicleImages } from "../../../lib/image-ranking";
 // caching at all.
 export const revalidate = 3600;
 const SITE_URL = "https://www.nindgeauto.com";
-const VEHICLE_FALLBACK_SHARE_IMAGE = `${SITE_URL}${SITE_HERO_PREVIEW.url}`;
+const VEHICLE_FALLBACK_SHARE_IMAGE = absoluteSocialImage(SITE_HERO_PREVIEW.url);
 
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -106,7 +106,7 @@ export async function generateMetadata({
   const canonicalUrl = `${SITE_URL}/vehicles/${encodeURIComponent(vehicle.slug)}`;
   const heroFile = rankVehicleImages(vehicle.images)[0];
   const shareImage = heroFile
-    ? new URL(imagePath(vehicle.site, vehicle.id, heroFile), SITE_URL).toString()
+    ? new URL(imagePath(vehicle.site, vehicle.id, heroFile), SOCIAL_IMAGE_ORIGIN).toString()
     : VEHICLE_FALLBACK_SHARE_IMAGE;
   return {
     title: vehicle.title,
