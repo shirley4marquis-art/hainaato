@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVehicleBySlug } from "../../../lib/vehicle-details";
 import { generateVehicleSpecificationPdf } from "../../../lib/documents/service";
-import { DOCUMENT_LANGUAGES, type DocumentLanguage } from "../../../lib/documents/types";
+import { SPECIFICATION_LANGUAGES, type SpecificationLanguage } from "../../../lib/documents/types";
 import { documentFailure, pdfResponse } from "../../../lib/documents/http";
 import { guardRequest } from "../../../lib/security/http";
 
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const lang = request.nextUrl.searchParams.get("language") ?? "en";
-    if (!Object.hasOwn(DOCUMENT_LANGUAGES, lang)) return NextResponse.json({ ok: false, error: "Choose a supported document language." }, { status: 400 });
-    const language: DocumentLanguage = lang as DocumentLanguage;
+    if (!Object.hasOwn(SPECIFICATION_LANGUAGES, lang)) return NextResponse.json({ ok: false, error: "Choose a supported specification language." }, { status: 400 });
+    const language: SpecificationLanguage = lang as SpecificationLanguage;
     const pdf = await generateVehicleSpecificationPdf(vehicle, language);
     return pdfResponse(pdf, `Nindge Automobile-Vehicle-Specification-${safeFilename(slug)}-${language.toUpperCase()}.pdf`, true);
   } catch (error) {

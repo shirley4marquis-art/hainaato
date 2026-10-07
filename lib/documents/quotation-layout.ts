@@ -4,54 +4,55 @@ import { cleanValue } from "./mapping";
 import { defaultField, DocumentError, type DocumentData, type FieldMapping } from "./types";
 import { translateSpecificationLines } from "./vehicle-translation";
 
-type CopyTriple = readonly [string, string, string];
+type CopyTranslations = readonly [english: string, spanish: string, chinese: string, russian: string];
 const C = {
-  quotation: ["VEHICLE QUOTATION", "COTIZACIÓN DE VEHÍCULOS", "车辆报价"],
-  specification: ["VEHICLE SPECIFICATIONS", "FICHA TÉCNICA DEL VEHÍCULO", "车辆规格"],
-  more: ["ADDITIONAL SPECIFICATIONS", "ESPECIFICACIONES ADICIONALES", "补充车辆规格"],
-  buyer: ["CUSTOMER DETAILS", "DATOS DEL CLIENTE", "客户资料"],
-  destination: ["DELIVERY DESTINATION", "DESTINO DE ENTREGA", "交付目的地"],
-  vehicleList: ["VEHICLES IN THIS QUOTATION", "VEHÍCULOS DE ESTA COTIZACIÓN", "本报价车辆"],
-  prices: ["PRICE BREAKDOWN", "DESGLOSE DE PRECIOS", "价格明细"],
-  total: ["TOTAL CIF ESTIMATE", "TOTAL CIF ESTIMADO", "预估 CIF 总额"],
-  deposit: ["Deposit", "Anticipo", "定金"],
-  balance: ["Balance before release", "Saldo antes de la entrega", "交付前尾款"],
-  valid: ["Valid until", "Válida hasta", "有效期至"],
-  fob: ["Vehicle FOB subtotal", "Subtotal FOB de los vehículos", "车辆 FOB 小计"],
-  inland: ["China inland handling", "Gestión terrestre en China", "中国境内运输及操作"],
-  export: ["Export clearance and documents", "Despacho y documentos de exportación", "出口清关及文件"],
-  freight: ["Ocean freight", "Flete marítimo", "海运费"],
-  insurance: ["Marine insurance", "Seguro marítimo", "海运保险"],
-  customs: ["Estimated destination duties", "Impuestos estimados en destino", "目的地预估税费"],
-  terms: ["PAYMENT & DELIVERY TERMS", "CONDICIONES DE PAGO Y ENTREGA", "付款及交付条款"],
-  localCosts: ["Destination duties, port handling, registration and other local charges are estimates payable at destination. They are excluded unless expressly included in the written offer.", "Los aranceles, la manipulación portuaria, el registro y otros gastos locales son estimaciones pagaderas en destino. Se excluyen salvo que la oferta escrita indique expresamente lo contrario.", "目的地关税、港口操作费、登记费及其他当地费用均为估算金额，需在目的地支付；除非书面报价明确列明，否则不包含在内。"],
-  facts: ["VEHICLE OVERVIEW", "DATOS DEL VEHÍCULO", "车辆概况"],
-  equipment: ["EQUIPMENT & ADDITIONAL DETAILS", "EQUIPAMIENTO Y DETALLES ADICIONALES", "配置及其他详情"],
-  noDetails: ["No additional catalogue details were supplied for this vehicle.", "No se proporcionaron más detalles de catálogo para este vehículo.", "目录中没有提供该车辆的其他信息。"],
-  vehicle: ["Vehicle", "Vehículo", "车辆"],
-  condition: ["Condition", "Estado", "车况"],
-  vin: ["VIN", "VIN", "车架号"],
-  exterior: ["Exterior", "Exterior", "外观颜色"],
-  interior: ["Interior", "Interior", "内饰颜色"],
-  engine: ["Engine", "Motor", "发动机"],
-  fuel: ["Fuel / powertrain", "Combustible / motor", "燃料 / 动力"],
-  transmission: ["Transmission", "Transmisión", "变速箱"],
-  drive: ["Drivetrain", "Tracción", "驱动方式"],
-  power: ["Power", "Potencia", "功率"],
-  mileage: ["Mileage", "Kilometraje", "里程"],
-  capacity: ["Seating capacity", "Capacidad de pasajeros", "乘坐人数"],
-  body: ["Body type", "Tipo de carrocería", "车身类型"],
-  stock: ["Stock ID", "Código de inventario", "库存编号"],
-  unitPrice: ["Vehicle price", "Precio del vehículo", "车辆价格"],
-  quantity: ["Quantity", "Cantidad", "数量"],
-  note: ["Specifications are based on available vehicle records. Confirm the exact unit and arrange an inspection before booking.", "Las especificaciones se basan en los registros disponibles. Confirme la unidad exacta y coordine una inspección antes de reservar.", "规格根据现有车辆记录整理。预订前请确认具体车辆并安排验车。"],
-  exported: ["Prepared for vehicle export", "Preparado para la exportación de vehículos", "汽车出口报价文件"],
-  page: ["Page", "Página", "页"],
-} satisfies Record<string, CopyTriple>;
+  quotation: ["VEHICLE QUOTATION", "COTIZACIÓN DE VEHÍCULOS", "车辆报价", "ПРЕДЛОЖЕНИЕ НА ПОСТАВКУ АВТОМОБИЛЯ"],
+  specification: ["VEHICLE SPECIFICATIONS", "FICHA TÉCNICA DEL VEHÍCULO", "车辆规格", "ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ АВТОМОБИЛЯ"],
+  more: ["ADDITIONAL SPECIFICATIONS", "ESPECIFICACIONES ADICIONALES", "补充车辆规格", "ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ"],
+  buyer: ["CUSTOMER DETAILS", "DATOS DEL CLIENTE", "客户资料", "ДАННЫЕ ПОКУПАТЕЛЯ"],
+  destination: ["DELIVERY DESTINATION", "DESTINO DE ENTREGA", "交付目的地", "МЕСТО ДОСТАВКИ"],
+  vehicleList: ["VEHICLES IN THIS QUOTATION", "VEHÍCULOS DE ESTA COTIZACIÓN", "本报价车辆", "АВТОМОБИЛИ В ПРЕДЛОЖЕНИИ"],
+  prices: ["PRICE BREAKDOWN", "DESGLOSE DE PRECIOS", "价格明细", "РАСЧЁТ СТОИМОСТИ"],
+  total: ["TOTAL CIF ESTIMATE", "TOTAL CIF ESTIMADO", "预估 CIF 总额", "РАСЧЁТНАЯ СТОИМОСТЬ CIF"],
+  deposit: ["Deposit", "Anticipo", "定金", "Аванс"],
+  balance: ["Balance before release", "Saldo antes de la entrega", "交付前尾款", "Остаток перед выдачей"],
+  valid: ["Valid until", "Válida hasta", "有效期至", "Действительно до"],
+  fob: ["Vehicle FOB subtotal", "Subtotal FOB de los vehículos", "车辆 FOB 小计", "Итого за автомобили FOB"],
+  inland: ["China inland handling", "Gestión terrestre en China", "中国境内运输及操作", "Внутренняя обработка в Китае"],
+  export: ["Export clearance and documents", "Despacho y documentos de exportación", "出口清关及文件", "Экспортное оформление и документы"],
+  freight: ["Ocean freight", "Flete marítimo", "海运费", "Морской фрахт"],
+  insurance: ["Marine insurance", "Seguro marítimo", "海运保险", "Морское страхование"],
+  customs: ["Estimated destination duties", "Impuestos estimados en destino", "目的地预估税费", "Расчётные пошлины в стране назначения"],
+  terms: ["PAYMENT & DELIVERY TERMS", "CONDICIONES DE PAGO Y ENTREGA", "付款及交付条款", "УСЛОВИЯ ОПЛАТЫ И ДОСТАВКИ"],
+  localCosts: ["Destination duties, port handling, registration and other local charges are estimates payable at destination. They are excluded unless expressly included in the written offer.", "Los aranceles, la manipulación portuaria, el registro y otros gastos locales son estimaciones pagaderas en destino. Se excluyen salvo que la oferta escrita indique expresamente lo contrario.", "目的地关税、港口操作费、登记费及其他当地费用均为估算金额，需在目的地支付；除非书面报价明确列明，否则不包含在内。", "Пошлины, портовая обработка, регистрация и другие местные расходы являются расчётными и оплачиваются в стране назначения. Они не включены, если иное прямо не указано в письменном предложении."],
+  facts: ["VEHICLE OVERVIEW", "DATOS DEL VEHÍCULO", "车辆概况", "ОБЩИЕ СВЕДЕНИЯ ОБ АВТОМОБИЛЕ"],
+  equipment: ["EQUIPMENT & ADDITIONAL DETAILS", "EQUIPAMIENTO Y DETALLES ADICIONALES", "配置及其他详情", "КОМПЛЕКТАЦИЯ И ДОПОЛНИТЕЛЬНЫЕ СВЕДЕНИЯ"],
+  noDetails: ["No additional catalogue details were supplied for this vehicle.", "No se proporcionaron más detalles de catálogo para este vehículo.", "目录中没有提供该车辆的其他信息。", "Дополнительные сведения об автомобиле в каталоге отсутствуют."],
+  vehicle: ["Vehicle", "Vehículo", "车辆", "Автомобиль"],
+  condition: ["Condition", "Estado", "车况", "Состояние"],
+  vin: ["VIN", "VIN", "车架号", "VIN"],
+  exterior: ["Exterior", "Exterior", "外观颜色", "Цвет кузова"],
+  interior: ["Interior", "Interior", "内饰颜色", "Цвет салона"],
+  engine: ["Engine", "Motor", "发动机", "Двигатель"],
+  fuel: ["Fuel / powertrain", "Combustible / motor", "燃料 / 动力", "Топливо / силовая установка"],
+  transmission: ["Transmission", "Transmisión", "变速箱", "Коробка передач"],
+  drive: ["Drivetrain", "Tracción", "驱动方式", "Тип привода"],
+  power: ["Power", "Potencia", "功率", "Мощность"],
+  mileage: ["Mileage", "Kilometraje", "里程", "Пробег"],
+  capacity: ["Seating capacity", "Capacidad de pasajeros", "乘坐人数", "Количество мест"],
+  body: ["Body type", "Tipo de carrocería", "车身类型", "Тип кузова"],
+  stock: ["Stock ID", "Código de inventario", "库存编号", "Номер в наличии"],
+  unitPrice: ["Vehicle price", "Precio del vehículo", "车辆价格", "Цена автомобиля"],
+  quantity: ["Quantity", "Cantidad", "数量", "Количество"],
+  note: ["Specifications are based on available vehicle records. Confirm the exact unit and arrange an inspection before booking.", "Las especificaciones se basan en los registros disponibles. Confirme la unidad exacta y coordine una inspección antes de reservar.", "规格根据现有车辆记录整理。预订前请确认具体车辆并安排验车。", "Характеристики указаны по имеющимся данным. Перед бронированием подтвердите конкретный автомобиль и согласуйте осмотр."],
+  exported: ["Prepared for vehicle export", "Preparado para la exportación de vehículos", "汽车出口报价文件", "Подготовлено для экспорта автомобиля"],
+  page: ["Page", "Página", "页", "Страница"],
+} satisfies Record<string, CopyTranslations>;
 
-function tr(copy: CopyTriple, language: DocumentData["language"]): string {
+function tr(copy: CopyTranslations, language: DocumentData["language"]): string {
   if (language === "en") return copy[0];
   if (language === "zh") return copy[2];
+  if (language === "ru") return copy[3];
   if (language === "es-zh") return `${copy[1]} / ${copy[2]}`;
   return copy[1];
 }
@@ -138,7 +139,7 @@ export async function generateQuotationLayout(data: DocumentData, galleries: Uin
         text(n, cleanValue(item.vehicle_total), top + 23, 22, { x: margin + content - 112, width: 101, align: "right", fontSize: 9.3, minFontSize: 8, fontWeight: "bold", color: "#2a0e08" });
       }
       if (!isLast) {
-        text(n, tr(["Additional vehicles continue on the next page.", "Los vehículos restantes continúan en la página siguiente.", "其余车辆详见下一页。"], data.language), 477, 22, { fontSize: 8.5, minFontSize: 8, color: "#6b5643" });
+        text(n, tr(["Additional vehicles continue on the next page.", "Los vehículos restantes continúan en la página siguiente.", "其余车辆详见下一页。", "Остальные автомобили указаны на следующей странице."], data.language), 477, 22, { fontSize: 8.5, minFontSize: 8, color: "#6b5643" });
         continue;
       }
       const costsY = 249 + (end - start) * 72 + 10;

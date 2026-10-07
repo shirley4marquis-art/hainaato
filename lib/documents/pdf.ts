@@ -140,8 +140,8 @@ export async function generatePdf(prepared: Uint8Array, mapping: TemplateMapping
   const pdf = await PDFDocument.load(prepared, { updateMetadata: false });
   const originals = pdf.getPages();
   const bound = (field: FieldMapping) => field.itemIndex != null && !data.vehicles[field.itemIndex] ? "" : field.kind === "vehicles" ? vehicleText(data, field) : bindField(field, { ...data.values, ...(field.itemIndex != null ? data.vehicles[field.itemIndex] : {}) });
-  const appendixLabel = data.language === "en" ? "Transmission details" : data.language === "zh" ? "变速箱详情" : data.language === "es-zh" ? "Transmisión / 变速箱详情" : "Detalle de transmisión";
-  const appendixRef = data.language === "en" ? "Appendix" : data.language === "zh" ? "附页" : "Anexo";
+  const appendixLabel = data.language === "en" ? "Transmission details" : data.language === "zh" ? "变速箱详情" : data.language === "es-zh" ? "Transmisión / 变速箱详情" : data.language === "ru" ? "Сведения о коробке передач" : "Detalle de transmisión";
+  const appendixRef = data.language === "en" ? "Appendix" : data.language === "zh" ? "附页" : data.language === "ru" ? "Приложение" : "Anexo";
   const vehicleContext = (field: FieldMapping) => {
     const item = data.vehicles[field.itemIndex ?? 0] ?? data.values;
     return [item.vehicle_year, item.vehicle_brand, item.vehicle_model, item.vin].map(cleanValue).filter(Boolean).join(" · ");

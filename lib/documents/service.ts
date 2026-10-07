@@ -13,7 +13,7 @@ import { cleanValue } from "./mapping";
 import { optimizeDocumentPhoto } from "./photo";
 import { loadQuotationPhotos } from "./quotation-gallery";
 import { defaultTemplate, documentFilename, documentPool, generatedMetadata, getTemplate, nextDocumentNumber } from "./store";
-import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type TemplateFile } from "./types";
+import { DocumentError, FIELD_NAMES, type DocumentLanguage, type DocumentType, type DocumentValues, type SpecificationLanguage, type TemplateFile } from "./types";
 import { translateSpecificationText, translateVehicleTerm } from "./vehicle-translation";
 import { generateOfficialDocument } from "./official-templates";
 
@@ -144,11 +144,13 @@ export async function generateQuoteTemplatePdf(ref: string, selectedLanguage?: D
   }
   return generateQuotationLayout(data, galleries);
 }
-export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language: DocumentLanguage) {
+export async function generateVehicleSpecificationPdf(vehicle: Vehicle, language: SpecificationLanguage) {
   const values: DocumentValues = Object.fromEntries(FIELD_NAMES.map(key => [key, ""]));
   const index = getVehicleIndexEntryBySlug(vehicle.slug);
-  const currency = new Intl.NumberFormat(language === "en" ? "en-US" : language === "zh" ? "zh-CN" : "es-ES", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-  Object.assign(values, { document_number: `HA-SP-${vehicle.id}`, vehicle_brand: index?.brand ?? "", vehicle_model: index?.model ?? vehicle.title, vehicle_year: vehicle.year ?? "", vehicle_color: translateVehicleTerm(vehicle.color ?? "", language), fuel: translateVehicleTerm(vehicle.fuel ?? "", language), transmission: translateVehicleTerm(vehicle.gearbox ?? "", language), mileage: vehicle.mileageKm ?? "", engine: vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "", quantity: 1, company_name: "NINDGE AUTOMOBILE", company_email: "info@nindgeauto.com", vehicle_summary: vehicle.title, notes: publicSpecificationNotes(vehicle.specs, language), unit_price: vehicle.priceCNY == null ? "" : `${currency.format(convertFromCNY(vehicle.priceCNY, "USD"))} FOB China`, interior_color: translateVehicleTerm(vehicle.specs["Interior Color"] ?? "", language), drivetrain: translateVehicleTerm(vehicle.driveType ?? "", language), power: vehicle.specs["Maximum Power"] ?? vehicle.specs.Horsepower ?? "", capacity: vehicle.specs.Capacity ?? vehicle.specs["Capacity (people/seats)"] ?? "", body_type: vehicle.bodyType ?? "", stock_id: index?.stockCode ?? vehicle.id });
+  const locale = language === "en" ? "en-US" : language === "zh" ? "zh-CN" : language === "ru" ? "ru-RU" : "es-ES";
+  const currency = new Intl.NumberFormat(locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const fobLabel = language === "ru" ? " FOB Китай" : " FOB China";
+  Object.assign(values, { document_number: `HA-SP-${vehicle.id}`, issue_date: new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" }).format(new Date()), units: language === "ru" ? "Метрическая система (СИ)" : language === "zh" ? "公制（SI）" : language === "es" ? "Métrico (SI)" : "Metric (SI)", vehicle_brand: index?.brand ?? "", vehicle_model: index?.model ?? vehicle.title, vehicle_year: vehicle.year ?? "", vehicle_color: translateVehicleTerm(vehicle.color ?? "", language), fuel: translateVehicleTerm(vehicle.fuel ?? "", language), transmission: translateVehicleTerm(vehicle.gearbox ?? "", language), mileage: vehicle.mileageKm ?? "", engine: vehicle.specs.Displacement ?? vehicle.specs.Engine ?? "", quantity: 1, company_name: "NINDGE AUTOMOBILE", company_email: "info@nindgeauto.com", vehicle_summary: vehicle.title, notes: publicSpecificationNotes(vehicle.specs, language), unit_price: vehicle.priceCNY == null ? "" : `${currency.format(convertFromCNY(vehicle.priceCNY, "USD"))}${fobLabel}`, interior_color: translateVehicleTerm(vehicle.specs["Interior Color"] ?? "", language), drivetrain: translateVehicleTerm(vehicle.driveType ?? "", language), power: vehicle.specs["Maximum Power"] ?? vehicle.specs.Horsepower ?? "", capacity: vehicle.specs.Capacity ?? vehicle.specs["Capacity (people/seats)"] ?? "", body_type: translateVehicleTerm(vehicle.bodyType ?? "", language), stock_id: index?.stockCode ?? vehicle.id });
   const photoSources = vehicle.images.slice(0, 3).map(file => imagePath(vehicle.site, vehicle.id, file));
   const photos = (await Promise.all(photoSources.map(catalogueImage))).filter((photo): photo is Buffer => photo !== null);
   if (!photos.length) throw new DocumentError(`Vehicle photos for ${vehicle.title} are temporarily unavailable. Please try again shortly.`, 503);

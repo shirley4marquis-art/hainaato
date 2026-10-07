@@ -7,6 +7,8 @@ export const DOCUMENT_TYPES = {
 export type DocumentType = keyof typeof DOCUMENT_TYPES;
 export const DOCUMENT_LANGUAGES = { es: "Español", zh: "中文", en: "English", "es-zh": "Español + 中文" } as const;
 export type DocumentLanguage = keyof typeof DOCUMENT_LANGUAGES;
+export const SPECIFICATION_LANGUAGES = { en: "English", es: "Español", zh: "中文", "es-zh": "Español + 中文", ru: "Русский" } as const;
+export type SpecificationLanguage = keyof typeof SPECIFICATION_LANGUAGES;
 export const FIELD_NAMES = ["document_number", "quotation_number", "contract_number", "invoice_number", "issue_date", "expiry_date", "buyer_name", "buyer_company", "buyer_email", "buyer_phone", "buyer_address", "buyer_country", "destination_country", "destination_port", "incoterm", "currency", "vehicle_brand", "vehicle_model", "vehicle_year", "vehicle_condition", "vehicle_color", "interior_color", "body_type", "drivetrain", "vin", "engine", "power", "fuel", "transmission", "mileage", "quantity", "units", "unit_price", "vehicle_total", "subtotal", "inland_cost", "documentation_cost", "shipping_cost", "insurance_cost", "cif_price", "customs_estimate", "total_amount", "estimated_grand_total", "shipping_insurance", "initial_payment", "initial_payment_percentage", "remaining_balance", "remaining_percentage", "payment_method", "payment_method_summary", "payment_terms", "seller_name", "sales_manager", "company_name", "company_address", "company_phone", "company_email", "company_website", "notes", "vehicle_summary", "vehicle_details", "stock_id", "stock_summary", "quantity_summary", "price_summary", "loading_port", "doors_seats", "steering", "emissions", "battery_range", "first_registration", "ownership_history", "keys_books", "condition_note", "inspection_status", "length_width_height", "wheelbase", "curb_weight", "packed_volume", "preferred_lifting", "export_photo_status", "export_licence_status", "deregistration_status", "destination_rules", "export_papers", "attached_to", "contract_terms", "inspection_notes", "export_documents", "vehicles", "vehicle_image"] as const;
 export type Rect = { page: number; x: number; y: number; width: number; height: number };
 export type PageInfo = { width: number; height: number; rotation: number; mediaBox: { x: number; y: number; width: number; height: number }; cropBox: { x: number; y: number; width: number; height: number } };
@@ -30,7 +32,7 @@ export type Template = {
 };
 export type TemplateFile = Template & { original: Buffer; prepared: Buffer };
 export type DocumentValues = Record<string, string | number | undefined>;
-export type DocumentData = { values: DocumentValues; vehicles: DocumentValues[]; images: (Uint8Array | null)[]; language: DocumentLanguage };
+export type DocumentData = { values: DocumentValues; vehicles: DocumentValues[]; images: (Uint8Array | null)[]; language: SpecificationLanguage };
 export type GeneratedDocument = { id: string; number: string; filename: string; type: DocumentType; language: DocumentLanguage; quoteRef: string; templateId: string; createdAt: string };
 export class DocumentError extends Error {
   constructor(message: string, public status = 422) { super(message); this.name = "DocumentError"; }
